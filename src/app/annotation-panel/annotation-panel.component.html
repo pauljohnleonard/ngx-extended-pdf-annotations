@@ -2,7 +2,7 @@
   <div class="annotation-window-messages-section" #chatWindowScroll>
     <ng-container
       *ngIf="
-        chatService.isInitialChatMessagesLoaded;
+        annotationService.isInitialChatMessagesLoaded;
         then initialChatMessagesLoadedTemplate;
         else loadingInitialMessagesSpinnerTemplate
       "
@@ -33,7 +33,7 @@
       <ng-template #nonEmptyChatTemplate>
         <div
           *ngFor="
-            let chatMessage of chatService.chatMessages;
+            let chatMessage of annotationService.chatMessages;
             trackBy: trackByMessages
           "
           class="chat-message-full-width-container"
@@ -192,7 +192,7 @@
               <mat-menu #deleteMessageMenu="matMenu">
                 <button
                   mat-menu-item
-                  (click)="chatService.deleteMessage(chatMessage)"
+                  (click)="annotationService.deleteMessage(chatMessage)"
                   aria-label="Delete message"
                 >
                   <mat-icon>delete</mat-icon>

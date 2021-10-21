@@ -1,16 +1,9 @@
 import { NgModule } from '@angular/core';
-import { AnnotationsComponent } from './annotations.component';
-
-
+import { AnnotationPanelWrapperComponent } from './annotations-panel-wrapper.component';
 
 @NgModule({
-  declarations: [
-    AnnotationsComponent
-  ],
-  imports: [
-  ],
-  exports: [
-    AnnotationsComponent
-  ]
+  declarations: [AnnotationPanelWrapperComponent],
+  imports: [],
+  exports: [AnnotationPanelWrapperComponent],
 })
-export class AnnotationsModule { }
+export class AnnotationsModule {}

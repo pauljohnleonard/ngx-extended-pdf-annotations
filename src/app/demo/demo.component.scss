@@ -6,3 +6,11 @@
   height: 100%;
   top: 40px;
 }
+
+.canpress {
+  cursor: pointer;
+}
+
+.canpress:hover {
+  background-color: gray;
+}

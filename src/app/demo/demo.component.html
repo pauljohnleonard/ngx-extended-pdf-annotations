@@ -1,40 +1,32 @@
-<div class="mycontainer">
-  <ngx-extended-pdf-viewer
-    style="flex: 1 1 100%"
-    #viewer
-    src="./assets/hammond-organ-wikipedia.pdf"
-    [useBrowserLocale]="true"
-    height="100vh"
-    [page]="1"
-    [handTool]="false"
-    [showHandToolButton]="true"
-    [textLayer]="false"
-    (pageRendered)="annotationsPanel.pageRendered($event)"
-    (pdfLoaded)="annotationsPanel.pdfLoaded($event)"
-    [customToolbar]="additionalButtons"
-  ></ngx-extended-pdf-viewer>
+<ngx-extended-pdf-viewer
+  style="flex: 1 1 100%"
+  #viewer
+  src="./assets/hammond-organ-wikipedia.pdf"
+  [useBrowserLocale]="true"
+  height="100vh"
+  [page]="1"
+  [handTool]="false"
+  [showHandToolButton]="true"
+  [textLayer]="false"
+  (pageRendered)="annotationsPanel.pageRendered($event)"
+  (pdfLoaded)="annotationsPanel.pdfLoaded($event)"
+  [customToolbar]="additionalButtons"
+></ngx-extended-pdf-viewer>
 
-  <ng-template #additionalButtons>
-    <div id="toolbarViewer" class="toolbar">
-      <pdf-zoom-toolbar></pdf-zoom-toolbar>
-    </div>
-  </ng-template>
-
-  <!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
-
-  <lib-annotations #annotationPanel class="annotationPanel">
-    <app-annotation> </app-annotation>
-  </lib-annotations>
-
-  <!-- <div [ngClass]="{ orgbrainPanel: true, icon_grey: true, hideme: documentService.loading }"> -->
-
-  <ng-template #annotationControls>
+<ng-template #additionalButtons>
+  <div id="toolbarViewer" class="toolbar">
+    <pdf-zoom-toolbar></pdf-zoom-toolbar>
     <mat-icon
-      class="ml-20 canpress mr-15 customIconSize"
+      [ngClass]="{ canpress: true, hightlight: highlightPen }"
       (click)="penAnnotate()"
-      i18n-matTooltip="@@ClickToAnnotateWithPenToolTip"
       matTooltip="Annotate with Pen"
-      >pen</mat-icon
+      >gesture</mat-icon
     >
-  </ng-template>
-</div>
+  </div>
+</ng-template>
+
+<!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
+
+<ngx-extended-pdf-annotation-wrapper #annotationPanel class="annotationPanel">
+  <app-annotation> </app-annotation>
+</ngx-extended-pdf-annotation-wrapper>

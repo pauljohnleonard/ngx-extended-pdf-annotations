@@ -1,34 +1,54 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { Subject } from 'rxjs';
 import { PageHandler } from './page-handler';
+
+export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
+export enum AnnotationMode {
+  OFF = 'OFF',
+  PEN = 'PEN',
+}
+
+export enum AnnotationEventType {
+  START = 'START',
+  END = 'END',
+}
+
+export interface AnnotationEvent {
+  id: string;
+  type: AnnotationEventType;
+  pos?: { x: number; y: number };
+  path?: AnnotationPath;
+}
 
 @UntilDestroy()
 @Component({
-  selector: 'lib-annotations',
+  selector: 'ngx-extended-pdf-annotation-wrapper',
   template: `<ng-content></ng-content>`,
   styles: [],
 })
-export class AnnotationsComponent implements OnInit {
-  // @ViewChild('annotionPanel') private annotionPanel: any;
-
+export class AnnotationPanelWrapperComponent implements OnInit {
   showAnnotationPanel = false;
-
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  showAnnotations: boolean;
+  showAnnotations = true;
+  subject$ = new Subject();
+  annotationSubject$ = new Subject<AnnotationEvent>();
+  mode = AnnotationMode.OFF;
 
   constructor(public elRef: ElementRef) {}
 
   async ngOnInit() {}
 
-  penAnnotate() {}
+  get penIsOn() {
+    return this.mode === AnnotationMode.PEN;
+  }
 
   pageRendered(evt) {
     console.log('Page render ', evt.source);
 
     const page = evt.pageNumber;
     if (!this.pages[page]) {
-      const pageHandler = new PageHandler(evt.source, page);
+      const pageHandler = new PageHandler(evt.source, page, this);
       this.pages[page] = pageHandler;
     } else {
       this.pages[page].update(evt.source);
@@ -58,5 +78,19 @@ export class AnnotationsComponent implements OnInit {
     for (const page of Object.keys(this.pages)) {
       this.pages[page].destroy();
     }
+  }
+
+  stopPenAnnoation() {
+    console.log(' STOP annotation ');
+    this.elRef.nativeElement.style.cursor = 'cursor';
+    this.mode = AnnotationMode.OFF;
+    this.subject$.next();
+  }
+
+  startPenAnnoation() {
+    console.log(' START annotation ');
+    this.elRef.nativeElement.style.cursor = 'pen';
+    this.mode = AnnotationMode.PEN;
+    this.subject$.next();
   }
 }

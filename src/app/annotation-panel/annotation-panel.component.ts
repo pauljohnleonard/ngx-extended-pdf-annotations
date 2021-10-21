@@ -40,10 +40,12 @@ const chatMesages: UIChatMessage[] = [
 @UntilDestroy()
 @Component({
   selector: 'app-annotation',
-  templateUrl: './annotation-window.component.html',
-  styleUrls: ['./annotation-window.component.scss'],
+  templateUrl: './annotation-panel.component.html',
+  styleUrls: ['./annotation-panel.component.scss'],
 })
 export class AnnotationComponent implements OnInit {
+  @ViewChild(MatInput) messageInput: MatInput;
+
   isMobileScreen = false;
   showNewMessagesBelowNotificationButton = false;
 
@@ -55,7 +57,7 @@ export class AnnotationComponent implements OnInit {
 
   replyToMessage;
 
-  chatService = {
+  annotationService = {
     isInitialChatMessagesLoaded: true,
     chatMessages: chatMesages,
     chatWindowTitle: 'Title',
@@ -67,11 +69,9 @@ export class AnnotationComponent implements OnInit {
     },
   };
 
-  @ViewChild(MatInput) messageInput: MatInput;
-  @ViewChild('bottomOfMessagesElement') bottomOfMessagesElement: ElementRef;
-  @ViewChild('chatWindowScroll') chatWindowScrollElement: ElementRef;
-
-  constructor(private breakpointObserver: BreakpointObserver) {}
+  constructor(private breakpointObserver: BreakpointObserver) {
+    console.log(' AnnotationComponent ');
+  }
 
   async ngOnInit() {}
 
@@ -112,7 +112,7 @@ export class AnnotationComponent implements OnInit {
     this.replyingToMessage = undefined;
     this.showNewMessagesBelowNotificationButton = false;
     this.messageIdForWhichDeleteMenuIsOpen = '';
-    this.chatWindowTitleText = this.chatService.chatWindowTitle;
+    this.chatWindowTitleText = this.annotationService.chatWindowTitle;
   }
 
   truncateMessage(message: string) {
@@ -128,15 +128,6 @@ export class AnnotationComponent implements OnInit {
     } else {
       return message;
     }
-  }
-
-  private getIsCurrentlyScrolledToBottom() {
-    const chatScrollNativeElement = this.chatWindowScrollElement?.nativeElement;
-    return chatScrollNativeElement
-      ? chatScrollNativeElement.scrollTop +
-          chatScrollNativeElement.clientHeight ===
-          chatScrollNativeElement.scrollHeight
-      : false;
   }
 
   initiateReplyToMessage(message: UIChatMessage) {
@@ -192,7 +183,7 @@ export class AnnotationComponent implements OnInit {
   // }
 
   hasChatMessages() {
-    return this.chatService.chatMessages.length > 0;
+    return this.annotationService.chatMessages.length > 0;
   }
   isProcessingMessage(chatMessage) {
     return false;

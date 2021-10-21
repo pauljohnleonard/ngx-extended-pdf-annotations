@@ -1,19 +1,36 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { AnnotationsComponent } from 'projects/annotations/src/public-api';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  AnnotationMode,
+  AnnotationPanelWrapperComponent,
+} from 'projects/annotations/src/public-api';
 
+@UntilDestroy()
 @Component({
   selector: 'app-demo',
   templateUrl: './demo.component.html',
   styleUrls: ['./demo.component.scss'],
 })
-export class DemoComponent implements OnInit {
-  @ViewChild(AnnotationsComponent) annotationsPanel;
-
+export class DemoComponent implements AfterViewInit {
+  @ViewChild(AnnotationPanelWrapperComponent)
+  annotationsPanel: AnnotationPanelWrapperComponent;
+  highlightPen = false;
   constructor() {}
 
-  ngOnInit(): void {}
+  ngAfterViewInit(): void {
+    this.annotationsPanel.subject$.pipe(untilDestroyed(this)).subscribe(() => {
+      this.highlightPen = this.annotationsPanel.mode === AnnotationMode.PEN;
+    });
+  }
 
-  penAnnotate() {}
+  penAnnotate() {
+    const on = this.annotationsPanel.penIsOn;
+    if (!on) {
+      this.annotationsPanel.startPenAnnoation();
+    } else {
+      this.annotationsPanel.stopPenAnnoation();
+    }
+  }
 
   // pageRendered(evt) {
   //   console.log('Page render ', evt.source);

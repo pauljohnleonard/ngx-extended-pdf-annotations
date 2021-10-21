@@ -16,7 +16,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
 import { AnnotationsModule } from 'projects/annotations/src/lib/annotations.module';
-import { AnnotationComponent } from './annotation-window/annotation-window.component';
+import { AnnotationComponent } from './annotation-panel/annotation-panel.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 @NgModule({
