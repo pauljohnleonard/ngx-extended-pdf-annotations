@@ -1,0 +1,264 @@
+<div class="chat-window mat-elevation-z8">
+  <div class="chat-window-messages-section" #chatWindowScroll>
+    <ng-container
+      *ngIf="
+        chatService.isInitialChatMessagesLoaded;
+        then initialChatMessagesLoadedTemplate;
+        else loadingInitialMessagesSpinnerTemplate
+      "
+    >
+    </ng-container>
+
+    <ng-template #loadingInitialMessagesSpinnerTemplate> </ng-template>
+
+    <ng-template #initialChatMessagesLoadedTemplate>
+      <ng-container *ngIf="hasChatMessages(); then nonEmptyChatTemplate; else emptyChatTemplate">
+      </ng-container>
+
+      <ng-template #emptyChatTemplate>
+        <div class="chat-messages-window-info-text" i18n="@@chat_nothing-has-been-said-here-yet">
+          Nothing has been said here yet
+        </div>
+      </ng-template>
+
+      <ng-template #nonEmptyChatTemplate>
+        <div
+          *ngFor="let chatMessage of chatService.chatMessages; trackBy: trackByMessages"
+          class="chat-message-full-width-container"
+          [class.message-is-sent-by-current-user]="isSentByCurrentUser(chatMessage)"
+        >
+          <div class="chat-message-top-meta-info">
+            <ng-container
+              *ngIf="
+                chatMessage.replyToMessage;
+                then replyingToSomeoneTopMetaTemplate;
+                else notReplyingToSomeoneTopMetaTemplate
+              "
+            >
+            </ng-container>
+
+            <ng-template #replyingToSomeoneTopMetaTemplate>
+              <span
+                ><mat-icon class="chat-message-top-meta-reply-icon">reply</mat-icon
+                ><span class="chat-message-top-meta-sent-by-name-if-not-current-user">{{
+                  getNameForUserId(chatMessage.fromUserId)
+                }}</span>
+
+                <ng-container
+                  *ngIf="
+                    isSentByCurrentUser(chatMessage);
+                    then youReplyToNameOrYourselfTemplate;
+                    else someoneReplyingToNameOrYouTextTemplate
+                  "
+                ></ng-container>
+
+                <ng-template #someoneReplyingToNameOrYouTextTemplate>
+                  <span i18n="@@chat_replying-to"> replying to </span>
+
+                  <ng-container
+                    *ngIf="
+                      isReplyToCurrentUser(chatMessage);
+                      then replyingToYouTextTemplate;
+                      else replyingToNameTextTemplate
+                    "
+                  ></ng-container>
+
+                  <ng-template #replyingToYouTextTemplate i18n="@@chat_you">you</ng-template>
+                </ng-template>
+
+                <ng-template #youReplyToNameOrYourselfTemplate>
+                  <span i18n="@@chat_reply-to"> Reply to </span>
+
+                  <ng-container
+                    *ngIf="
+                      isReplyToCurrentUser(chatMessage);
+                      then replyToYourselfTextTemplate;
+                      else replyingToNameTextTemplate
+                    "
+                  ></ng-container>
+
+                  <ng-template #replyToYourselfTextTemplate i18n="@@chat_yourself"
+                    >yourself</ng-template
+                  >
+                </ng-template>
+
+                <ng-template #replyingToNameTextTemplate>{{
+                  getNameForUserId(chatMessage.replyToMessage.fromUserId)
+                }}</ng-template>
+                -
+              </span>
+            </ng-template>
+
+            <ng-template #notReplyingToSomeoneTopMetaTemplate>
+              <span class="chat-message-top-meta-sent-by-name-if-not-current-user"
+                >{{ getNameForUserId(chatMessage.fromUserId) }} -
+              </span>
+            </ng-template>
+
+            <span *ngIf="!chatMessage.isSending">{{
+              dateUtil.formatDate(chatMessage.receivedAt)
+            }}</span>
+            <span *ngIf="chatMessage.isSending"
+              ><ng-container i18n="@@chat_sending">Sending</ng-container>...</span
+            >
+          </div>
+
+          <div
+            *ngIf="chatMessage.replyToMessage"
+            class="chat-message-replying-to-message-bubble-container"
+          >
+            <div
+              class="chat-message-bubble"
+              [class.message-is-deleted]="chatMessage.replyToMessage.isDeleted"
+            >
+              <ng-container
+                *ngIf="
+                  chatMessage.replyToMessage.isDeleted;
+                  then deletedMessageTextTemplate;
+                  else replyingToChatMessageTemplate
+                "
+              ></ng-container>
+              <ng-template #replyingToChatMessageTemplate>{{
+                truncateMessage(chatMessage?.replyToMessage?.mentionDecodedMessage)
+              }}</ng-template>
+            </div>
+          </div>
+
+          <div
+            class="chat-message-bubble-and-buttons"
+            [class.is-delete-menu-open]="chatMessage.id === messageIdForWhichDeleteMenuIsOpen"
+          >
+            <div class="chat-message-bubble" [class.message-is-deleted]="chatMessage.isDeleted">
+              <ng-container
+                *ngIf="
+                  chatMessage.isDeleted;
+                  then deletedMessageTextTemplate;
+                  else chatMessageTemplate
+                "
+              ></ng-container>
+              <ng-template #chatMessageTemplate>
+                <span [innerHtml]="chatMessage.message | safeHtml"></span>
+              </ng-template>
+            </div>
+
+            <div class="bubble-and-buttons-separator"></div>
+
+            <div class="chat-message-buttons" *ngIf="!chatMessage.isDeleted">
+              <button
+                mat-icon-button
+                class="reply-button"
+                aria-label="Reply"
+                matTooltip="Reply"
+                i18n-matTooltip="@@chat_reply"
+                *ngIf="!chatMessage.isDeleted"
+                (click)="initiateReplyToMessage(chatMessage)"
+              >
+                <mat-icon>reply</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="deleteMessageMenu"
+                class="delete-menu-button"
+                [class.delete-menu-button-for-non-admin]="!isAdmin()"
+                aria-label="Delete message menu"
+                (menuOpened)="onDeleteMenuOpenedForMessageId(chatMessage.id)"
+                (menuClosed)="onDeleteMenuClosed()"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #deleteMessageMenu="matMenu">
+                <button
+                  mat-menu-item
+                  (click)="chatService.deleteMessage(chatMessage)"
+                  aria-label="Delete message"
+                >
+                  <mat-icon>delete</mat-icon>
+                  <span i18n="@@chat_delete-message">Delete message</span>
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+        <!-- 
+        <div
+          class="bottom-of-messages-element"
+          #bottomOfMessagesElement
+          observeVisibility
+          [rootElement]="chatWindowScrollElement.nativeElement"
+          (visible)="onScrolledToBottom()"
+        >
+          &nbsp;
+        </div> -->
+      </ng-template>
+    </ng-template>
+  </div>
+
+  <!-- <div
+    class="there-are-new-messages-below-notification"
+    *ngIf="showNewMessagesBelowNotificationButton"
+  >
+    <button mat-raised-button color="primary" (click)="onNewMessagesNotificationButtonClick()">
+      <ng-container i18n="@@chat_new-messages-below-notification">New messages</ng-container>
+      <mat-icon>arrow_downward</mat-icon>
+    </button>
+  </div> -->
+
+  <div class="chat-window-textbox-section">
+    <div *ngIf="replyingToMessage" class="is-replying-to-message-info-container">
+      <div class="is-replying-to-message-info">
+        <div class="is-replying-to-message-info-first-line-who-info">
+          <ng-container i18n="@@chat_you-are-replying-to">You are replying to</ng-container>
+          <span class="is-replying-to-message-info-who-name">
+            {{ getNameForUserId(replyingToMessage.fromUserId) }}
+          </span>
+        </div>
+        <!-- <div class="is-replying-to-message-info-second-line-message">
+          {{ truncateMessage(replyingToMessage.mentionDecodedMessage) }}
+        </div> -->
+      </div>
+
+      <button
+        mat-icon-button
+        class="is-replying-info-cancel-button"
+        aria-label="Cancel replying to message"
+        (click)="cancelReplyingToMessage()"
+      >
+        <mat-icon>clear</mat-icon>
+      </button>
+    </div>
+
+    <mat-form-field appearance="fill" class="chat-window-formfield">
+
+      <textarea
+        matInput
+        class="chat-window-textarea-message-input"
+        placeholder="Your message"
+        i18n-placeholder="@@chat_your-message"
+        (keydown)="onKeydownInput($event)"
+        [formControl]="messageInputFC"
+        autocomplete="off"
+        cdkTextareaAutosize
+        cdkAutosizeMinRows="1"
+        cdkAutosizeMaxRows="5"
+        #messageinput
+      >
+      </textarea>
+
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="sendChatMessage()"
+        [attr.aria-label]="'Send message'"
+        matTooltip="Send message"
+        i18n-matTooltip="@@chat_send-message"
+      >
+        <mat-icon>send</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+</div>
+
+<ng-template #deletedMessageTextTemplate i18n="@@chat_the-message-has-been-deleted"
+  >The message has been deleted</ng-template
+>

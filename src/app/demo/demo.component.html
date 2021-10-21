@@ -1,0 +1,38 @@
+<div class="mycontainer">
+  <ngx-extended-pdf-viewer
+    style="flex: 1 1 100%"
+    #viewer
+    src="./assets/hammond-organ-wikipedia.pdf"
+    [useBrowserLocale]="true"
+    height="100vh"
+    [page]="1"
+    [handTool]="false"
+    [showHandToolButton]="true"
+    [textLayer]="false"
+    (pageRendered)="annotationsPanel.pageRendered($event)"
+    (pdfLoaded)="annotationsPanel.pdfLoaded($event)"
+    [customToolbar]="additionalButtons"
+  ></ngx-extended-pdf-viewer>
+
+  <ng-template #additionalButtons>
+    <div id="toolbarViewer" class="toolbar">
+      <pdf-zoom-toolbar></pdf-zoom-toolbar>
+    </div>
+  </ng-template>
+
+  <div #annotionPanel class="annotationPanel">
+    <lib-annotations></lib-annotations>
+  </div>
+
+  <!-- <div [ngClass]="{ orgbrainPanel: true, icon_grey: true, hideme: documentService.loading }"> -->
+
+  <ng-template #annotationControls>
+    <mat-icon
+      class="ml-20 canpress mr-15 customIconSize"
+      (click)="penAnnotate()"
+      i18n-matTooltip="@@ClickToAnnotateWithPenToolTip"
+      matTooltip="Annotate with Pen"
+      >pen</mat-icon
+    >
+  </ng-template>
+</div>
