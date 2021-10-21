@@ -1,18 +1,12 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-import { BehaviorSubject, fromEvent } from 'rxjs';
+import { fromEvent } from 'rxjs';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { debounceTime, filter, sampleTime } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 
 const MOBILE_CHAT_WINDOW_OFFSET_FROM_TOP = 52;
 
@@ -22,7 +16,8 @@ export class UIChatMessage {
     public id: string,
     public fromUserId: string,
     public message: string,
-    public receivedAt: string
+    public receivedAt: string,
+    public replyToMessage?: UIChatMessage
   ) {}
 }
 
@@ -57,6 +52,8 @@ export class AnnotationComponent implements OnInit {
   replyingToMessage: UIChatMessage;
   messageIdForWhichDeleteMenuIsOpen = '';
   windowHeightForMobile: number;
+
+  replyToMessage;
 
   chatService = {
     isInitialChatMessagesLoaded: true,

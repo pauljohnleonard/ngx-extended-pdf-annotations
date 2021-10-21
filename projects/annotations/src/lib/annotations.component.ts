@@ -6,7 +6,7 @@ import { PageHandler } from './page-handler';
 @UntilDestroy()
 @Component({
   selector: 'lib-annotations',
-  template: ` <p>annotations works!</p> `,
+  template: `<ng-content></ng-content>`,
   styles: [],
 })
 export class AnnotationsComponent implements OnInit {

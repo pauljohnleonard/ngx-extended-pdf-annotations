@@ -20,8 +20,11 @@
     </div>
   </ng-template>
 
+  <!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
   <div #annotionPanel class="annotationPanel">
-    <lib-annotations></lib-annotations>
+    <lib-annotations>
+      <app-annotation> </app-annotation>
+    </lib-annotations>
   </div>
 
   <!-- <div [ngClass]="{ orgbrainPanel: true, icon_grey: true, hideme: documentService.loading }"> -->
