@@ -1,15 +1,5 @@
-// @import '../../../../../assets/scss/utilities/_variables.scss';
-$black: #000;
-$white: #fff;
-$regent-gray: #889aa2;
-$tiara: #ccd4d7;
-$mercury: #e8e8e8;
-$orgbrain-gray: #546e7a;
-$orgbrain-blue: #0097a7;
-$orgbrain-orange: #f57c00;
-
-.chat-window {
-  width: 400px;
+.annotation-window {
+  width: 300px;
   height: 100%;
   // height: calc(min(700px, 90vh));
 
@@ -17,7 +7,7 @@ $orgbrain-orange: #f57c00;
     width: 90vw;
     height: 80vh; // Should be set dynamically by style attribute, this is just a fallback if that doesn't work for some reason
 
-    .chat-window-messages-section {
+    .annotation-window-messages-section {
       padding: 12px;
     }
   }
@@ -35,15 +25,15 @@ $orgbrain-orange: #f57c00;
   display: flex;
   flex-direction: column;
 
-  .chat-window-top-section {
+  .annotation-window-top-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-radius: 18px 18px 0 0;
 
-    background-color: $orgbrain-blue;
+    background-color: #0097a7;
 
-    .chat-window-heading {
+    .annotation-window-heading {
       color: white;
       font-weight: 500;
       font-size: 16px;
@@ -56,7 +46,7 @@ $orgbrain-orange: #f57c00;
     }
   }
 
-  .chat-window-messages-section {
+  .annotation-window-messages-section {
     flex: 1;
     // overflow-y: scroll;
     padding: 16px;
@@ -67,7 +57,7 @@ $orgbrain-orange: #f57c00;
       text-transform: uppercase;
       font-size: 14px;
       font-weight: bold;
-      color: $regent-gray;
+      color: rgb(187, 187, 187);
       align-self: center;
       margin-bottom: 16px;
     }
@@ -111,9 +101,9 @@ $orgbrain-orange: #f57c00;
         white-space: pre-wrap;
 
         &.message-is-deleted {
-          border: 1px dashed $orgbrain-gray;
+          border: 1px dashed rgb(187, 187, 187);
           background-color: white;
-          color: $regent-gray;
+          color: rgb(187, 187, 187);
           font-style: italic;
           padding: 7px 13px;
         }
@@ -122,7 +112,7 @@ $orgbrain-orange: #f57c00;
       .chat-message-top-meta-info {
         margin-bottom: 6px;
         font-size: 12px;
-        color: $orgbrain-gray;
+        color: rgb(187, 187, 187);
 
         .chat-message-top-meta-reply-icon {
           font-size: 18px;
@@ -154,7 +144,7 @@ $orgbrain-orange: #f57c00;
           display: flex;
           align-items: center;
           visibility: hidden; // shown on hover
-          color: $orgbrain-gray;
+          color: #5d5d5d;
 
           button {
             height: 36px;
@@ -192,7 +182,7 @@ $orgbrain-orange: #f57c00;
           flex-direction: row-reverse;
 
           .chat-message-bubble:not(.message-is-deleted) {
-            background-color: $orgbrain-blue;
+            background-color: #477dc4;
             color: white;
           }
 
@@ -219,8 +209,8 @@ $orgbrain-orange: #f57c00;
     margin: 0 auto;
   }
 
-  .chat-window-textbox-section {
-    border-top: 1px solid $regent-gray;
+  .annotation-window-textbox-section {
+    border-top: 1px solid rgb(180, 179, 179);
     background-color: #f7fbfb;
     border-radius: 0 0 18px 18px;
 
@@ -228,7 +218,7 @@ $orgbrain-orange: #f57c00;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid $regent-gray;
+      border-bottom: 1px solid rgb(180, 179, 179);
 
       .is-replying-to-message-info {
         margin: 8px;
@@ -242,11 +232,11 @@ $orgbrain-orange: #f57c00;
       }
     }
 
-    .chat-window-formfield {
+    .annotation-window-formfield {
       height: 100%;
       width: 100%;
 
-      .chat-window-textarea-message-input {
+      .annotation-window-textarea-message-input {
         color: #050505;
         font-size: 16px;
 

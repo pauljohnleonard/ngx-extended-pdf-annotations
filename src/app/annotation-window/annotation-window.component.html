@@ -1,5 +1,5 @@
-<div class="chat-window mat-elevation-z8">
-  <div class="chat-window-messages-section" #chatWindowScroll>
+<div class="annotation-window mat-elevation-z8">
+  <div class="annotation-window-messages-section" #chatWindowScroll>
     <ng-container
       *ngIf="
         chatService.isInitialChatMessagesLoaded;
@@ -226,7 +226,7 @@
     </button>
   </div> -->
 
-  <div class="chat-window-textbox-section">
+  <div class="annotation-window-textbox-section">
     <div
       *ngIf="replyingToMessage"
       class="is-replying-to-message-info-container"
@@ -255,10 +255,10 @@
       </button>
     </div>
 
-    <mat-form-field appearance="fill" class="chat-window-formfield">
+    <mat-form-field appearance="fill" class="annotation-window-formfield">
       <textarea
         matInput
-        class="chat-window-textarea-message-input"
+        class="annotation-window-textarea-message-input"
         placeholder="Your message"
         i18n-placeholder="@@chat_your-message"
         (keydown)="onKeydownInput($event)"

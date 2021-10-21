@@ -21,11 +21,10 @@
   </ng-template>
 
   <!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
-  <div #annotionPanel class="annotationPanel">
-    <lib-annotations>
-      <app-annotation> </app-annotation>
-    </lib-annotations>
-  </div>
+
+  <lib-annotations #annotationPanel class="annotationPanel">
+    <app-annotation> </app-annotation>
+  </lib-annotations>
 
   <!-- <div [ngClass]="{ orgbrainPanel: true, icon_grey: true, hideme: documentService.loading }"> -->
 
