@@ -5,6 +5,19 @@ need to be stored by the user.
 
 This is a common use case for allowing users to discuss a document.
 
+# Quick start 
+
+```
+git clone https://github.com/pauljohnleonard/ngx-extended-pdf-annotations.git
+cd  ngx-extended-pdf-annotations
+npm i 
+ng s
+```
+
 # Dependencies
 
 [ngx-extended-pdf-viewer](https://github.com/stephanrauh/ngx-extended-pdf-viewer)
+
+# Demo
+
+[Demo](http://ngx-annotations.s3-website-eu-west-1.amazonaws.com/)
