@@ -16,12 +16,28 @@
 <ng-template #additionalButtons>
   <div id="toolbarViewer" class="toolbar">
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
-    <mat-icon
-      [ngClass]="{ canpress: true, hightlight: highlightPen }"
-      (click)="penAnnotate()"
-      matTooltip="Annotate with Pen"
-      >gesture</mat-icon
-    >
+    <div class="annotationControlPanel">
+      <mat-icon
+        [ngClass]="{
+          canpress: true,
+          iconButton: true
+        }"
+        (click)="toogleAnnotations()"
+        matTooltip="Show Annotation Tools"
+        >comments</mat-icon
+      >
+
+      <mat-icon
+        [ngClass]="{
+          canpress: true,
+          highlight: highlightPen,
+          iconButton: true
+        }"
+        (click)="penAnnotate()"
+        matTooltip="Annotate with Pen"
+        >gesture</mat-icon
+      >
+    </div>
   </div>
 </ng-template>
 

@@ -1,11 +1,15 @@
 import { Subscription } from 'rxjs';
 import {
-  AnnotationEventType,
   AnnotationPanelWrapperComponent,
   AnnotationPath,
 } from './annotations-panel-wrapper.component';
 
 import { v4 as uuidv4 } from 'uuid';
+import {
+  AnnotationMark,
+  AnnotationMode,
+  PageEventType as PageEventType,
+} from './classes';
 
 export class PageHandler {
   pageViewer: any;
@@ -19,7 +23,7 @@ export class PageHandler {
   pos: { x: number; y: number };
   isDrawing: boolean;
   canvas: HTMLCanvasElement;
-  currentAnnotationId: any;
+  currentAnnotationId: string;
 
   constructor(
     pageViewer,
@@ -30,7 +34,7 @@ export class PageHandler {
     this.pageViewer = pageViewer;
     this.page = page;
     this.annotationWrapper = annotationWrapper;
-
+    this.canvas = this.pageViewer.canvas;
     this.penSub = this.annotationWrapper.subject$.subscribe(() => {
       if (annotationWrapper.penIsOn && !this.isActive) {
         this.activatePen();
@@ -58,9 +62,7 @@ export class PageHandler {
   }
 
   activatePen() {
-    if (!this.canvas) {
-      this.canvas = this.pageViewer.canvas;
-    }
+    this.canvas = this.pageViewer.canvas; // not needed ?
     this.canvas.onmousedown = this.mouseDownHandler.bind(this);
     this.canvas.onmousemove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
@@ -73,13 +75,14 @@ export class PageHandler {
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
       this.path = [];
-      this.currentAnnotationId = this.annotationWrapper.annotationSubject$.next(
-        {
-          id: this.currentAnnotationId,
-          type: AnnotationEventType.START,
-          pos: this.pos,
-        }
-      );
+      this.annotationWrapper.annotationManager._handlePageEvent({
+        id: this.currentAnnotationId,
+        type: PageEventType.START,
+        pos: this.pos,
+        mode: AnnotationMode.PEN,
+        path: this.path,
+        page: this.page,
+      });
     }
     console.log('down', {
       x: e.offsetX,
@@ -96,7 +99,11 @@ export class PageHandler {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
-      this.draw();
+      this.annotationWrapper.annotationManager._handlePageEvent({
+        id: this.currentAnnotationId,
+        type: PageEventType.UPDATE,
+      });
+      // this.draw();
     }
   }
 
@@ -107,7 +114,11 @@ export class PageHandler {
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
       this.isDrawing = false;
-      this.draw();
+      this.annotationWrapper.annotationManager._handlePageEvent({
+        id: this.currentAnnotationId,
+        type: PageEventType.UPDATE,
+      });
+      // this.draw();
     }
   }
 
@@ -118,14 +129,16 @@ export class PageHandler {
     if (this.isDrawing) {
       this.activatePen();
     }
-    setTimeout(() => this.draw());
+    // setTimeout(() => this.draw());
   }
 
-  draw() {
+  draw(mark: AnnotationMark) {
+    const path = mark.path;
+
     this.ctx = this.canvas.getContext('2d');
     this.ctx.beginPath();
     const s = this.pageViewer.outputScale;
-    for (const line of this.path) {
+    for (const line of path) {
       const start = this.realToCanvas(line.pos1);
       this.ctx.moveTo(start.x, start.y);
       const end = this.realToCanvas(line.pos2);
@@ -140,18 +153,16 @@ export class PageHandler {
   disablePen() {
     if (this.canvas) {
       this.canvas.style.cursor = 'default';
-
       this.canvas.onmousedown = null;
       this.canvas.onmouseup = null;
-      delete this.canvas;
     }
+
     this.isActive = false;
 
     if (!!this.currentAnnotationId) {
-      this.annotationWrapper.annotationSubject$.next({
+      this.annotationWrapper.annotationManager._handlePageEvent({
         id: this.currentAnnotationId,
-        path: this.path,
-        type: AnnotationEventType.END,
+        type: PageEventType.PEN_UP,
       });
     }
   }

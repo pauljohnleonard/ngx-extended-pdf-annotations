@@ -1,22 +1,16 @@
+import { ContentObserver } from '@angular/cdk/observers';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { Subject } from 'rxjs';
+import { PageEventType, AnnotationMode, AnnotationRecord } from './classes';
 import { PageHandler } from './page-handler';
+import { PDFAnnotationManager } from './pdf-annotation-manager';
 
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
-export enum AnnotationMode {
-  OFF = 'OFF',
-  PEN = 'PEN',
-}
-
-export enum AnnotationEventType {
-  START = 'START',
-  END = 'END',
-}
 
 export interface AnnotationEvent {
   id: string;
-  type: AnnotationEventType;
+  type: PageEventType;
   pos?: { x: number; y: number };
   path?: AnnotationPath;
 }
@@ -32,10 +26,20 @@ export class AnnotationPanelWrapperComponent implements OnInit {
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
   showAnnotations = true;
   subject$ = new Subject();
-  annotationSubject$ = new Subject<AnnotationEvent>();
+  // annotationSubject$ = new Subject<AnnotationEvent>();
   mode = AnnotationMode.OFF;
+  annotationManager: PDFAnnotationManager;
 
-  constructor(public elRef: ElementRef) {}
+  constructor(public elRef: ElementRef) {
+    const renderer = (record: AnnotationRecord) => {
+      if (!record.mark) return;
+      const page = this.pages[record.mark.page];
+      page.draw(record.mark);
+      // console.log(' RENDER ', page);
+    };
+
+    this.annotationManager = new PDFAnnotationManager(renderer);
+  }
 
   async ngOnInit() {}
 
@@ -52,6 +56,7 @@ export class AnnotationPanelWrapperComponent implements OnInit {
       this.pages[page] = pageHandler;
     } else {
       this.pages[page].update(evt.source);
+      this.annotationManager._redraw(page);
     }
   }
 

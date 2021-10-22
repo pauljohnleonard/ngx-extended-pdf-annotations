@@ -1,4 +1,6 @@
 
+
+# For me to deply demo no use to anyone else.
 export AWS_PROFILE=longground
 export BUCKET=ngx-annotations
   
