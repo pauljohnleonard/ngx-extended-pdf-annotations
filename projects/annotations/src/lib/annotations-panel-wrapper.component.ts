@@ -1,9 +1,10 @@
 import { ContentObserver } from '@angular/cdk/observers';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Subject } from 'rxjs';
 import { PageEventType, AnnotationMode, AnnotationRecord } from './classes';
 import { PageHandler } from './page-handler';
+import { AnnotationService } from './annotation.service';
 import { PDFAnnotationManager } from './pdf-annotation-manager';
 
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
@@ -18,19 +19,22 @@ export interface AnnotationEvent {
 @UntilDestroy()
 @Component({
   selector: 'ngx-extended-pdf-annotation-wrapper',
-  template: `<ng-content></ng-content>`,
+  template: `<ng-content #content></ng-content>`,
   styles: [],
+  providers: [AnnotationService],
 })
 export class AnnotationPanelWrapperComponent implements OnInit {
   showAnnotationPanel = false;
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
   showAnnotations = true;
-  subject$ = new Subject();
-  // annotationSubject$ = new Subject<AnnotationEvent>();
+  subject$ = new Subject<AnnotationMode>();
   mode = AnnotationMode.OFF;
   annotationManager: PDFAnnotationManager;
 
-  constructor(public elRef: ElementRef) {
+  constructor(
+    public elRef: ElementRef,
+    public annotationService: AnnotationService
+  ) {
     const renderer = (record: AnnotationRecord) => {
       if (!record.mark) return;
       const page = this.pages[record.mark.page];
@@ -38,7 +42,16 @@ export class AnnotationPanelWrapperComponent implements OnInit {
       // console.log(' RENDER ', page);
     };
 
-    this.annotationManager = new PDFAnnotationManager(renderer);
+    this.annotationManager = new PDFAnnotationManager(
+      renderer,
+      annotationService
+    );
+
+    // this.annotationManager.newRecordSubject$
+    //   .pipe(untilDestroyed(this))
+    //   .subscribe((record) => {
+    //     this.annotationService._addNewRecord(record);
+    //   });
   }
 
   async ngOnInit() {}
@@ -48,7 +61,7 @@ export class AnnotationPanelWrapperComponent implements OnInit {
   }
 
   pageRendered(evt) {
-    console.log('Page render ', evt.source);
+    //     console.log('Page render ', evt.source);
 
     const page = evt.pageNumber;
     if (!this.pages[page]) {
@@ -66,8 +79,8 @@ export class AnnotationPanelWrapperComponent implements OnInit {
     // await new Promise((resolve) => setTimeout(resolve, 3000));
     container.appendChild(this.elRef.nativeElement);
     this.elRef.nativeElement.style.display = 'block';
-    console.log(container);
-    console.log('PDF LOADED 3', evt);
+    //     console.log(container);
+    //     console.log('PDF LOADED 3', evt);
   }
 
   toggleAnnotations() {
@@ -89,13 +102,13 @@ export class AnnotationPanelWrapperComponent implements OnInit {
     console.log(' STOP annotation ');
     this.elRef.nativeElement.style.cursor = 'cursor';
     this.mode = AnnotationMode.OFF;
-    this.subject$.next();
+    this.subject$.next(this.mode);
   }
 
   startPenAnnoation() {
     console.log(' START annotation ');
     this.elRef.nativeElement.style.cursor = 'pen';
     this.mode = AnnotationMode.PEN;
-    this.subject$.next();
+    this.subject$.next(this.mode);
   }
 }

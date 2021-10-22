@@ -1,17 +1,26 @@
+import { Subject } from 'rxjs';
+import { AnnotationService } from './annotation.service';
 import {
   AnnotationMark,
   AnnotationMarkRender,
   AnnotationMode,
   AnnotationRecord,
   AnnotationType,
+  BoundingBox,
   PageEvent,
 } from './classes';
+import { boundingBoxOf } from './util';
 
 export class PDFAnnotationManager {
-  annotationMap: { [id: string]: AnnotationRecord } = {};
   user = 'Paul';
 
-  constructor(private renderer: AnnotationMarkRender) {}
+  // emit when a new annotation is created
+  //   newRecordSubject$ = new Subject<AnnotationRecord>();
+
+  constructor(
+    private renderer: AnnotationMarkRender,
+    private annotations: AnnotationService
+  ) {}
 
   // delete annotations
   // if no argument delete all.
@@ -23,15 +32,15 @@ export class PDFAnnotationManager {
   // add new annoations.
   addAnnotations(arg: AnnotationRecord[]) {}
 
-  registerEventListener(
-    func: (event: any) => Promise<void>,
-    eventOptions: {}
-  ) {}
+  //   registerEventListener(
+  //     func: (event: any) => Promise<void>,
+  //     eventOptions: {}
+  //   ) {}
 
   // INternal interface
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
-    let record: AnnotationRecord = this.annotationMap[id];
+    let record: AnnotationRecord = this.annotations.annotationMap[id];
     if (!record) {
       let type: AnnotationType;
 
@@ -40,11 +49,14 @@ export class PDFAnnotationManager {
           type = AnnotationType.PATH;
       }
 
+      const boundingBox: BoundingBox = boundingBoxOf(event);
+
       const mark: AnnotationMark = {
         page: event.page,
         path: event.path,
         type,
       };
+
       record = {
         id: event.id,
         bodyValue: 'My Comment',
@@ -56,15 +68,14 @@ export class PDFAnnotationManager {
         },
         createdAt: new Date().toISOString(),
       };
-      this.annotationMap[event.id] = record;
+      this.annotations._addNewRecord(record);
     }
-
     this.renderer(record);
   }
 
   _redraw(page?: number) {
-    for (const id of Object.keys(this.annotationMap)) {
-      const record = this.annotationMap[id];
+    for (const id of Object.keys(this.annotations.annotationMap)) {
+      const record = this.annotations.annotationMap[id];
       if (!page || (record.mark && record.mark.page === page)) {
         this.renderer(record);
       }

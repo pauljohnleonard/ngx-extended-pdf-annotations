@@ -7,34 +7,33 @@ import { fromEvent } from 'rxjs';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { debounceTime } from 'rxjs/operators';
+import {
+  AnnotationRecord,
+  AnnotationService,
+  PanelPosition,
+} from 'projects/annotations/src/public-api';
 
 const MOBILE_CHAT_WINDOW_OFFSET_FROM_TOP = 52;
 
-export class UIChatMessage {
+export class UIPannelComment {
   isDeleted?: boolean;
-  constructor(
-    public id: string,
-    public fromUserId: string,
-    public message: string,
-    public receivedAt: string,
-    public replyToMessage?: UIChatMessage
-  ) {}
+  pos: PanelPosition;
+  record: AnnotationRecord;
 }
 
-const chatMesages: UIChatMessage[] = [
-  {
-    id: '1',
-    fromUserId: '1',
-    message: 'Hello Worlds',
-    receivedAt: new Date().toISOString(),
-  },
-
-  {
-    id: '2',
-    fromUserId: '2',
-    message: 'Goodbye cruel Worlds',
-    receivedAt: new Date().toISOString(),
-  },
+const chatMesages: UIPannelComment[] = [
+  // {
+  //   id: '1',
+  //   fromUserId: '1',
+  //   message: 'Hello Worlds',
+  //   receivedAt: new Date().toISOString(),
+  // },
+  // {
+  //   id: '2',
+  //   fromUserId: '2',
+  //   message: 'Goodbye cruel Worlds',
+  //   receivedAt: new Date().toISOString(),
+  // },
 ];
 
 @UntilDestroy()
@@ -51,7 +50,7 @@ export class AnnotationComponent implements OnInit {
 
   chatWindowTitleText = '';
   messageInputFC = new FormControl({ value: '', disabled: true });
-  replyingToMessage: UIChatMessage;
+  replyingToMessage: UIPannelComment;
   messageIdForWhichDeleteMenuIsOpen = '';
   windowHeightForMobile: number;
 
@@ -59,21 +58,36 @@ export class AnnotationComponent implements OnInit {
 
   annotationService = {
     isInitialChatMessagesLoaded: true,
-    chatMessages: chatMesages,
+
     chatWindowTitle: 'Title',
-    channelHasEarlierMessages: true,
-    hasLoadedEarlierMessages: true,
-    isLoadingEarlierMessages: false,
     deleteMessage: (chatMessage) => {
       console.log(chatMessage);
     },
   };
 
-  constructor(private breakpointObserver: BreakpointObserver) {
-    console.log(' AnnotationComponent ');
+  comments: UIPannelComment[] = [];
+
+  constructor(
+    private breakpointObserver: BreakpointObserver,
+    public annotations: AnnotationService
+  ) {
+    // console.log(' AnnotationComponent ');
   }
 
-  async ngOnInit() {}
+  async ngOnInit() {
+    this.annotations.newRecord$
+      .pipe(untilDestroyed(this))
+      .subscribe((record) => {
+        const pos = this.annotations.getAnnotationPanelPos(record);
+
+        const comment: UIPannelComment = {
+          pos,
+          record,
+        };
+        this.comments.push(comment);
+        console.log(' MY PANEL ', record);
+      });
+  }
 
   getIsChatWindowOpen() {
     // return this.chatService.isChatWindowOpen;
@@ -130,7 +144,7 @@ export class AnnotationComponent implements OnInit {
     }
   }
 
-  initiateReplyToMessage(message: UIChatMessage) {
+  initiateReplyToMessage(message: UIPannelComment) {
     this.replyingToMessage = message;
     // this.ifAlreadyScrolledToBottomDetectChangesAndScrollToBottomAgain();
     this.messageInput.focus();
@@ -183,17 +197,17 @@ export class AnnotationComponent implements OnInit {
   // }
 
   hasChatMessages() {
-    return this.annotationService.chatMessages.length > 0;
+    return this.comments.length > 0;
   }
   isProcessingMessage(chatMessage) {
     return false;
   }
 
-  isSentByCurrentUser(uiMessage: UIChatMessage) {
+  isSentByCurrentUser(uiMessage: UIPannelComment) {
     return true;
   }
 
-  isReplyToCurrentUser(uiMessage: UIChatMessage) {
+  isReplyToCurrentUser(uiMessage: UIPannelComment) {
     return true;
   }
   // isReplyToCurrentUser(uiMessage: UIChatMessage) {
@@ -213,7 +227,7 @@ export class AnnotationComponent implements OnInit {
     setTimeout(() => (this.messageIdForWhichDeleteMenuIsOpen = ''), 0);
   }
 
-  trackByMessages(index: number, chatMessage: UIChatMessage) {
-    return chatMessage.id;
+  trackByMessages(index: number, chatMessage: UIPannelComment) {
+    return chatMessage.record.id;
   }
 }

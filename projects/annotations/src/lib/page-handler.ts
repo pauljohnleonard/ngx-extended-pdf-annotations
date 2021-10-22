@@ -35,11 +35,11 @@ export class PageHandler {
     this.page = page;
     this.annotationWrapper = annotationWrapper;
     this.canvas = this.pageViewer.canvas;
-    this.penSub = this.annotationWrapper.subject$.subscribe(() => {
+    this.penSub = this.annotationWrapper.subject$.subscribe((mode) => {
       if (annotationWrapper.penIsOn && !this.isActive) {
-        this.activatePen();
+        this.startAnnotation();
       } else if (this.isActive) {
-        this.disablePen();
+        this.endAnnotation();
       }
     });
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
@@ -61,7 +61,9 @@ export class PageHandler {
     // { x: pos.x * this.pageViewer.outputScale.sx, y: pos.y * this.pageViewer.outputScale.sy };
   }
 
-  activatePen() {
+  startAnnotation() {
+    this.path = [];
+    this.currentAnnotationId = null;
     this.canvas = this.pageViewer.canvas; // not needed ?
     this.canvas.onmousedown = this.mouseDownHandler.bind(this);
     this.canvas.onmousemove = this.mouseMoveHandler.bind(this);
@@ -84,12 +86,12 @@ export class PageHandler {
         page: this.page,
       });
     }
-    console.log('down', {
-      x: e.offsetX,
-      y: e.offsetY,
-      x1: this.pos.x,
-      y1: this.pos.y,
-    });
+//     console.log('down', {
+//       x: e.offsetX,
+//       y: e.offsetY,
+//       x1: this.pos.x,
+//       y1: this.pos.y,
+//     });
     this.isDrawing = true;
   }
 
@@ -123,11 +125,11 @@ export class PageHandler {
   }
 
   update(source: any) {
-    this.disablePen();
+    this.endAnnotation();
     this.pageViewer = source;
     this.canvas = this.pageViewer.canvas;
     if (this.isDrawing) {
-      this.activatePen();
+      this.startAnnotation();
     }
     // setTimeout(() => this.draw());
   }
@@ -150,14 +152,12 @@ export class PageHandler {
     this.ctx.stroke();
   }
 
-  disablePen() {
+  endAnnotation() {
     if (this.canvas) {
       this.canvas.style.cursor = 'default';
       this.canvas.onmousedown = null;
       this.canvas.onmouseup = null;
     }
-
-    this.isActive = false;
 
     if (!!this.currentAnnotationId) {
       this.annotationWrapper.annotationManager._handlePageEvent({
@@ -165,10 +165,14 @@ export class PageHandler {
         type: PageEventType.PEN_UP,
       });
     }
+
+    this.path = [];
+    this.currentAnnotationId = null;
+    this.isActive = false;
   }
 
   destroy() {
-    this.disablePen();
+    this.endAnnotation();
     if (this.penSub) {
       this.penSub.unsubscribe();
       delete this.penSub;
