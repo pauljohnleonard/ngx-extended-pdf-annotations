@@ -52,6 +52,16 @@ export class PageHandler {
   //   }
   // }
 
+  showTops() {
+    let el: HTMLElement = this.canvas;
+
+    while (el) {
+      const str = `${el.localName}:${el.className} ${el.offsetTop}`;
+      console.log(str);
+      el = el.parentElement;
+    }
+  }
+
   // Y center of annotation bounding box in terms of full viewport.
   getAnnotationPanelPos(anno: AnnotationRecord): number {
     if (!anno.mark) {
@@ -61,14 +71,18 @@ export class PageHandler {
       throw Error(' Expected this.page to be same as mark.page');
     }
 
-    const clinetRect = this.canvas.getBoundingClientRect();
-    const canvasTop = clinetRect.top;
+    this.showTops();
+
+    // const clinetRect = this.canvas.getBoundingClientRect();
+    // const canvasTop = clinetRect.top;
     const x = (anno.mark.boundingBox.x1 + anno.mark.boundingBox.x2) / 2;
     const y = (anno.mark.boundingBox.y1 + anno.mark.boundingBox.y2) / 2;
     const z = this.realToCanvas({ x, y });
 
+    const pageDiv = this.canvas.parentElement.parentElement;
+
     const retY =
-      canvasTop + (z.y * this.canvas.clientHeight) / this.canvas.height;
+      pageDiv.offsetTop + (z.y * this.canvas.clientHeight) / this.canvas.height;
     return retY;
   }
 

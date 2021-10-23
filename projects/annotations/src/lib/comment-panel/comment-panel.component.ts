@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { UIPannelComment } from 'src/app/my-annotation-panel/my-annotation-panel.component';
 import { AnnotationService } from '../annotation.service';
@@ -11,6 +11,7 @@ import { AnnotationLayoutService } from '../annotation-layout.service';
   styleUrls: ['./comment-panel.component.css'],
 })
 export class CommentPanelComponent implements OnInit {
+  @Input('commentItem') commentItem;
   comments: UIPannelComment[] = [];
 
   constructor(

@@ -1,5 +1,5 @@
 import { ContentObserver } from '@angular/cdk/observers';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Subject } from 'rxjs';
 import {
@@ -25,12 +25,15 @@ export interface AnnotationEvent {
 @UntilDestroy()
 @Component({
   selector: 'ngx-extended-pdf-annotation-wrapper',
-  template: ` <lib-comment-panel> </lib-comment-panel>`,
+  template: ` <lib-comment-panel [commentItem]="commentItem">
+  </lib-comment-panel>`,
   styles: [],
   providers: [AnnotationService, AnnotationLayoutService],
 })
 export class AnnotationPanelWrapperComponent implements OnInit {
   @ViewChild(CommentPanelComponent) commentPanel: CommentPanelComponent;
+  @Input('commentItem') commentItem;
+
   showAnnotationPanel = false;
 
   showAnnotations = true;

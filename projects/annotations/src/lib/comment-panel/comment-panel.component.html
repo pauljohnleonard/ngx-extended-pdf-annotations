@@ -1,7 +1,7 @@
-<p>comment-panel works!</p>
-
 <div *ngFor="let comment of comments">
-  <div style="background-color: bisque; margin: 10px">
-    {{ comment.record.bodyValue }}
+  <div class="comment" [style.top]="comment.pos.y + 'px'">
+    <ng-container
+      *ngTemplateOutlet="commentItem; context: { comment: this.comment }"
+    ></ng-container>
   </div>
 </div>

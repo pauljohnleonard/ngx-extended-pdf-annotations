@@ -43,5 +43,13 @@
 
 <!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
 
-<ngx-extended-pdf-annotation-wrapper #annotationPanel class="annotationPanel">
+<ngx-extended-pdf-annotation-wrapper
+  #annotationPanel
+  class="annotationPanel"
+  [commentItem]="commentItem"
+>
 </ngx-extended-pdf-annotation-wrapper>
+
+<ng-template #commentItem let-comment="comment">
+  {{ comment.record.bodyValue }}
+</ng-template>
