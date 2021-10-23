@@ -8,7 +8,10 @@ import {
   PageEvent,
 } from './classes';
 
-export function boundingBoxOf(event: PageEvent): BoundingBox {
+export function setBoundingBoxOf(
+  record: AnnotationRecord,
+  event: PageEvent
+): void {
   let x1 = null,
     y1 = null,
     x2 = null,
@@ -28,5 +31,5 @@ export function boundingBoxOf(event: PageEvent): BoundingBox {
     }
   }
 
-  return { x1, x2, y1, y2 };
+  record.mark.boundingBox = { x1, x2, y1, y2 };
 }

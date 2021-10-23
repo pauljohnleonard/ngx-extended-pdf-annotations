@@ -42,7 +42,7 @@ const chatMesages: UIPannelComment[] = [
   templateUrl: './annotation-panel.component.html',
   styleUrls: ['./annotation-panel.component.scss'],
 })
-export class AnnotationComponent implements OnInit {
+export class MyAnnotationComponent implements OnInit {
   @ViewChild(MatInput) messageInput: MatInput;
 
   isMobileScreen = false;

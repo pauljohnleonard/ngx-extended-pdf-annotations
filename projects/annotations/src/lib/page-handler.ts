@@ -1,13 +1,12 @@
 import { Subscription } from 'rxjs';
-import {
-  AnnotationPanelWrapperComponent,
-  AnnotationPath,
-} from './annotations-panel-wrapper.component';
+import { AnnotationPanelWrapperComponent } from './annotations-panel-wrapper.component';
 
 import { v4 as uuidv4 } from 'uuid';
 import {
   AnnotationMark,
   AnnotationMode,
+  AnnotationPath,
+  AnnotationRecord,
   PageEventType as PageEventType,
 } from './classes';
 
@@ -43,6 +42,34 @@ export class PageHandler {
       }
     });
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
+  }
+
+  // scrollEvent(evt: Event) {
+  //   console.log('PAGE SCROLL');
+
+  //   if (!this.canvas) {
+  //     throw Error(' Expected there to be a canvas');
+  //   }
+  // }
+
+  // Y center of annotation bounding box in terms of full viewport.
+  getAnnotationPanelPos(anno: AnnotationRecord): number {
+    if (!anno.mark) {
+      throw Error(' Expected annotation record to have a mark');
+    }
+    if (!anno.mark.page === this.page) {
+      throw Error(' Expected this.page to be same as mark.page');
+    }
+
+    const clinetRect = this.canvas.getBoundingClientRect();
+    const canvasTop = clinetRect.top;
+    const x = (anno.mark.boundingBox.x1 + anno.mark.boundingBox.x2) / 2;
+    const y = (anno.mark.boundingBox.y1 + anno.mark.boundingBox.y2) / 2;
+    const z = this.realToCanvas({ x, y });
+
+    const retY =
+      canvasTop + (z.y * this.canvas.clientHeight) / this.canvas.height;
+    return retY;
   }
 
   cursorToReal(e) {
@@ -86,12 +113,12 @@ export class PageHandler {
         page: this.page,
       });
     }
-//     console.log('down', {
-//       x: e.offsetX,
-//       y: e.offsetY,
-//       x1: this.pos.x,
-//       y1: this.pos.y,
-//     });
+    //     console.log('down', {
+    //       x: e.offsetX,
+    //       y: e.offsetY,
+    //       x1: this.pos.x,
+    //       y1: this.pos.y,
+    //     });
     this.isDrawing = true;
   }
 

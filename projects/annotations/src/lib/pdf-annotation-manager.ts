@@ -1,4 +1,3 @@
-import { Subject } from 'rxjs';
 import { AnnotationService } from './annotation.service';
 import {
   AnnotationMark,
@@ -6,14 +5,13 @@ import {
   AnnotationMode,
   AnnotationRecord,
   AnnotationType,
-  BoundingBox,
   PageEvent,
 } from './classes';
-import { boundingBoxOf } from './util';
+import { setBoundingBoxOf } from './util';
 
 export class PDFAnnotationManager {
   user = 'Paul';
-
+  cnt = 0;
   // emit when a new annotation is created
   //   newRecordSubject$ = new Subject<AnnotationRecord>();
 
@@ -49,8 +47,6 @@ export class PDFAnnotationManager {
           type = AnnotationType.PATH;
       }
 
-      const boundingBox: BoundingBox = boundingBoxOf(event);
-
       const mark: AnnotationMark = {
         page: event.page,
         path: event.path,
@@ -59,7 +55,7 @@ export class PDFAnnotationManager {
 
       record = {
         id: event.id,
-        bodyValue: 'My Comment',
+        bodyValue: 'My Comment ' + this.cnt++,
         mark,
         motivation: 'comment',
         creator: {
@@ -68,6 +64,7 @@ export class PDFAnnotationManager {
         },
         createdAt: new Date().toISOString(),
       };
+      setBoundingBoxOf(record, event);
       this.annotations._addNewRecord(record);
     }
     this.renderer(record);

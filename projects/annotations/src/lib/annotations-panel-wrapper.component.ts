@@ -2,12 +2,18 @@ import { ContentObserver } from '@angular/cdk/observers';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Subject } from 'rxjs';
-import { PageEventType, AnnotationMode, AnnotationRecord } from './classes';
+import {
+  PageEventType,
+  AnnotationMode,
+  AnnotationRecord,
+  PanelPositionHelper,
+  AnnotationPath,
+} from './classes';
 import { PageHandler } from './page-handler';
 import { AnnotationService } from './annotation.service';
 import { PDFAnnotationManager } from './pdf-annotation-manager';
-
-export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
+import { CommentPanelComponent } from './comment-panel/comment-panel.component';
+import { AnnotationLayoutService } from './annotation-layout.service';
 
 export interface AnnotationEvent {
   id: string;
@@ -19,13 +25,14 @@ export interface AnnotationEvent {
 @UntilDestroy()
 @Component({
   selector: 'ngx-extended-pdf-annotation-wrapper',
-  template: `<ng-content #content></ng-content>`,
+  template: ` <lib-comment-panel> </lib-comment-panel>`,
   styles: [],
-  providers: [AnnotationService],
+  providers: [AnnotationService, AnnotationLayoutService],
 })
 export class AnnotationPanelWrapperComponent implements OnInit {
+  @ViewChild(CommentPanelComponent) commentPanel: CommentPanelComponent;
   showAnnotationPanel = false;
-  pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
+
   showAnnotations = true;
   subject$ = new Subject<AnnotationMode>();
   mode = AnnotationMode.OFF;
@@ -33,11 +40,21 @@ export class AnnotationPanelWrapperComponent implements OnInit {
 
   constructor(
     public elRef: ElementRef,
-    public annotationService: AnnotationService
+    public annotationService: AnnotationService,
+    public layout: AnnotationLayoutService
   ) {
+    const pannelPosHelper: PanelPositionHelper = {
+      getAnnotationPanelPos: (record: AnnotationRecord) => {
+        const page = this.layout.pages[record.mark.page];
+        return page.getAnnotationPanelPos(record);
+      },
+    };
+
+    annotationService.setPanelPositionHelper(pannelPosHelper);
+
     const renderer = (record: AnnotationRecord) => {
       if (!record.mark) return;
-      const page = this.pages[record.mark.page];
+      const page = this.layout.pages[record.mark.page];
       page.draw(record.mark);
       // console.log(' RENDER ', page);
     };
@@ -54,7 +71,15 @@ export class AnnotationPanelWrapperComponent implements OnInit {
     //   });
   }
 
-  async ngOnInit() {}
+  async ngOnInit() {
+    const viewerContainer = document.querySelector(
+      '#viewerContainer'
+    ) as HTMLElement;
+
+    viewerContainer.addEventListener('scroll', (evt) => {
+      this.layout.srollEvent(evt);
+    });
+  }
 
   get penIsOn() {
     return this.mode === AnnotationMode.PEN;
@@ -64,11 +89,11 @@ export class AnnotationPanelWrapperComponent implements OnInit {
     //     console.log('Page render ', evt.source);
 
     const page = evt.pageNumber;
-    if (!this.pages[page]) {
+    if (!this.layout.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
-      this.pages[page] = pageHandler;
+      this.layout.pages[page] = pageHandler;
     } else {
-      this.pages[page].update(evt.source);
+      this.layout.pages[page].update(evt.source);
       this.annotationManager._redraw(page);
     }
   }
@@ -76,11 +101,8 @@ export class AnnotationPanelWrapperComponent implements OnInit {
   pdfLoaded(evt) {
     var container = document.getElementById('viewerContainer');
     container.style.display = 'flex';
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
     container.appendChild(this.elRef.nativeElement);
     this.elRef.nativeElement.style.display = 'block';
-    //     console.log(container);
-    //     console.log('PDF LOADED 3', evt);
   }
 
   toggleAnnotations() {
@@ -93,8 +115,8 @@ export class AnnotationPanelWrapperComponent implements OnInit {
   }
 
   onNgDestroy() {
-    for (const page of Object.keys(this.pages)) {
-      this.pages[page].destroy();
+    for (const page of Object.keys(this.layout.pages)) {
+      this.layout.pages[page].destroy();
     }
   }
 

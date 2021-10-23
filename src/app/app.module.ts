@@ -16,11 +16,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
 import { AnnotationsModule } from 'projects/annotations/src/lib/annotations.module';
-import { AnnotationComponent } from './annotation-panel/annotation-panel.component';
+import { MyAnnotationComponent } from './my-annotation-panel/my-annotation-panel.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 @NgModule({
-  declarations: [AppComponent, DemoComponent, AnnotationComponent],
+  declarations: [AppComponent, DemoComponent, MyAnnotationComponent],
   imports: [
     BrowserModule,
     InlineSVGModule,

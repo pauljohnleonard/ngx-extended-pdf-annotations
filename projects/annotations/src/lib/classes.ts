@@ -1,5 +1,3 @@
-import { AnnotationPath } from './annotations-panel-wrapper.component';
-
 export enum AnnotationMode {
   OFF = 'OFF',
   PEN = 'PEN',
@@ -26,6 +24,7 @@ export type PageEvent = {
 };
 
 // This is what is drawn on the pdf.
+export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
 
 export type BoundingBox = { x1: number; y1: number; x2: number; y2: number };
 export type AnnotationMark = {
@@ -55,4 +54,18 @@ export type AnnotationRecord = {
 
 export type AnnotationMarkRender = (record: AnnotationRecord) => void;
 
-export type PanelPosition = {};
+export type PanelPosition = {
+  page: number;
+  rank: number;
+  y: number;
+};
+
+export interface PanelPositionHelper {
+  getAnnotationPanelPos(anno: AnnotationRecord);
+}
+
+export class UIPannelComment {
+  isDeleted?: boolean;
+  pos: PanelPosition;
+  record: AnnotationRecord;
+}
