@@ -9,23 +9,11 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-$black: #000;
-$white: #fff;
-$regent-gray: #889aa2;
-$tiara: #ccd4d7;
-$mercury: #e8e8e8;
-$orgbrain-gray: #546e7a;
-$orgbrain-blue: #0097a7;
-$orgbrain-orange: #f57c00;
-$agenda-blue: #e7f9fb;
+textarea.mat-input-element {
+  padding: 2px 0;
+  margin: unset !important;
+}
 
-$primary-separator: #0d47a1;
-$primary-dropfield: #b7bbcb;
-$hint-color: #2d76d3;
-$dull-background: #fafafa;
-
-$agenda-blue-hover: #cbe4e9;
-$label-br: 4px;
-$label-width: 80px;
-$title-font-size: 35px;
-$agenda-title-font-size: 20px;
+.filler {
+  flex: 1 0;
+}

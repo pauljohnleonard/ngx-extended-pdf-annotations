@@ -1,6 +1,9 @@
+import { ElementRef } from '@angular/core';
+
 export enum AnnotationMode {
   OFF = 'OFF',
   PEN = 'PEN',
+  READY = 'READY',
 }
 
 export enum PageEventType {
@@ -58,14 +61,20 @@ export type PanelPosition = {
   page: number;
   rank: number;
   y: number;
+  yPlot: number;
 };
 
 export interface PanelPositionHelper {
   getAnnotationPanelPos(anno: AnnotationRecord);
 }
 
+export interface HasHeight {
+  getHeight: () => number;
+}
 export class UIPannelComment {
   isDeleted?: boolean;
   pos: PanelPosition;
   record: AnnotationRecord;
+  editing: boolean;
+  component?: HasHeight;
 }

@@ -8,8 +8,8 @@
   [handTool]="false"
   [showHandToolButton]="true"
   [textLayer]="false"
-  (pageRendered)="annotationsPanel.pageRendered($event)"
-  (pdfLoaded)="annotationsPanel.pdfLoaded($event)"
+  (pageRendered)="annotationsService.pageRendered($event)"
+  (pdfLoaded)="annotationsService.pdfLoaded($event)"
   [customToolbar]="additionalButtons"
 ></ngx-extended-pdf-viewer>
 
@@ -45,11 +45,10 @@
 
 <ngx-extended-pdf-annotation-wrapper
   #annotationPanel
-  class="annotationPanel"
   [commentItem]="commentItem"
 >
 </ngx-extended-pdf-annotation-wrapper>
 
 <ng-template #commentItem let-comment="comment">
-  {{ comment.record.bodyValue }}
+  <app-my-comment-item [comment]="comment"></app-my-comment-item>
 </ng-template>

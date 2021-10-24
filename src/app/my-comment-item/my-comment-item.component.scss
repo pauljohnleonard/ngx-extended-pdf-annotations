@@ -1,0 +1,47 @@
+@import "../../assets/colors";
+
+.comment-top-meta-info {
+  display: flex;
+  width: 100%;
+}
+
+.comment-name-and-date {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-body-container {
+  width: 100%;
+}
+
+.comment-full-width-container {
+  background-color: $commentBackground;
+  width: 400px;
+  border: 1px solid $greyLight;
+  border-radius: 10px;
+}
+
+.comment-inner-container {
+  padding: 10px;
+}
+
+.controls-container {
+  display: flex;
+}
+
+.comment-body-formfield {
+  width: 100%;
+}
+
+.name {
+  color: $greyMedium;
+}
+
+.date {
+  color: $greyLight;
+}
+
+.comment-body {
+  margin-top: 15px;
+  color: $greyBold;
+}

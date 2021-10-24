@@ -15,12 +15,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
-import { AnnotationsModule } from 'projects/annotations/src/lib/annotations.module';
-import { MyAnnotationComponent } from './my-annotation-panel/my-annotation-panel.component';
+import { AnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib/annotations.module';
+
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
+import { MyCommentItemComponent } from './my-comment-item/my-comment-item.component';
 @NgModule({
-  declarations: [AppComponent, DemoComponent, MyAnnotationComponent],
+  declarations: [AppComponent, DemoComponent, MyCommentItemComponent],
   imports: [
     BrowserModule,
     InlineSVGModule,

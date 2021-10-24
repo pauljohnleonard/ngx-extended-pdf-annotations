@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-extended-pdf-annotations": {
+    "ngx-extended-pdf-annotations-demo": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/ngx-extended-pdf-annotations",
+            "outputPath": "dist/ngx-extended-pdf-annotations-demo",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -36,7 +36,7 @@
               }
             ],
             "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/assets/theme.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -78,10 +78,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ngx-extended-pdf-annotations:build:production"
+              "browserTarget": "ngx-extended-pdf-annotations-demo:build:production"
             },
             "development": {
-              "browserTarget": "ngx-extended-pdf-annotations:build:development"
+              "browserTarget": "ngx-extended-pdf-annotations-demo:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -89,7 +89,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ngx-extended-pdf-annotations:build"
+            "browserTarget": "ngx-extended-pdf-annotations-demo:build"
           }
         },
         "test": {
@@ -113,23 +113,23 @@
         }
       }
     },
-    "annotations": {
+    "ngx-extended-pdf-annotations": {
       "projectType": "library",
-      "root": "projects/annotations",
-      "sourceRoot": "projects/annotations/src",
+      "root": "projects/ngx-extended-pdf-annotations",
+      "sourceRoot": "projects/ngx-extended-pdf-annotations/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/annotations/ng-package.json"
+            "project": "projects/ngx-extended-pdf-annotations/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/annotations/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx-extended-pdf-annotations/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/annotations/tsconfig.lib.json"
+              "tsConfig": "projects/ngx-extended-pdf-annotations/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -137,13 +137,13 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/annotations/src/test.ts",
-            "tsConfig": "projects/annotations/tsconfig.spec.json",
-            "karmaConfig": "projects/annotations/karma.conf.js"
+            "main": "projects/ngx-extended-pdf-annotations/src/test.ts",
+            "tsConfig": "projects/ngx-extended-pdf-annotations/tsconfig.spec.json",
+            "karmaConfig": "projects/ngx-extended-pdf-annotations/karma.conf.js"
           }
         }
       }
     }
   },
-  "defaultProject": "ngx-extended-pdf-annotations"
+  "defaultProject": "ngx-extended-pdf-annotations-demo"
 }

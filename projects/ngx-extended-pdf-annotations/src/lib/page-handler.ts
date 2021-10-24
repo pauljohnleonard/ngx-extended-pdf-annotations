@@ -1,6 +1,4 @@
 import { Subscription } from 'rxjs';
-import { AnnotationPanelWrapperComponent } from './annotations-panel-wrapper.component';
-
 import { v4 as uuidv4 } from 'uuid';
 import {
   AnnotationMark,
@@ -9,14 +7,12 @@ import {
   AnnotationRecord,
   PageEventType as PageEventType,
 } from './classes';
+import { AnnotationService } from './annotation.service';
 
 export class PageHandler {
-  pageViewer: any;
   path: AnnotationPath = [];
 
-  page: any;
   ctx: CanvasRenderingContext2D;
-  annotationWrapper: AnnotationPanelWrapperComponent;
   penSub: Subscription;
   isActive = false;
   pos: { x: number; y: number };
@@ -25,17 +21,16 @@ export class PageHandler {
   currentAnnotationId: string;
 
   constructor(
-    pageViewer,
-    page,
-    annotationWrapper: AnnotationPanelWrapperComponent
+    public pageViewer,
+    public page: number,
+    public annotationService: AnnotationService
   ) {
     // Add the event listeners for mousedown, mousemove, and mouseup
     this.pageViewer = pageViewer;
     this.page = page;
-    this.annotationWrapper = annotationWrapper;
     this.canvas = this.pageViewer.canvas;
-    this.penSub = this.annotationWrapper.subject$.subscribe((mode) => {
-      if (annotationWrapper.penIsOn && !this.isActive) {
+    this.penSub = this.annotationService.subject$.subscribe((mode) => {
+      if (annotationService.penIsOn && !this.isActive) {
         this.startAnnotation();
       } else if (this.isActive) {
         this.endAnnotation();
@@ -43,14 +38,6 @@ export class PageHandler {
     });
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
   }
-
-  // scrollEvent(evt: Event) {
-  //   console.log('PAGE SCROLL');
-
-  //   if (!this.canvas) {
-  //     throw Error(' Expected there to be a canvas');
-  //   }
-  // }
 
   showTops() {
     let el: HTMLElement = this.canvas;
@@ -67,7 +54,7 @@ export class PageHandler {
     if (!anno.mark) {
       throw Error(' Expected annotation record to have a mark');
     }
-    if (!anno.mark.page === this.page) {
+    if (anno.mark.page !== this.page) {
       throw Error(' Expected this.page to be same as mark.page');
     }
 
@@ -118,7 +105,7 @@ export class PageHandler {
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
       this.path = [];
-      this.annotationWrapper.annotationManager._handlePageEvent({
+      this.annotationService.annotationManager._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.START,
         pos: this.pos,
@@ -142,7 +129,7 @@ export class PageHandler {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
-      this.annotationWrapper.annotationManager._handlePageEvent({
+      this.annotationService.annotationManager._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
       });
@@ -157,7 +144,7 @@ export class PageHandler {
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
       this.isDrawing = false;
-      this.annotationWrapper.annotationManager._handlePageEvent({
+      this.annotationService.annotationManager._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
       });
@@ -201,7 +188,7 @@ export class PageHandler {
     }
 
     if (!!this.currentAnnotationId) {
-      this.annotationWrapper.annotationManager._handlePageEvent({
+      this.annotationService.annotationManager._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.PEN_UP,
       });

@@ -1,0 +1,117 @@
+<div class="comment-full-width-container">
+  <div class="comment-inner-container">
+    <div class="comment-top-meta-info">
+      <div class="comment-name-and-date">
+        <div class="name">{{ comment.record.creator.name }}</div>
+        <div class="date">{{ date.formatDate(comment.record.createdAt) }}</div>
+      </div>
+      <span class="filler"></span>
+      <div class="chat-message-buttons" *ngIf="comment.editing">
+        <!-- <button
+          mat-icon-button
+          class="reply-button"
+          aria-label="Reply"
+          matTooltip="Reply"
+          i18n-matTooltip="@@chat_reply"
+          *ngIf="!comment.isDeleted"
+          (click)="initiateReplyToMessage(comment)"
+        >
+          <mat-icon>reply</mat-icon>
+        </button> -->
+
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="deleteMessageMenu"
+          class="delete-menu-button"
+          [class.delete-menu-button-for-non-admin]="true"
+          aria-label="Delete message menu"
+          (menuOpened)="onDeleteMenuOpenedForMessageId(comment.record.id)"
+          (menuClosed)="onDeleteMenuClosed()"
+        >
+          <mat-icon>more_vert</mat-icon>
+        </button>
+
+        <mat-menu #deleteMessageMenu="matMenu">
+          <button
+            mat-menu-item
+            (click)="annotationService.deleteMessage(comment)"
+            aria-label="Delete message"
+          >
+            <mat-icon>delete</mat-icon>
+            <span i18n="@@chat_delete-message">Delete message</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <div class="ccomment-body-container">
+      <div *ngIf="!comment.editing" class="comment-body">
+        {{ comment.record.bodyValue }}
+      </div>
+
+      <mat-form-field *ngIf="comment.editing" class="comment-body-formfield">
+        <textarea
+          matInput
+          class="comment-window-textarea-message-input"
+          i18n-placeholder="@@YourCommentPlaceHolder"
+          placeholder="Your comment"
+          i18n-placeholder="@@chat_your-message"
+          (keydown)="onKeydownInput($event)"
+          [formControl]="messageInputFC"
+          autocomplete="off"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="5"
+          #messageinput
+        >
+        </textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="controls-container" *ngIf="comment.editing">
+      <span class="filler"></span>
+      <button
+        mat-icon-button
+        class="is-replying-info-cancel-button"
+        aria-label="Cancel replying to message"
+        (click)="clearMessage()"
+        i18n-matTooltip="@@ClearCommentBottonng s"
+        matTooltip="clear"
+      >
+        <mat-icon>clear</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="sendMessage()"
+        [attr.aria-label]="'Send message'"
+        matTooltip="Send message"
+        i18n-matTooltip="@@chat_send-message"
+      >
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+
+    <div class="annotation-window-textbox-section">
+      <div
+        *ngIf="replyingToMessage"
+        class="is-replying-to-message-info-container"
+      >
+        <div class="is-replying-to-message-info">
+          <div class="is-replying-to-message-info-first-line-who-info">
+            <ng-container i18n="@@chat_you-are-replying-to"
+              >You are replying to</ng-container
+            >
+            <span class="is-replying-to-message-info-who-name">
+              The original creator.
+            </span>
+          </div>
+          <!-- <div class="is-replying-to-message-info-second-line-message">
+            {{ truncateMessage(replyingToMessage.mentionDecodedMessage) }}
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

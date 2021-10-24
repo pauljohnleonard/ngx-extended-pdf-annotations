@@ -1,7 +1,0 @@
-<div *ngFor="let comment of comments">
-  <div class="comment" [style.top]="comment.pos.y + 'px'">
-    <ng-container
-      *ngTemplateOutlet="commentItem; context: { comment: this.comment }"
-    ></ng-container>
-  </div>
-</div>
