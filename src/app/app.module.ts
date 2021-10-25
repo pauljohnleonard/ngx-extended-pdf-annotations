@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
-import { InlineSVGModule } from 'ng-inline-svg';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { DemoComponent } from './demo/demo.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -19,12 +18,12 @@ import { AnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib
 
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
-import { MyCommentItemComponent } from './my-comment-item/my-comment-item.component';
+
 @NgModule({
-  declarations: [AppComponent, DemoComponent, MyCommentItemComponent],
+  declarations: [AppComponent, DemoComponent],
   imports: [
     BrowserModule,
-    InlineSVGModule,
+    AnnotationsModule,
     NgxExtendedPdfViewerModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,
@@ -42,7 +41,6 @@ import { MyCommentItemComponent } from './my-comment-item/my-comment-item.compon
     MatIconModule,
     MatTooltipModule,
     MatTableModule,
-    AnnotationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

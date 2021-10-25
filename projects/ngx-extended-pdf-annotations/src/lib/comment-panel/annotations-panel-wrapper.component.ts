@@ -19,7 +19,7 @@ export interface AnnotationEvent {
 
 @UntilDestroy()
 @Component({
-  selector: 'ngx-extended-pdf-annotation-wrapper',
+  selector: 'ngx-extended-pdf-annotation',
   templateUrl: './comment-panel.component.html',
   styleUrls: ['./comment-panel.component.scss'],
 })
@@ -60,6 +60,7 @@ export class CommentComponent implements OnInit, OnDestroy {
             container.style.display = 'flex';
             container.appendChild(this.elRef.nativeElement);
             this.elRef.nativeElement.style.display = 'block';
+            break;
         }
       });
   }

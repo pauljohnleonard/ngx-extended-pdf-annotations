@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import {
+  AnnotationMark,
   AnnotationMode,
   AnnotationRecord,
+  AnnotationType,
+  PageEvent,
   PanelPosition,
   PanelPositionHelper,
   UIPannelComment,
 } from './classes';
 import { PageHandler } from './page-handler';
-import { PDFAnnotationManager } from './pdf-annotation-manager';
+import { setBoundingBoxOf } from './util';
 
 @Injectable({
   providedIn: 'root',
@@ -16,30 +19,63 @@ import { PDFAnnotationManager } from './pdf-annotation-manager';
 export class AnnotationService {
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
   comments: UIPannelComment[] = [];
-
   annotationMap: { [id: string]: AnnotationRecord } = {};
   public newRecord$ = new Subject<AnnotationRecord>();
   panelPositionHelper: PanelPositionHelper;
   sub: Subscription;
-  annotationManager: PDFAnnotationManager;
-  mode = AnnotationMode.OFF;
+  // mode = AnnotationMode.OFF;
   public subject$ = new Subject<AnnotationMode>();
+
+  user = 'Paul';
+  cnt = 0;
+  mode: AnnotationMode;
 
   constructor() {
     console.log(' PanelHelper INIT');
     this.initAnnotationListener();
   }
 
-  get penIsOn() {
-    return this.mode === AnnotationMode.PEN;
+  isActive(): boolean {
+    return this.mode !== AnnotationMode.HIDE;
   }
 
-  _addNewRecord(record: AnnotationRecord): boolean {
-    if (this.annotationMap[record.id]) return false;
-    this.annotationMap[record.id] = record;
-    this.newRecord$.next(record);
-    return true;
+  destroy() {
+    this.sub.unsubscribe();
   }
+
+  stopPenAnnoation() {
+    this.setMode(AnnotationMode.OFF);
+  }
+
+  startPenAnnoation() {
+    this.setMode(AnnotationMode.PEN);
+  }
+
+  pdfLoaded(evt) {
+    this.subject$.next(AnnotationMode.READY);
+  }
+
+  toggleAnnotations() {
+    if (this.mode === AnnotationMode.HIDE) {
+      this.setMode(AnnotationMode.SHOW);
+    } else {
+      this.setMode(AnnotationMode.HIDE);
+    }
+  }
+
+  // delete annotations
+  // if no argument delete all.
+  deleteAnnotations(arg?: { annotationIds: string[] }) {}
+
+  // update the given annotation
+  updateAnnotation(data: AnnotationRecord) {}
+
+  // add new annoations.
+  addAnnotations(arg: AnnotationRecord[]) {}
+
+  // get penIsOn() {
+  //   return this.mode === AnnotationMode.PEN;
+  // }
 
   getAnnotationPanelPos(anno: AnnotationRecord): PanelPosition {
     if (!this.panelPositionHelper) {
@@ -58,15 +94,13 @@ export class AnnotationService {
 
   setPanelPositionHelper(pannelPosHelper: PanelPositionHelper) {
     this.panelPositionHelper = pannelPosHelper;
+  }
 
-    const renderer = (record: AnnotationRecord) => {
-      if (!record.mark) return;
-      const page = this.pages[record.mark.page];
-      page.draw(record.mark);
-      // console.log(' RENDER ', page);
-    };
-
-    this.annotationManager = new PDFAnnotationManager(renderer, this);
+  renderer(record: AnnotationRecord) {
+    if (!record.mark) return;
+    const page = this.pages[record.mark.page];
+    page.draw(record.mark);
+    // console.log(' RENDER ', page);
   }
 
   sortComments() {
@@ -115,35 +149,80 @@ export class AnnotationService {
   }
 
   pageRendered(evt) {
-    //     console.log('Page render ', evt.source);
     const page = evt.pageNumber;
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
       this.pages[page] = pageHandler;
     } else {
-      this.pages[page].update(evt.source);
-      this.annotationManager._redraw(page);
+      this.pages[page].updateCanvas(evt.source);
+      setTimeout(() => this._redraw(page));
     }
   }
 
   setMode(mode: AnnotationMode) {
     this.mode = mode;
-    this.subject$.next(this.mode);
+    this.subject$.next(mode);
   }
 
-  destroy() {
-    this.sub.unsubscribe();
+  // Internal stuff
+  _handlePageEvent(event: PageEvent) {
+    const id = event.id;
+    let record: AnnotationRecord = this.annotationMap[id];
+    if (!record) {
+      let type: AnnotationType;
+
+      switch (event.mode) {
+        case AnnotationMode.PEN:
+          type = AnnotationType.PATH;
+      }
+
+      const mark: AnnotationMark = {
+        page: event.page,
+        path: event.path,
+        type,
+      };
+
+      record = {
+        id: event.id,
+        bodyValue: 'My Comment ' + this.cnt++,
+        mark,
+        motivation: 'comment',
+        creator: {
+          id: '',
+          name: this.user,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      setBoundingBoxOf(record, event);
+      this._addNewRecord(record);
+    }
+    this.renderer(record);
   }
 
-  stopPenAnnoation() {
-    this.setMode(AnnotationMode.OFF);
+  // if no page then redraw all
+  _redraw(page?: number) {
+    for (const id of Object.keys(this.annotationMap)) {
+      const record = this.annotationMap[id];
+      if (!page || (record.mark && record.mark.page === page)) {
+        this.renderer(record);
+      }
+    }
   }
 
-  startPenAnnoation() {
-    this.setMode(AnnotationMode.PEN);
+  _addNewRecord(record: AnnotationRecord): boolean {
+    if (this.annotationMap[record.id]) return false;
+    this.annotationMap[record.id] = record;
+    this.newRecord$.next(record);
+    return true;
   }
 
-  pdfLoaded(evt) {
-    this.subject$.next(AnnotationMode.READY);
+  _layoutChange() {
+    setTimeout(() => this.sortComments());
+  }
+
+  _deleteComment(comment: UIPannelComment) {
+    const ii = this.comments.findIndex((x) => x === comment);
+    this.comments.splice(ii, 1);
+    this.sortComments();
   }
 }

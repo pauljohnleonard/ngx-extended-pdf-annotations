@@ -4,6 +4,8 @@ export enum AnnotationMode {
   OFF = 'OFF',
   PEN = 'PEN',
   READY = 'READY',
+  HIDE = 'HIDE',
+  SHOW = 'SHOW',
 }
 
 export enum PageEventType {
@@ -71,6 +73,7 @@ export interface PanelPositionHelper {
 export interface HasHeight {
   getHeight: () => number;
 }
+
 export class UIPannelComment {
   isDeleted?: boolean;
   pos: PanelPosition;

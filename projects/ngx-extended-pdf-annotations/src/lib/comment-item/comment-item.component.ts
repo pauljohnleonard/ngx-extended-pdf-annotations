@@ -1,18 +1,17 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
-import {
-  HasHeight,
-  UIPannelComment,
-} from 'projects/ngx-extended-pdf-annotations/src/public-api';
+import { AnnotationService } from '../annotation.service';
+import { HasHeight, UIPannelComment } from '../classes';
+
 import { DateUtilService } from '../date-util.service';
 
 @Component({
-  selector: 'app-my-comment-item',
-  templateUrl: './my-comment-item.component.html',
-  styleUrls: ['./my-comment-item.component.scss'],
+  selector: 'ngx-extended-pdf-comment-item',
+  templateUrl: './comment-item.component.html',
+  styleUrls: ['./comment-item.component.scss'],
 })
-export class MyCommentItemComponent implements OnInit, HasHeight {
+export class CommentItemComponent implements OnInit, HasHeight {
   @ViewChild(MatInput) messageInput: MatInput;
   @Input() comment: UIPannelComment;
 
@@ -27,16 +26,16 @@ export class MyCommentItemComponent implements OnInit, HasHeight {
 
   replyToMessage;
 
-  annotationService = {
-    isInitialChatMessagesLoaded: true,
+  constructor(
+    public date: DateUtilService,
+    public el: ElementRef,
+    public annotationService: AnnotationService
+  ) {}
 
-    chatWindowTitle: 'Title',
-    deleteMessage: (chatMessage) => {
-      console.log(chatMessage);
-    },
-  };
-
-  constructor(public date: DateUtilService, public el: ElementRef) {}
+  clicked() {
+    this.comment.editing = true;
+    this.annotationService._layoutChange();
+  }
 
   ngOnInit(): void {
     console.log(this.comment);

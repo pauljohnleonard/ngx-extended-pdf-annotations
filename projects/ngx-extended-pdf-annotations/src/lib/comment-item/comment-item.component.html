@@ -1,4 +1,4 @@
-<div class="comment-full-width-container">
+<div class="comment-full-width-container" (click)="clicked()">
   <div class="comment-inner-container">
     <div class="comment-top-meta-info">
       <div class="comment-name-and-date">
@@ -34,7 +34,7 @@
         <mat-menu #deleteMessageMenu="matMenu">
           <button
             mat-menu-item
-            (click)="annotationService.deleteMessage(comment)"
+            (click)="annotationService._deleteComment(comment)"
             aria-label="Delete message"
           >
             <mat-icon>delete</mat-icon>

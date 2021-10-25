@@ -12,42 +12,55 @@ import { AnnotationService } from './annotation.service';
 export class PageHandler {
   path: AnnotationPath = [];
 
-  ctx: CanvasRenderingContext2D;
+  private ctx: CanvasRenderingContext2D;
   penSub: Subscription;
   isActive = false;
   pos: { x: number; y: number };
   isDrawing: boolean;
-  canvas: HTMLCanvasElement;
   currentAnnotationId: string;
+
+  private annotationCanvas: HTMLCanvasElement;
+  private pdfCanvas: HTMLCanvasElement;
 
   constructor(
     public pageViewer,
     public page: number,
     public annotationService: AnnotationService
   ) {
-    // Add the event listeners for mousedown, mousemove, and mouseup
-    this.pageViewer = pageViewer;
     this.page = page;
-    this.canvas = this.pageViewer.canvas;
+
+    this.updateCanvas(pageViewer);
+
     this.penSub = this.annotationService.subject$.subscribe((mode) => {
-      if (annotationService.penIsOn && !this.isActive) {
-        this.startAnnotation();
-      } else if (this.isActive) {
-        this.endAnnotation();
+      switch (mode) {
+        case AnnotationMode.PEN:
+          this.startAnnotation();
+          break;
+
+        case AnnotationMode.OFF:
+          this.endAnnotation();
+          break;
+
+        case AnnotationMode.HIDE:
+          this.visible(false);
+          break;
+
+        case AnnotationMode.SHOW:
+          this.visible(true);
+          break;
       }
     });
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
   }
 
-  showTops() {
-    let el: HTMLElement = this.canvas;
-
-    while (el) {
-      const str = `${el.localName}:${el.className} ${el.offsetTop}`;
-      console.log(str);
-      el = el.parentElement;
-    }
-  }
+  // showTops() {
+  //   let el: HTMLElement = this.annotationCanvas;
+  //   while (el) {
+  //     const str = `${el.localName}:${el.className} ${el.offsetTop}`;
+  //     console.log(str);
+  //     el = el.parentElement;
+  //   }
+  // }
 
   // Y center of annotation bounding box in terms of full viewport.
   getAnnotationPanelPos(anno: AnnotationRecord): number {
@@ -58,7 +71,7 @@ export class PageHandler {
       throw Error(' Expected this.page to be same as mark.page');
     }
 
-    this.showTops();
+    // this.showTops();
 
     // const clinetRect = this.canvas.getBoundingClientRect();
     // const canvasTop = clinetRect.top;
@@ -66,10 +79,11 @@ export class PageHandler {
     const y = (anno.mark.boundingBox.y1 + anno.mark.boundingBox.y2) / 2;
     const z = this.realToCanvas({ x, y });
 
-    const pageDiv = this.canvas.parentElement.parentElement;
+    const pageDiv = this.annotationCanvas.parentElement.parentElement;
 
     const retY =
-      pageDiv.offsetTop + (z.y * this.canvas.clientHeight) / this.canvas.height;
+      pageDiv.offsetTop +
+      (z.y * this.annotationCanvas.clientHeight) / this.annotationCanvas.height;
     return retY;
   }
 
@@ -92,11 +106,11 @@ export class PageHandler {
   startAnnotation() {
     this.path = [];
     this.currentAnnotationId = null;
-    this.canvas = this.pageViewer.canvas; // not needed ?
-    this.canvas.onmousedown = this.mouseDownHandler.bind(this);
-    this.canvas.onmousemove = this.mouseMoveHandler.bind(this);
+    // this.annotationCanvas = this.pageViewer.canvas; // not needed ?
+    this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
+    this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
-    this.canvas.style.cursor = 'crosshair';
+    this.annotationCanvas.style.cursor = 'crosshair';
   }
 
   mouseDownHandler(e) {
@@ -105,7 +119,7 @@ export class PageHandler {
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
       this.path = [];
-      this.annotationService.annotationManager._handlePageEvent({
+      this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.START,
         pos: this.pos,
@@ -129,7 +143,7 @@ export class PageHandler {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
-      this.annotationService.annotationManager._handlePageEvent({
+      this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
       });
@@ -144,7 +158,7 @@ export class PageHandler {
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
       this.isDrawing = false;
-      this.annotationService.annotationManager._handlePageEvent({
+      this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
       });
@@ -152,20 +166,45 @@ export class PageHandler {
     }
   }
 
-  update(source: any) {
-    this.endAnnotation();
-    this.pageViewer = source;
-    this.canvas = this.pageViewer.canvas;
+  updateCanvas(pageViewer: any) {
+    // Add the event listeners for mousedown, mousemove, and mouseup
+
+    this.detachPen();
+
+    if (this.annotationCanvas && this.annotationCanvas.parentNode) {
+      this.annotationCanvas.parentNode.removeChild(this.annotationCanvas);
+    }
+    this.pageViewer = pageViewer;
+    this.pdfCanvas = this.pageViewer.canvas;
+
+    this.annotationCanvas = document.createElement(
+      'CANVAS'
+    ) as HTMLCanvasElement;
+
+    this.annotationCanvas.width = this.pdfCanvas.width;
+    this.annotationCanvas.height = this.pdfCanvas.height;
+    this.annotationCanvas.style.width = this.pdfCanvas.style.width;
+    this.annotationCanvas.style.height = this.pdfCanvas.style.height;
+
+    this.pdfCanvas.style.position = 'absolute';
+    this.annotationCanvas.style.position = 'absolute';
+    this.annotationCanvas.id = 'mycanvas';
+    // this.canvas.style['z-index'] = '30';
+    // this.pdfCanvas.style['z-index'] = '20';
+
+    this.pdfCanvas.parentElement.appendChild(this.annotationCanvas);
+
+    // console.log(this.canvas);
+
     if (this.isDrawing) {
       this.startAnnotation();
     }
-    // setTimeout(() => this.draw());
   }
 
   draw(mark: AnnotationMark) {
     const path = mark.path;
 
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.annotationCanvas.getContext('2d');
     this.ctx.beginPath();
     const s = this.pageViewer.outputScale;
     for (const line of path) {
@@ -180,15 +219,30 @@ export class PageHandler {
     this.ctx.stroke();
   }
 
-  endAnnotation() {
-    if (this.canvas) {
-      this.canvas.style.cursor = 'default';
-      this.canvas.onmousedown = null;
-      this.canvas.onmouseup = null;
+  visible(yes) {
+    if (!this.annotationCanvas) {
+      return;
     }
+    if (yes) {
+      this.annotationCanvas.style.display = 'block';
+    } else {
+      this.annotationCanvas.style.display = 'none';
+    }
+  }
+
+  detachPen() {
+    if (this.annotationCanvas) {
+      this.annotationCanvas.style.cursor = 'default';
+      this.annotationCanvas.onmousedown = null;
+      this.annotationCanvas.onmouseup = null;
+    }
+  }
+
+  endAnnotation() {
+    this.detachPen();
 
     if (!!this.currentAnnotationId) {
-      this.annotationService.annotationManager._handlePageEvent({
+      this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.PEN_UP,
       });

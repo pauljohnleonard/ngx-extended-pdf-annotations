@@ -17,7 +17,7 @@
   <div id="toolbarViewer" class="toolbar">
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
     <div class="annotationControlPanel">
-      <!-- <mat-icon
+      <mat-icon
         [ngClass]="{
           canpress: true,
           iconButton: true
@@ -25,30 +25,31 @@
         (click)="toogleAnnotations()"
         matTooltip="Show Annotation Tools"
         >comments</mat-icon
-      > -->
-
-      <mat-icon
-        [ngClass]="{
-          canpress: true,
-          highlight: highlightPen,
-          iconButton: true
-        }"
-        (click)="penAnnotate()"
-        matTooltip="Annotate with Pen"
-        >gesture</mat-icon
       >
+
+      <ng-container *ngIf="annotationsService.isActive()">
+        <mat-icon
+          [ngClass]="{
+            canpress: true,
+            highlight: highlightPen,
+            iconButton: true
+          }"
+          (click)="penAnnotate()"
+          matTooltip="Annotate with Pen"
+          >gesture</mat-icon
+        >
+      </ng-container>
     </div>
   </div>
 </ng-template>
 
 <!--    HACK FOR THE MOMENT UNTIL WE GET A PROPER RIGHT PANEL -->
 
-<ngx-extended-pdf-annotation-wrapper
-  #annotationPanel
-  [commentItem]="commentItem"
->
-</ngx-extended-pdf-annotation-wrapper>
+<ngx-extended-pdf-annotation #annotationPanel [commentItem]="commentItem">
+</ngx-extended-pdf-annotation>
 
 <ng-template #commentItem let-comment="comment">
-  <app-my-comment-item [comment]="comment"></app-my-comment-item>
+  <ngx-extended-pdf-comment-item
+    [comment]="comment"
+  ></ngx-extended-pdf-comment-item>
 </ng-template>

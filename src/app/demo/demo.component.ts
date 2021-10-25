@@ -23,10 +23,12 @@ export class DemoComponent implements AfterViewInit {
       });
   }
 
-  toogleAnnotations() {}
+  toogleAnnotations() {
+    this.annotationsService.toggleAnnotations();
+  }
 
   penAnnotate() {
-    const on = this.annotationsService.penIsOn;
+    const on = this.annotationsService.mode === AnnotationMode.PEN;
     if (!on) {
       this.annotationsService.startPenAnnoation();
     } else {
