@@ -29,6 +29,7 @@ export class AnnotationService {
   user = 'Paul';
   cnt = 0;
   mode: AnnotationMode;
+  editingComment: UIPannelComment;
 
   constructor() {
     console.log(' PanelHelper INIT');
@@ -137,9 +138,9 @@ export class AnnotationService {
       const comment: UIPannelComment = {
         pos,
         record,
-        editing: true,
       };
 
+      this.editingComment = comment;
       this.comments.push(comment);
 
       // give angluar time to add to dom.
@@ -161,7 +162,15 @@ export class AnnotationService {
 
   setMode(mode: AnnotationMode) {
     this.mode = mode;
+    if (this.mode === AnnotationMode.OFF || this.mode === AnnotationMode.HIDE) {
+      this.editingComment = null;
+    }
     this.subject$.next(mode);
+  }
+
+  _focusOnComment(comment: UIPannelComment) {
+    this.editingComment = comment;
+    setTimeout(() => this.sortComments());
   }
 
   // Internal stuff
@@ -200,10 +209,13 @@ export class AnnotationService {
   }
 
   // if no page then redraw all
-  _redraw(page?: number) {
+  _redraw(page: number) {
+    const pageHandler = this.pages[page];
+    pageHandler.clear();
+
     for (const id of Object.keys(this.annotationMap)) {
       const record = this.annotationMap[id];
-      if (!page || (record.mark && record.mark.page === page)) {
+      if (record.mark && record.mark.page === page) {
         this.renderer(record);
       }
     }
@@ -216,13 +228,18 @@ export class AnnotationService {
     return true;
   }
 
-  _layoutChange() {
-    setTimeout(() => this.sortComments());
-  }
+  // _layoutChange() {}
 
   _deleteComment(comment: UIPannelComment) {
+    if (this.mode !== AnnotationMode.HIDE) {
+      this.setMode(AnnotationMode.OFF);
+    }
     const ii = this.comments.findIndex((x) => x === comment);
     this.comments.splice(ii, 1);
     this.sortComments();
+    const id = comment.record.id;
+    delete this.annotationMap[id];
+    const page = comment.pos.page;
+    this._redraw(page);
   }
 }

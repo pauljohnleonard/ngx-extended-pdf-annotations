@@ -78,6 +78,6 @@ export class UIPannelComment {
   isDeleted?: boolean;
   pos: PanelPosition;
   record: AnnotationRecord;
-  editing: boolean;
+  // editing: boolean;
   component?: HasHeight;
 }

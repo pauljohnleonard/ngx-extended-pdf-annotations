@@ -33,8 +33,8 @@ export class CommentItemComponent implements OnInit, HasHeight {
   ) {}
 
   clicked() {
-    this.comment.editing = true;
-    this.annotationService._layoutChange();
+    // this.comment.editing = true;
+    this.annotationService._focusOnComment(this.comment);
   }
 
   ngOnInit(): void {
@@ -109,7 +109,7 @@ export class CommentItemComponent implements OnInit, HasHeight {
   }
 
   async sendMessage() {
-    this.comment.editing = false;
+    // this.comment.editing = false;
   }
 
   // loadEarlierMessages() {

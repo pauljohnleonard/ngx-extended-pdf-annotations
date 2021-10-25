@@ -219,6 +219,16 @@ export class PageHandler {
     this.ctx.stroke();
   }
 
+  clear() {
+    const context = this.annotationCanvas.getContext('2d');
+    context.clearRect(
+      0,
+      0,
+      this.annotationCanvas.width,
+      this.annotationCanvas.height
+    );
+  }
+
   visible(yes) {
     if (!this.annotationCanvas) {
       return;

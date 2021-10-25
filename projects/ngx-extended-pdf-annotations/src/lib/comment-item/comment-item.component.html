@@ -6,7 +6,10 @@
         <div class="date">{{ date.formatDate(comment.record.createdAt) }}</div>
       </div>
       <span class="filler"></span>
-      <div class="chat-message-buttons" *ngIf="comment.editing">
+      <div
+        class="chat-message-buttons"
+        *ngIf="comment === annotationService.editingComment"
+      >
         <!-- <button
           mat-icon-button
           class="reply-button"
@@ -44,12 +47,18 @@
       </div>
     </div>
 
-    <div class="ccomment-body-container">
-      <div *ngIf="!comment.editing" class="comment-body">
+    <div class="comment-body-container">
+      <div
+        *ngIf="comment !== annotationService.editingComment"
+        class="comment-body"
+      >
         {{ comment.record.bodyValue }}
       </div>
 
-      <mat-form-field *ngIf="comment.editing" class="comment-body-formfield">
+      <mat-form-field
+        *ngIf="comment === annotationService.editingComment"
+        class="comment-body-formfield"
+      >
         <textarea
           matInput
           class="comment-window-textarea-message-input"
@@ -68,7 +77,10 @@
       </mat-form-field>
     </div>
 
-    <div class="controls-container" *ngIf="comment.editing">
+    <div
+      class="controls-container"
+      *ngIf="comment === annotationService.editingComment"
+    >
       <span class="filler"></span>
       <button
         mat-icon-button
