@@ -5,6 +5,7 @@ import {
   AnnotationMode,
   AnnotationRecord,
   AnnotationType,
+  AnnotationUser,
   PageEvent,
   PanelPosition,
   PanelPositionHelper,
@@ -26,7 +27,7 @@ export class AnnotationService {
   // mode = AnnotationMode.OFF;
   public subject$ = new Subject<AnnotationMode>();
 
-  user = 'Paul';
+  user: AnnotationUser = { name: 'Guest', id: '1234' };
   cnt = 0;
   mode = AnnotationMode.OFF;
   focusComment: UIPannelComment;
@@ -37,6 +38,9 @@ export class AnnotationService {
     this.initAnnotationListener();
   }
 
+  setUser(user: AnnotationUser) {
+    this.user = user;
+  }
   isActive(): boolean {
     return this.mode !== AnnotationMode.HIDE;
   }
@@ -251,10 +255,7 @@ export class AnnotationService {
         bodyValue: 'My Comment ' + this.cnt++,
         mark,
         motivation: 'comment',
-        creator: {
-          id: '',
-          name: this.user,
-        },
+        creator: this.user,
         createdAt: new Date().toISOString(),
       };
       setBoundingBoxOf(record, event);

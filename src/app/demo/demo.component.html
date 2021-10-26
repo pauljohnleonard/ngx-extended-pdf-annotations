@@ -16,6 +16,18 @@
 
 <ng-template #additionalButtons>
   <div id="myToolbarViewer" class="mytoolbar">
+    <div class="annotationControlPanel" id="toolbarViewerLeft">
+      <form>
+        <mat-form-field>
+          <mat-select [formControl]="userControl" name="User">
+            <mat-option *ngFor="let user of users" [value]="user">
+              {{ user }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </form>
+    </div>
+
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
 
     <div class="annotationControlPanel" id="toolbarViewerRight">

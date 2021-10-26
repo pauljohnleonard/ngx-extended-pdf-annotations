@@ -28,6 +28,8 @@ export type PageEvent = {
   pos?: AnnotationPoint;
 };
 
+export type AnnotationUser = { name: string; id: string };
+
 // This is what is drawn on the pdf.
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
 
@@ -48,10 +50,7 @@ export type AnnotationRecord = {
   motivation: 'comment' | 'reply';
   parentId?: string;
   mark?: AnnotationMark;
-  creator: {
-    id: string;
-    name: string;
-  };
+  creator: AnnotationUser;
   createdAt: string;
   modifiedAt?: string;
 };

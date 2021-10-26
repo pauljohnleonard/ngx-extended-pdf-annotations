@@ -19,6 +19,7 @@ import { AnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { DebugComponent } from './debug/debug.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @NgModule({
   declarations: [AppComponent, DemoComponent, DebugComponent],
@@ -34,6 +35,7 @@ import { DebugComponent } from './debug/debug.component';
     MatDialogModule,
     FormsModule,
     MatFormFieldModule,
+    MatSelectModule,
     FormsModule,
     HttpClientModule,
     MatCheckboxModule,
