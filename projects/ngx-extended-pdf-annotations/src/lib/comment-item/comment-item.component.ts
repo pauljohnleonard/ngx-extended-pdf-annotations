@@ -2,7 +2,11 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { AnnotationService } from '../annotation.service';
-import { HasHeight, UIPannelComment } from '../classes';
+import {
+  FocusModeEnum,
+  UIPanelItemIterface,
+  UIPannelComment,
+} from '../classes';
 
 import { DateUtilService } from '../date-util.service';
 
@@ -11,7 +15,7 @@ import { DateUtilService } from '../date-util.service';
   templateUrl: './comment-item.component.html',
   styleUrls: ['./comment-item.component.scss'],
 })
-export class CommentItemComponent implements OnInit, HasHeight {
+export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   @ViewChild(MatInput) messageInput: MatInput;
   @Input() comment: UIPannelComment;
 
@@ -25,12 +29,17 @@ export class CommentItemComponent implements OnInit, HasHeight {
   windowHeightForMobile: number;
 
   replyToMessage;
+  focusMode: FocusModeEnum;
 
   constructor(
     public date: DateUtilService,
     public el: ElementRef,
     public annotationService: AnnotationService
   ) {}
+
+  setFocus(focusMode: FocusModeEnum) {
+    this.focusMode = focusMode;
+  }
 
   clicked() {
     // this.comment.editing = true;

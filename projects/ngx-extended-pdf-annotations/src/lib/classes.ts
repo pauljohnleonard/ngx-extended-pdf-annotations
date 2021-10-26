@@ -69,8 +69,14 @@ export interface PanelPositionHelper {
   getAnnotationPanelPos(anno: AnnotationRecord);
 }
 
-export interface HasHeight {
+export enum FocusModeEnum {
+  CREATE = 'CREATE',
+  FOCUS = 'FOCUS',
+  OFF = 'OFF',
+}
+export interface UIPanelItemIterface {
   getHeight: () => number;
+  setFocus(focusMode: FocusModeEnum);
 }
 
 export class UIPannelComment {
@@ -78,5 +84,5 @@ export class UIPannelComment {
   pos: PanelPosition;
   record: AnnotationRecord;
   // editing: boolean;
-  component?: HasHeight;
+  component?: UIPanelItemIterface;
 }
