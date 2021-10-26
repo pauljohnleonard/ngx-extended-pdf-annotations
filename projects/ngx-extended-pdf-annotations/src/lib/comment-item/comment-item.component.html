@@ -1,6 +1,15 @@
-<div class="comment-full-width-container" (click)="clicked()">
+<div
+  [ngClass]="{
+    'comment-outer-container': true,
+    'mat-elevation-z8': true,
+    'blue-border': comment === annotationService.focusComment
+  }"
+  (click)="clicked()"
+>
   <div class="comment-inner-container">
     <div class="comment-top-meta-info">
+      <mat-icon style="margin-right: 10px; color: blue">gesture</mat-icon>
+
       <div class="comment-name-and-date">
         <div class="name">{{ comment.record.creator.name }}</div>
         <div class="date">{{ date.formatDate(comment.record.createdAt) }}</div>
@@ -8,7 +17,7 @@
       <span class="filler"></span>
       <div
         class="chat-message-buttons"
-        *ngIf="comment === annotationService.editingComment"
+        *ngIf="comment === annotationService.focusComment"
       >
         <!-- <button
           mat-icon-button
@@ -49,21 +58,21 @@
 
     <div class="comment-body-container">
       <div
-        *ngIf="comment !== annotationService.editingComment"
+        *ngIf="comment !== annotationService.focusComment"
         class="comment-body"
       >
         {{ comment.record.bodyValue }}
       </div>
 
       <mat-form-field
-        *ngIf="comment === annotationService.editingComment"
+        *ngIf="comment === annotationService.focusComment"
         class="comment-body-formfield"
       >
         <textarea
           matInput
           class="comment-window-textarea-message-input"
           i18n-placeholder="@@YourCommentPlaceHolder"
-          placeholder="Your comment"
+          placeholder="Comment"
           i18n-placeholder="@@chat_your-message"
           (keydown)="onKeydownInput($event)"
           [formControl]="messageInputFC"
@@ -79,7 +88,7 @@
 
     <div
       class="controls-container"
-      *ngIf="comment === annotationService.editingComment"
+      *ngIf="comment === annotationService.focusComment"
     >
       <span class="filler"></span>
       <button

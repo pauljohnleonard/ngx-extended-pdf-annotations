@@ -28,8 +28,9 @@ export class AnnotationService {
 
   user = 'Paul';
   cnt = 0;
-  mode: AnnotationMode;
-  editingComment: UIPannelComment;
+  mode = AnnotationMode.OFF;
+  focusComment: UIPannelComment;
+  highlightComment: any;
 
   constructor() {
     console.log(' PanelHelper INIT');
@@ -97,37 +98,76 @@ export class AnnotationService {
     this.panelPositionHelper = pannelPosHelper;
   }
 
+  hadleHightlightChange() {
+    const oldHighlight: UIPannelComment = this.highlightComment;
+    const newHighlight =
+      this.focusComment && this.mode === AnnotationMode.OFF
+        ? this.focusComment
+        : null;
+    if (newHighlight !== this.highlightComment) {
+      this.highlightComment = newHighlight;
+      this.sortComments();
+    }
+
+    setTimeout(() => {
+      if (oldHighlight) {
+        this._redraw(oldHighlight.pos.page);
+        if (newHighlight && newHighlight.pos.page !== oldHighlight.pos.page) {
+          this._redraw(newHighlight.pos.page);
+        }
+      } else if (newHighlight && newHighlight.pos.page) {
+        this._redraw(newHighlight.pos.page);
+      }
+    });
+  }
+
   renderer(record: AnnotationRecord) {
     if (!record.mark) return;
     const page = this.pages[record.mark.page];
-    page.draw(record.mark);
+
+    const highlight =
+      this.highlightComment && record.id === this.highlightComment.record.id;
+    // this.mode === AnnotationMode.OFF &&
+    //   this.focusComment &&
+    //   record.id === this.focusComment.record.id;
+
+    page.draw(record, highlight);
     // console.log(' RENDER ', page);
   }
 
   sortComments() {
-    let yPlot = -1;
-    this.comments.sort((a, b) => {
-      if (a.pos.page > b.pos.page) return 1;
-      if (a.pos.page < b.pos.page) return -1;
+    setTimeout(() => {
+      let yPlot = -1;
+      this.comments.sort((a, b) => {
+        if (a.pos.page > b.pos.page) return 1;
+        if (a.pos.page < b.pos.page) return -1;
 
-      // Same page
-      if (a.pos.y > b.pos.y) return 1;
-      if (a.pos.y < b.pos.y) return -1;
+        // Same page
+        if (a.pos.y > b.pos.y) return 1;
+        if (a.pos.y < b.pos.y) return -1;
 
-      return 0;
+        return 0;
+      });
+
+      for (const comment of this.comments) {
+        if (comment.pos.y < 0) {
+          comment.pos.yPlot = -1;
+          continue;
+        }
+        if (!comment.component) {
+          console.error(' Expect comment to belong to a elem !!');
+        } else {
+          comment.pos.yPlot = Math.max(comment.pos.y, yPlot + 10);
+          yPlot = comment.pos.yPlot + comment.component.getHeight();
+        }
+      }
     });
+  }
 
-    for (const comment of this.comments) {
-      if (comment.pos.y < 0) {
-        comment.pos.yPlot = -1;
-        continue;
-      }
-      if (!comment.component) {
-        console.error(' Expect comment to belong to a elem !!');
-      } else {
-        comment.pos.yPlot = Math.max(comment.pos.y, yPlot);
-        yPlot = comment.pos.yPlot + comment.component.getHeight();
-      }
+  // Do this if the zoom changes
+  rebuildCommentPostions() {
+    for (const c of this.comments) {
+      c.pos = this.getAnnotationPanelPos(c.record);
     }
   }
 
@@ -140,7 +180,7 @@ export class AnnotationService {
         record,
       };
 
-      this.editingComment = comment;
+      this.focusComment = comment;
       this.comments.push(comment);
 
       // give angluar time to add to dom.
@@ -150,6 +190,7 @@ export class AnnotationService {
   }
 
   pageRendered(evt) {
+    console.log(' PAGE RENDER  ', evt.pageNumber);
     const page = evt.pageNumber;
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
@@ -163,14 +204,28 @@ export class AnnotationService {
   setMode(mode: AnnotationMode) {
     this.mode = mode;
     if (this.mode === AnnotationMode.OFF || this.mode === AnnotationMode.HIDE) {
-      this.editingComment = null;
+      this.focusComment = null;
     }
+    this.hadleHightlightChange();
     this.subject$.next(mode);
   }
 
+  zoomChange(evt) {
+    console.log(' ZOOM CHANGE ');
+    setTimeout(() => {
+      this.rebuildCommentPostions();
+      this.sortComments();
+      setTimeout(() => this._redraw());
+    });
+  }
+
   _focusOnComment(comment: UIPannelComment) {
-    this.editingComment = comment;
-    setTimeout(() => this.sortComments());
+    if (this.focusComment === comment) {
+      return;
+    }
+    this.setMode(AnnotationMode.OFF);
+    this.focusComment = comment;
+    this.hadleHightlightChange();
   }
 
   // Internal stuff
@@ -204,18 +259,25 @@ export class AnnotationService {
       };
       setBoundingBoxOf(record, event);
       this._addNewRecord(record);
+    } else {
+      setBoundingBoxOf(record, event);
     }
+
     this.renderer(record);
   }
 
   // if no page then redraw all
-  _redraw(page: number) {
-    const pageHandler = this.pages[page];
-    pageHandler.clear();
+  _redraw(page?: number) {
+    console.log(' _REDRAW', page);
+
+    if (page !== undefined) {
+      const pageHandler = this.pages[page];
+      pageHandler.clear();
+    }
 
     for (const id of Object.keys(this.annotationMap)) {
       const record = this.annotationMap[id];
-      if (record.mark && record.mark.page === page) {
+      if (page === undefined || (record.mark && record.mark.page === page)) {
         this.renderer(record);
       }
     }

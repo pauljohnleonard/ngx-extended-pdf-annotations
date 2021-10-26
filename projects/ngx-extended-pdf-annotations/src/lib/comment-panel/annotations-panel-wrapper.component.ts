@@ -29,11 +29,32 @@ export class CommentComponent implements OnInit, OnDestroy {
   showAnnotationPanel = false;
 
   showAnnotations = true;
+  viewContainer: HTMLElement;
 
   constructor(
     public elRef: ElementRef,
     public annotationService: AnnotationService
-  ) {
+  ) {}
+  ngOnDestroy(): void {
+    throw new Error('Method not implemented.');
+  }
+
+  // setVisible(yes) {
+  //   if (yes === this.isVisible) {
+  //     return;
+  //   }
+  //   if (yes) {
+  //     console.log(' VISIBLE ');
+  //     this.viewContainer.style.display = 'flex';
+  //     this.elRef.nativeElement.style.display = 'block';
+  //   } else {
+  //     console.log(' HIDE ');
+  //     this.elRef.nativeElement.style.display = 'none';
+  //   }
+  //   this.isVisible = yes;
+  // }
+
+  async ngOnInit() {
     const pannelPosHelper: PanelPositionHelper = {
       getAnnotationPanelPos: (record: AnnotationRecord) => {
         const page = this.annotationService.pages[record.mark.page];
@@ -41,8 +62,11 @@ export class CommentComponent implements OnInit, OnDestroy {
       },
     };
 
-    annotationService.setPanelPositionHelper(pannelPosHelper);
+    this.annotationService.setPanelPositionHelper(pannelPosHelper);
+    this.viewContainer = document.getElementById('viewerContainer');
+    this.viewContainer.appendChild(this.elRef.nativeElement);
 
+    this._showCommentPanel(true);
     this.annotationService.subject$
       .pipe(untilDestroyed(this))
       .subscribe((mode) => {
@@ -51,36 +75,33 @@ export class CommentComponent implements OnInit, OnDestroy {
             console.log(' STOP annotation ');
             this.elRef.nativeElement.style.cursor = 'cursor';
             break;
+
           case AnnotationMode.PEN:
             console.log(' START annotation ');
             this.elRef.nativeElement.style.cursor = 'pen';
             break;
+
           case AnnotationMode.READY:
-            var container = document.getElementById('viewerContainer');
-            container.style.display = 'flex';
-            container.appendChild(this.elRef.nativeElement);
-            this.elRef.nativeElement.style.display = 'block';
+            this.viewContainer = document.getElementById('viewerContainer');
+            break;
+
+          case AnnotationMode.SHOW:
+          case AnnotationMode.HIDE:
+            this._showCommentPanel(mode === AnnotationMode.SHOW);
             break;
         }
       });
   }
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
-  }
 
-  async ngOnInit() {
-    // const viewerContainer = document.querySelector(
-    //   '#viewerContainer'
-    // ) as HTMLElement;
-    // this.initAnnotationListener();
-  }
-
-  toggleAnnotations() {
-    this.showAnnotations = !this.showAnnotations;
-    if (this.showAnnotations) {
+  _showCommentPanel(yes) {
+    if (yes) {
+      console.log(' TOggle anno  ON ');
       this.elRef.nativeElement.style.display = 'block';
+      this.viewContainer.style.display = 'flex';
     } else {
+      console.log(' TOggle anno  OFF ');
       this.elRef.nativeElement.style.display = 'none';
+      this.viewContainer.style.display = 'block';
     }
   }
 

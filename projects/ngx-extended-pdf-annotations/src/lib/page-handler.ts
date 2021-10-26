@@ -1,9 +1,9 @@
 import { Subscription } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  AnnotationMark,
   AnnotationMode,
   AnnotationPath,
+  AnnotationPoint,
   AnnotationRecord,
   PageEventType as PageEventType,
 } from './classes';
@@ -11,7 +11,6 @@ import { AnnotationService } from './annotation.service';
 
 export class PageHandler {
   path: AnnotationPath = [];
-
   private ctx: CanvasRenderingContext2D;
   penSub: Subscription;
   isActive = false;
@@ -87,13 +86,13 @@ export class PageHandler {
     return retY;
   }
 
-  cursorToReal(e) {
+  cursorToReal(e: { offsetX; offsetY }) {
     let z = this.pageViewer.viewport.convertToPdfPoint(e.offsetX, e.offsetY);
 
     return { x: z[0], y: z[1] };
   }
 
-  realToCanvas(pos) {
+  realToCanvas(pos: AnnotationPoint) {
     let z = this.pageViewer.viewport.convertToViewportPoint(pos.x, pos.y);
     return {
       x: z[0] * this.pageViewer.outputScale.sx,
@@ -169,6 +168,8 @@ export class PageHandler {
   updateCanvas(pageViewer: any) {
     // Add the event listeners for mousedown, mousemove, and mouseup
 
+    console.log(' UPDATE CANVAS ');
+
     this.detachPen();
 
     if (this.annotationCanvas && this.annotationCanvas.parentNode) {
@@ -201,22 +202,51 @@ export class PageHandler {
     }
   }
 
-  draw(mark: AnnotationMark) {
-    const path = mark.path;
+  draw(record: AnnotationRecord, highlight) {
+    const path = record.mark.path;
 
-    this.ctx = this.annotationCanvas.getContext('2d');
-    this.ctx.beginPath();
+    const ctx = this.annotationCanvas.getContext('2d');
+    ctx.beginPath();
     const s = this.pageViewer.outputScale;
     for (const line of path) {
       const start = this.realToCanvas(line.pos1);
-      this.ctx.moveTo(start.x, start.y);
+      ctx.moveTo(start.x, start.y);
       const end = this.realToCanvas(line.pos2);
-      this.ctx.lineTo(end.x, end.y);
+      ctx.lineTo(end.x, end.y);
     }
-    this.ctx.closePath();
-    this.ctx.lineWidth = 6;
-    this.ctx.strokeStyle = 'red';
-    this.ctx.stroke();
+    ctx.closePath();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(255,0,0,0.7)';
+    ctx.stroke();
+
+    if (highlight) {
+      const x1 = record.mark.boundingBox.x1;
+      const y1 = record.mark.boundingBox.y1;
+
+      const c1 = this.realToCanvas({ x: x1, y: y1 });
+
+      const x2 = record.mark.boundingBox.x2;
+      const y2 = record.mark.boundingBox.y2;
+
+      const c2 = this.realToCanvas({ x: x2, y: y2 });
+      const w = Math.abs(c2.x - c1.x);
+      const h = Math.abs(c2.y - c1.y);
+
+      const x = Math.min(c2.x, c1.x);
+      const y = Math.min(c2.y, c1.y);
+
+      ctx.beginPath();
+      const HIGHLIGHT_BORDER = 12;
+      ctx.rect(
+        x - HIGHLIGHT_BORDER,
+        y - HIGHLIGHT_BORDER,
+        w + HIGHLIGHT_BORDER * 2,
+        h + HIGHLIGHT_BORDER * 2
+      );
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(0,0,255,0.5)';
+      ctx.stroke();
+    }
   }
 
   clear() {

@@ -15,7 +15,11 @@
 }
 
 .annotationControlPanel {
+  position: relative;
+  right: 0px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   height: 34px;
+  margin: 0px 10px;
 }

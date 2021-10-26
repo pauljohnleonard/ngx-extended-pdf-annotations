@@ -3,6 +3,7 @@
 .comment-top-meta-info {
   display: flex;
   width: 100%;
+  align-items: center;
 }
 
 .comment-name-and-date {
@@ -14,12 +15,16 @@
   width: 100%;
 }
 
-.comment-full-width-container {
+.comment-outer-container {
   background-color: $commentBackground;
   width: 400px;
   border: 1px solid $greyLight;
   border-radius: 10px;
   cursor: pointer;
+}
+
+.blue-border {
+  border: 2px solid blue;
 }
 
 .comment-inner-container {

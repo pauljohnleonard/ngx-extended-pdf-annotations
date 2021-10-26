@@ -18,9 +18,10 @@ import { AnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib
 
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
+import { DebugComponent } from './debug/debug.component';
 
 @NgModule({
-  declarations: [AppComponent, DemoComponent],
+  declarations: [AppComponent, DemoComponent, DebugComponent],
   imports: [
     BrowserModule,
     AnnotationsModule,

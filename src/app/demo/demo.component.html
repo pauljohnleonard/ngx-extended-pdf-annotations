@@ -11,22 +11,14 @@
   (pageRendered)="annotationsService.pageRendered($event)"
   (pdfLoaded)="annotationsService.pdfLoaded($event)"
   [customToolbar]="additionalButtons"
+  (currentZoomFactor)="annotationsService.zoomChange($event)"
 ></ngx-extended-pdf-viewer>
 
 <ng-template #additionalButtons>
-  <div id="toolbarViewer" class="toolbar">
+  <div id="myToolbarViewer" class="mytoolbar">
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
-    <div class="annotationControlPanel">
-      <mat-icon
-        [ngClass]="{
-          canpress: true,
-          iconButton: true
-        }"
-        (click)="toogleAnnotations()"
-        matTooltip="Show Annotation Tools"
-        >comments</mat-icon
-      >
 
+    <div class="annotationControlPanel">
       <ng-container *ngIf="annotationsService.isActive()">
         <mat-icon
           [ngClass]="{
@@ -39,6 +31,16 @@
           >gesture</mat-icon
         >
       </ng-container>
+
+      <mat-icon
+        [ngClass]="{
+          canpress: true,
+          iconButton: true
+        }"
+        (click)="toogleAnnotations()"
+        matTooltip="Show Annotation Tools"
+        >comments</mat-icon
+      >
     </div>
   </div>
 </ng-template>

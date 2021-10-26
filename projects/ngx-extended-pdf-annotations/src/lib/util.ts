@@ -1,21 +1,13 @@
-import {
-  AnnotationMark,
-  AnnotationMarkRender,
-  AnnotationMode,
-  AnnotationRecord,
-  AnnotationType,
-  BoundingBox,
-  PageEvent,
-} from './classes';
+import { AnnotationRecord, PageEvent } from './classes';
 
 export function setBoundingBoxOf(
   record: AnnotationRecord,
   event: PageEvent
 ): void {
-  let x1 = null,
-    y1 = null,
-    x2 = null,
-    y2 = null;
+  let x1 = Number.MAX_SAFE_INTEGER,
+    y1 = Number.MAX_SAFE_INTEGER,
+    x2 = Number.MIN_SAFE_INTEGER,
+    y2 = Number.MIN_SAFE_INTEGER;
 
   if (event.pos) {
     x1 = x2 = event.pos.x;
@@ -25,9 +17,18 @@ export function setBoundingBoxOf(
   if (event.path) {
     for (const l of event.path) {
       x1 = Math.min(l.pos1.x, x1);
-      x2 = Math.max(l.pos1.y, x1);
-      x1 = Math.min(l.pos2.y, x1);
-      x2 = Math.max(l.pos2.x, x1);
+      x2 = Math.max(l.pos2.x, x2);
+      y1 = Math.min(l.pos1.y, y1);
+      y2 = Math.max(l.pos2.y, y2);
+    }
+  }
+
+  if (record.mark) {
+    for (const l of record.mark.path) {
+      x1 = Math.min(l.pos1.x, x1);
+      x2 = Math.max(l.pos2.x, x2);
+      y1 = Math.min(l.pos1.y, y1);
+      y2 = Math.max(l.pos2.y, y2);
     }
   }
 
