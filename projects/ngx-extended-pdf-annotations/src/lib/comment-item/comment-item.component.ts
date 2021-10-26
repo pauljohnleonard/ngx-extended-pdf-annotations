@@ -20,16 +20,16 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   @Input() comment: UIPannelComment;
 
   isMobileScreen = false;
-  showNewMessagesBelowNotificationButton = false;
-
-  chatWindowTitleText = '';
+  FocusMode = FocusModeEnum;
   messageInputFC = new FormControl({ value: '', disabled: false });
-  replyingToMessage: UIPannelComment;
-  messageIdForWhichDeleteMenuIsOpen = '';
+
   windowHeightForMobile: number;
 
   replyToMessage;
-  focusMode: FocusModeEnum;
+  private focusmode = FocusModeEnum.CREATE;
+  editComment = true;
+  highlight = true;
+  expand = true;
 
   constructor(
     public date: DateUtilService,
@@ -37,8 +37,25 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     public annotationService: AnnotationService
   ) {}
 
-  setFocus(focusMode: FocusModeEnum) {
-    this.focusMode = focusMode;
+  // Set the mode of the item.
+  // Do not call directly. Let annotation manager do it.
+  setFocusMode(focusMode: FocusModeEnum) {
+    this.focusmode = focusMode;
+
+    console.log('FOCUS MODE', focusMode, this.comment);
+    switch (focusMode) {
+      case FocusModeEnum.CREATE:
+      case FocusModeEnum.FOCUS:
+      case FocusModeEnum.HIGHLIGHT_ON:
+        this.editComment = true;
+        this.highlight = true;
+        this.expand = true;
+        break;
+      default:
+        this.editComment = false;
+        this.highlight = false;
+        this.expand = false;
+    }
   }
 
   clicked() {
@@ -75,11 +92,11 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  initiateReplyToMessage(message: UIPannelComment) {
-    this.replyingToMessage = message;
-    // this.ifAlreadyScrolledToBottomDetectChangesAndScrollToBottomAgain();
-    this.messageInput.focus();
-  }
+  // initiateReplyToMessage(message: UIPannelComment) {
+  //   this.replyingToMessage = message;
+  //   // this.ifAlreadyScrolledToBottomDetectChangesAndScrollToBottomAgain();
+  //   this.messageInput.focus();
+  // }
 
   // cancelReplyingToMessage() {
   //   this.replyingToMessage = null;
@@ -140,12 +157,12 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   //   return uiMessage.replyToMessage?.fromUserId === this.boardmemberService.currentUser._id;
   // }
 
-  onDeleteMenuOpenedForMessageId(messageId: string) {
-    this.messageIdForWhichDeleteMenuIsOpen = messageId;
-  }
+  // onDeleteMenuOpenedForMessageId(messageId: string) {
+  //   this.messageIdForWhichDeleteMenuIsOpen = messageId;
+  // }
 
-  onDeleteMenuClosed() {
-    // setTimeout is used to avoid an "expression changed after checked" error
-    setTimeout(() => (this.messageIdForWhichDeleteMenuIsOpen = ''), 0);
-  }
+  // onDeleteMenuClosed() {
+  //   // setTimeout is used to avoid an "expression changed after checked" error
+  //   setTimeout(() => (this.messageIdForWhichDeleteMenuIsOpen = ''), 0);
+  // }
 }

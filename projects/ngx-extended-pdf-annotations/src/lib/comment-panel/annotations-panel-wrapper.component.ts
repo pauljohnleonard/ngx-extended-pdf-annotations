@@ -1,12 +1,6 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import {
-  PageEventType,
-  AnnotationMode,
-  AnnotationRecord,
-  PanelPositionHelper,
-  AnnotationPath,
-} from '../classes';
+import { PageEventType, AnnotationMode, AnnotationPath } from '../classes';
 
 import { AnnotationService } from '../annotation.service';
 
@@ -39,30 +33,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     throw new Error('Method not implemented.');
   }
 
-  // setVisible(yes) {
-  //   if (yes === this.isVisible) {
-  //     return;
-  //   }
-  //   if (yes) {
-  //     console.log(' VISIBLE ');
-  //     this.viewContainer.style.display = 'flex';
-  //     this.elRef.nativeElement.style.display = 'block';
-  //   } else {
-  //     console.log(' HIDE ');
-  //     this.elRef.nativeElement.style.display = 'none';
-  //   }
-  //   this.isVisible = yes;
-  // }
-
   async ngOnInit() {
-    const pannelPosHelper: PanelPositionHelper = {
-      getAnnotationPanelPos: (record: AnnotationRecord) => {
-        const page = this.annotationService.pages[record.mark.page];
-        return page.getAnnotationPanelPos(record);
-      },
-    };
-
-    this.annotationService.setPanelPositionHelper(pannelPosHelper);
     this.viewContainer = document.getElementById('viewerContainer');
     this.viewContainer.appendChild(this.elRef.nativeElement);
 
@@ -106,9 +77,8 @@ export class CommentComponent implements OnInit, OnDestroy {
   }
 
   onNgDestroy() {
-    for (const page of Object.keys(this.annotationService.pages)) {
-      this.annotationService.pages[page].destroy();
-    }
-    this.annotationService.destroy();
+    this.annotationService._destroy();
+
+    // this.annotationService.destroy();
   }
 }

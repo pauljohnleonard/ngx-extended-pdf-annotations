@@ -65,18 +65,16 @@ export type PanelPosition = {
   yPlot: number;
 };
 
-export interface PanelPositionHelper {
-  getAnnotationPanelPos(anno: AnnotationRecord);
-}
-
 export enum FocusModeEnum {
   CREATE = 'CREATE',
   FOCUS = 'FOCUS',
-  OFF = 'OFF',
+  CLOSED = 'CLOSED',
+  HIGHLIGHT_OFF = 'HIGHLIGHT_OFF',
+  HIGHLIGHT_ON = 'HIGHLIGHT_ON',
 }
 export interface UIPanelItemIterface {
   getHeight: () => number;
-  setFocus(focusMode: FocusModeEnum);
+  setFocusMode(focusMode: FocusModeEnum);
 }
 
 export class UIPannelComment {

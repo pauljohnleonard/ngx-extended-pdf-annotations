@@ -2,7 +2,7 @@
   [ngClass]="{
     'comment-outer-container': true,
     'mat-elevation-z8': true,
-    'blue-border': comment === annotationService.focusComment
+    'blue-border': highlight
   }"
   (click)="clicked()"
 >
@@ -17,30 +17,13 @@
         <div class="date">{{ date.formatDate(comment.record.createdAt) }}</div>
       </div>
       <span class="filler"></span>
-      <div
-        class="chat-message-buttons"
-        *ngIf="comment === annotationService.focusComment"
-      >
-        <!-- <button
-          mat-icon-button
-          class="reply-button"
-          aria-label="Reply"
-          matTooltip="Reply"
-          i18n-matTooltip="@@chat_reply"
-          *ngIf="!comment.isDeleted"
-          (click)="initiateReplyToMessage(comment)"
-        >
-          <mat-icon>reply</mat-icon>
-        </button> -->
-
+      <div class="chat-message-buttons" *ngIf="expand">
         <button
           mat-icon-button
           [matMenuTriggerFor]="deleteMessageMenu"
           class="delete-menu-button"
           [class.delete-menu-button-for-non-admin]="true"
           aria-label="Delete message menu"
-          (menuOpened)="onDeleteMenuOpenedForMessageId(comment.record.id)"
-          (menuClosed)="onDeleteMenuClosed()"
         >
           <mat-icon>more_vert</mat-icon>
         </button>
@@ -59,17 +42,11 @@
     </div>
 
     <div class="comment-body-container">
-      <div
-        *ngIf="comment !== annotationService.focusComment"
-        class="comment-body"
-      >
+      <div *ngIf="!editComment" class="comment-body">
         {{ comment.record.bodyValue }}
       </div>
 
-      <mat-form-field
-        *ngIf="comment === annotationService.focusComment"
-        class="comment-body-formfield"
-      >
+      <mat-form-field *ngIf="editComment" class="comment-body-formfield">
         <textarea
           matInput
           class="comment-window-textarea-message-input"
@@ -88,10 +65,7 @@
       </mat-form-field>
     </div>
 
-    <div
-      class="controls-container"
-      *ngIf="comment === annotationService.focusComment"
-    >
+    <div class="controls-container" *ngIf="editComment">
       <span class="filler"></span>
       <button
         mat-icon-button
@@ -114,27 +88,6 @@
       >
         <mat-icon>send</mat-icon>
       </button>
-    </div>
-
-    <div class="annotation-window-textbox-section">
-      <div
-        *ngIf="replyingToMessage"
-        class="is-replying-to-message-info-container"
-      >
-        <div class="is-replying-to-message-info">
-          <div class="is-replying-to-message-info-first-line-who-info">
-            <ng-container i18n="@@chat_you-are-replying-to"
-              >You are replying to</ng-container
-            >
-            <span class="is-replying-to-message-info-who-name">
-              The original creator.
-            </span>
-          </div>
-          <!-- <div class="is-replying-to-message-info-second-line-message">
-            {{ truncateMessage(replyingToMessage.mentionDecodedMessage) }}
-          </div> -->
-        </div>
-      </div>
     </div>
   </div>
 </div>

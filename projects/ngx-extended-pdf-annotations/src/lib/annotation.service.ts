@@ -6,9 +6,9 @@ import {
   AnnotationRecord,
   AnnotationType,
   AnnotationUser,
+  FocusModeEnum,
   PageEvent,
   PanelPosition,
-  PanelPositionHelper,
   UIPannelComment,
 } from './classes';
 import { PageHandler } from './page-handler';
@@ -18,35 +18,69 @@ import { setBoundingBoxOf } from './util';
   providedIn: 'root',
 })
 export class AnnotationService {
-  pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  comments: UIPannelComment[] = [];
-  annotationMap: { [id: string]: AnnotationRecord } = {};
-  public newRecord$ = new Subject<AnnotationRecord>();
-  panelPositionHelper: PanelPositionHelper;
-  sub: Subscription;
-  // mode = AnnotationMode.OFF;
-  public subject$ = new Subject<AnnotationMode>();
+  private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
+  _comments: UIPannelComment[] = [];
+  private annotationMap: { [id: string]: AnnotationRecord } = {};
 
-  user: AnnotationUser = { name: 'Guest', id: '1234' };
-  cnt = 0;
-  mode = AnnotationMode.OFF;
-  focusComment: UIPannelComment;
-  highlightComment: any;
+  private user: AnnotationUser = { name: 'Guest', id: '1234' };
+  private cnt = 0;
+  private sub: Subscription;
+  private focusComment: UIPannelComment = null;
+  private highlightComment: UIPannelComment = null;
+
+  private _mode = AnnotationMode.OFF;
+
+  public subject$ = new Subject<AnnotationMode>();
+  public newRecord$ = new Subject<AnnotationRecord>();
 
   constructor() {
     console.log(' PanelHelper INIT');
     this.initAnnotationListener();
   }
 
+  getMode() {
+    return this._mode;
+  }
+  // Interface to ngx-extended-pdf-viewer -----------------------------------------------------------------------------------------
+
+  pageRendered(evt) {
+    console.log(' PAGE RENDER  ', evt.pageNumber);
+    const page = evt.pageNumber;
+    if (!this.pages[page]) {
+      const pageHandler = new PageHandler(evt.source, page, this);
+      this.pages[page] = pageHandler;
+    } else {
+      this.pages[page].updateCanvas(evt.source);
+      setTimeout(() => this._redraw(page));
+    }
+  }
+
+  zoomChange(evt) {
+    console.log(' ZOOM CHANGE ');
+    setTimeout(() => {
+      this.rebuildCommentPostions();
+      this.sortComments();
+      setTimeout(() => this._redraw());
+    });
+  }
+
+  pdfLoaded(evt) {
+    this.subject$.next(AnnotationMode.READY);
+  }
+
+  pannelPosHelper(record: AnnotationRecord) {
+    const page = this.pages[record.mark.page];
+    return page.getAnnotationPanelPos(record);
+  }
+
+  // Public interface -----------------------------------------------------------------------------------------
+
   setUser(user: AnnotationUser) {
     this.user = user;
   }
-  isActive(): boolean {
-    return this.mode !== AnnotationMode.HIDE;
-  }
 
-  destroy() {
-    this.sub.unsubscribe();
+  isActive(): boolean {
+    return this._mode !== AnnotationMode.HIDE;
   }
 
   stopPenAnnoation() {
@@ -57,12 +91,8 @@ export class AnnotationService {
     this.setMode(AnnotationMode.PEN);
   }
 
-  pdfLoaded(evt) {
-    this.subject$.next(AnnotationMode.READY);
-  }
-
   toggleAnnotations() {
-    if (this.mode === AnnotationMode.HIDE) {
+    if (this._mode === AnnotationMode.HIDE) {
       this.setMode(AnnotationMode.SHOW);
     } else {
       this.setMode(AnnotationMode.HIDE);
@@ -83,33 +113,22 @@ export class AnnotationService {
   //   return this.mode === AnnotationMode.PEN;
   // }
 
-  getAnnotationPanelPos(anno: AnnotationRecord): PanelPosition {
-    if (!this.panelPositionHelper) {
-      throw new Error(
-        'AnnotationService: you must provide a PanelPositionHelper'
-      );
-    }
-
-    // TODO motive !== comment;
-    const y = this.panelPositionHelper.getAnnotationPanelPos(anno);
-
-    const pos: PanelPosition = { page: anno.mark.page, rank: 0, y, yPlot: y };
-    console.log('POS ', pos);
-    return pos;
-  }
-
-  setPanelPositionHelper(pannelPosHelper: PanelPositionHelper) {
-    this.panelPositionHelper = pannelPosHelper;
-  }
-
-  hadleHightlightChange() {
+  // Private and internal  after here -------------------------------------------------------------------------------------
+  private handleHightlightChange(newHighlight: UIPannelComment) {
     const oldHighlight: UIPannelComment = this.highlightComment;
-    const newHighlight =
-      this.focusComment && this.mode === AnnotationMode.OFF
-        ? this.focusComment
-        : null;
-    if (newHighlight !== this.highlightComment) {
+
+    if (!newHighlight || newHighlight !== this.highlightComment) {
+      if (this.highlightComment) {
+        this.highlightComment.component.setFocusMode(
+          FocusModeEnum.HIGHLIGHT_OFF
+        );
+      }
       this.highlightComment = newHighlight;
+      if (newHighlight) {
+        this.highlightComment.component.setFocusMode(
+          FocusModeEnum.HIGHLIGHT_ON
+        );
+      }
       this.sortComments();
     }
 
@@ -125,24 +144,37 @@ export class AnnotationService {
     });
   }
 
-  renderer(record: AnnotationRecord) {
+  private getAnnotationPanelPos(anno: AnnotationRecord): PanelPosition {
+    // if (!this.panelPositionHelper) {
+    //   throw new Error(
+    //     'AnnotationService: you must provide a PanelPositionHelper'
+    //   );
+    // }
+
+    // TODO motive !== comment;
+    const y = this.pannelPosHelper(anno);
+
+    const pos: PanelPosition = { page: anno.mark.page, rank: 0, y, yPlot: y };
+    console.log('POS ', pos);
+    return pos;
+  }
+
+  private renderer(record: AnnotationRecord) {
     if (!record.mark) return;
     const page = this.pages[record.mark.page];
 
     const highlight =
       this.highlightComment && record.id === this.highlightComment.record.id;
-    // this.mode === AnnotationMode.OFF &&
-    //   this.focusComment &&
-    //   record.id === this.focusComment.record.id;
 
+    console.log(this.highlightComment);
+    console.log(record);
     page.draw(record, highlight);
-    // console.log(' RENDER ', page);
   }
 
-  sortComments() {
+  private sortComments() {
     setTimeout(() => {
       let yPlot = -1;
-      this.comments.sort((a, b) => {
+      this._comments.sort((a, b) => {
         if (a.pos.page > b.pos.page) return 1;
         if (a.pos.page < b.pos.page) return -1;
 
@@ -153,7 +185,7 @@ export class AnnotationService {
         return 0;
       });
 
-      for (const comment of this.comments) {
+      for (const comment of this._comments) {
         if (comment.pos.y < 0) {
           comment.pos.yPlot = -1;
           continue;
@@ -169,13 +201,13 @@ export class AnnotationService {
   }
 
   // Do this if the zoom changes
-  rebuildCommentPostions() {
-    for (const c of this.comments) {
+  private rebuildCommentPostions() {
+    for (const c of this._comments) {
       c.pos = this.getAnnotationPanelPos(c.record);
     }
   }
 
-  async initAnnotationListener() {
+  private async initAnnotationListener() {
     // TODO destory
     this.sub = this.newRecord$.subscribe((record) => {
       const pos = this.getAnnotationPanelPos(record);
@@ -185,7 +217,7 @@ export class AnnotationService {
       };
 
       this.focusComment = comment;
-      this.comments.push(comment);
+      this._comments.push(comment);
 
       // give angluar time to add to dom.
       setTimeout(() => this.sortComments());
@@ -193,46 +225,44 @@ export class AnnotationService {
     });
   }
 
-  pageRendered(evt) {
-    console.log(' PAGE RENDER  ', evt.pageNumber);
-    const page = evt.pageNumber;
-    if (!this.pages[page]) {
-      const pageHandler = new PageHandler(evt.source, page, this);
-      this.pages[page] = pageHandler;
-    } else {
-      this.pages[page].updateCanvas(evt.source);
-      setTimeout(() => this._redraw(page));
-    }
-  }
-
-  setMode(mode: AnnotationMode) {
-    this.mode = mode;
-    if (this.mode === AnnotationMode.OFF || this.mode === AnnotationMode.HIDE) {
+  private setMode(mode: AnnotationMode) {
+    this._mode = mode;
+    if (
+      this._mode === AnnotationMode.OFF ||
+      this._mode === AnnotationMode.HIDE
+    ) {
+      if (this.focusComment) {
+        this.focusComment.component.setFocusMode(FocusModeEnum.CLOSED);
+      }
       this.focusComment = null;
     }
-    this.hadleHightlightChange();
+    this.handleHightlightChange(this.focusComment);
     this.subject$.next(mode);
   }
 
-  zoomChange(evt) {
-    console.log(' ZOOM CHANGE ');
-    setTimeout(() => {
-      this.rebuildCommentPostions();
-      this.sortComments();
-      setTimeout(() => this._redraw());
-    });
-  }
+  // Not for external use  ----------------------------------------------------------------------------------------------------------
 
+  // This is when a user selects an comment
   _focusOnComment(comment: UIPannelComment) {
     if (this.focusComment === comment) {
       return;
     }
+
     this.setMode(AnnotationMode.OFF);
+
+    if (this.focusComment) {
+      this.focusComment.component.setFocusMode(FocusModeEnum.CLOSED);
+    }
+
     this.focusComment = comment;
-    this.hadleHightlightChange();
+
+    if (this.focusComment) {
+      this.focusComment.component.setFocusMode(FocusModeEnum.FOCUS);
+    }
+
+    this.handleHightlightChange(comment);
   }
 
-  // Internal stuff
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
     let record: AnnotationRecord = this.annotationMap[id];
@@ -294,15 +324,21 @@ export class AnnotationService {
   // _layoutChange() {}
 
   _deleteComment(comment: UIPannelComment) {
-    if (this.mode !== AnnotationMode.HIDE) {
+    if (this._mode !== AnnotationMode.HIDE) {
       this.setMode(AnnotationMode.OFF);
     }
-    const ii = this.comments.findIndex((x) => x === comment);
-    this.comments.splice(ii, 1);
+    const ii = this._comments.findIndex((x) => x === comment);
+    this._comments.splice(ii, 1);
     this.sortComments();
     const id = comment.record.id;
     delete this.annotationMap[id];
     const page = comment.pos.page;
     this._redraw(page);
+  }
+
+  _destroy() {
+    for (const page of Object.keys(this.pages)) {
+      this.pages[page].destroy();
+    }
   }
 }

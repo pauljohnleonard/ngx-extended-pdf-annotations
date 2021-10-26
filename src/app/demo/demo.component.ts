@@ -26,7 +26,8 @@ export class DemoComponent implements AfterViewInit {
     this.annotationsService.subject$
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        this.highlightPen = this.annotationsService.mode === AnnotationMode.PEN;
+        this.highlightPen =
+          this.annotationsService.getMode() === AnnotationMode.PEN;
       });
 
     this.userControl.valueChanges.subscribe((name) => {
@@ -41,7 +42,7 @@ export class DemoComponent implements AfterViewInit {
   }
 
   penAnnotate() {
-    const on = this.annotationsService.mode === AnnotationMode.PEN;
+    const on = this.annotationsService.getMode() === AnnotationMode.PEN;
     if (!on) {
       this.annotationsService.startPenAnnoation();
     } else {
