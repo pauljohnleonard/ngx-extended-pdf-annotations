@@ -18,7 +18,7 @@
   <div id="myToolbarViewer" class="mytoolbar">
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
 
-    <div class="annotationControlPanel">
+    <div class="annotationControlPanel" id="toolbarViewerRight">
       <ng-container *ngIf="annotationsService.isActive()">
         <mat-icon
           [ngClass]="{
