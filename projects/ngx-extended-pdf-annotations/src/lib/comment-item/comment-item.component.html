@@ -66,6 +66,13 @@
     </div>
 
     <div class="controls-container" *ngIf="editComment">
+      <mat-checkbox
+        matTooltip="Only you can see private comments "
+        style="margin: 0 12px"
+      >
+      </mat-checkbox>
+      <span style="margin-left: 10px"> private </span>
+
       <span class="filler"></span>
       <button
         mat-icon-button
