@@ -18,7 +18,7 @@ export interface AnnotationEvent {
   styleUrls: ['./comment-panel.component.scss'],
 })
 export class CommentComponent implements OnInit, OnDestroy {
-  @Input('commentItem') commentItem;
+  @Input('commentItem') commentItemComponent;
 
   showAnnotationPanel = false;
 

@@ -1,25 +1,28 @@
 import { Injectable } from '@angular/core';
 
-import { AnnotationRecord } from 'projects/ngx-extended-pdf-annotations/src/public-api';
+import {
+  AnnotationRecord,
+  AnnotationStorage,
+} from 'projects/ngx-extended-pdf-annotations/src/public-api';
 
 @Injectable({
   providedIn: 'root',
 })
-export class LocalStoreService {
+export class LocalStoreService implements AnnotationStorage {
   db: IDBDatabase;
   store: IDBObjectStore;
 
   constructor() {
-    const request = indexedDB.open('annotations');
+    const request = indexedDB.open('DB');
 
     request.onupgradeneeded = () => {
       // The database did not previously exist, so create object stores and indexes.
       this.db = request.result;
-      this.store = this.db.createObjectStore('annotation', { keyPath: 'isbn' });
-      const titleIndex = this.store.createIndex('by_id', 'id', {
-        unique: true,
-      });
-      const authorIndex = this.store.createIndex('by_user', 'userId');
+      this.store = this.db.createObjectStore('annotation', { keyPath: 'id' });
+      // const idIndex = this.store.createIndex('by_id', 'id', {
+      //   unique: true,
+      // });
+      // const userIdIndex = this.store.createIndex('by_user', 'userId');
 
       // Populate with initial data.
       // store.put({ title: 'Quarry Memories', author: 'Fred', isbn: 123456 });
@@ -33,10 +36,12 @@ export class LocalStoreService {
   }
 
   addAnnotation(anno: AnnotationRecord) {
-    this.store.put(anno);
+    var transaction = this.db.transaction(['annotation'], 'readwrite');
+    var objectStore = transaction.objectStore('annotation');
+    objectStore.put(anno);
   }
 
-  updateAnnotation(anno) {}
+  updateAnnotation(anno: AnnotationRecord) {}
 
   deleteAnnotation(anno) {}
 }

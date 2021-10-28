@@ -6,6 +6,7 @@ import {
   AnnotationMessageEnum,
   AnnotationMode,
   AnnotationRecord,
+  AnnotationStorage,
   AnnotationType,
   AnnotationUser,
   FocusModeEnum,
@@ -33,13 +34,25 @@ export class AnnotationService {
   _comments: UIPannelComment[] = [];
   public modeSubject$ = new Subject<AnnotationMode>();
   public newRecord$ = new Subject<AnnotationRecord>();
-  public subject$ = new Subject<AnnotationMessage>();
+  storage: AnnotationStorage = {
+    addAnnotation: (anno: AnnotationRecord) => {
+      console.log(' NO STORAGE SET');
+    },
+    updateAnnotation: (anno: AnnotationRecord) => {
+      console.log(' NO STORAGE SET');
+    },
+  };
+  isPrivate: true;
+  // public subject$ = new Subject<AnnotationMessage>();
 
   constructor() {
     console.log(' PanelHelper INIT');
     this.initAnnotationListener();
   }
 
+  setStorage(storage: AnnotationStorage) {
+    this.storage = storage;
+  }
   getMode() {
     return this._mode;
   }
@@ -101,11 +114,16 @@ export class AnnotationService {
     }
   }
 
-  _commitComment(comment: UIPannelComment) {
-    this.subject$.next({
-      type: AnnotationMessageEnum.CREATE,
-      record: comment.record,
-    });
+  private _commitComment(comment: UIPannelComment) {
+    // this.subject$.next({
+    //   type: AnnotationMessageEnum.CREATE,
+    //   record: comment.record,
+    // });
+    if (this.storage) {
+      this.storage.addAnnotation(comment.record);
+    }
+    comment.dirty = false;
+    comment.saved = true;
   }
 
   // get penIsOn() {
@@ -113,6 +131,18 @@ export class AnnotationService {
   // }
 
   // Private and internal  after here -------------------------------------------------------------------------------------
+
+  handleItemFocusOff(comment: UIPannelComment) {
+    if (!comment.saved) {
+      this.storage.addAnnotation(comment.record);
+      comment.saved = true;
+      comment.dirty = false;
+    } else if (comment.dirty) {
+      this.storage.updateAnnotation(comment.record);
+      comment.dirty = false;
+    }
+  }
+
   private handleHightlightChange(newHighlight: UIPannelComment) {
     const oldHighlight: UIPannelComment = this.highlightComment;
 
@@ -211,6 +241,8 @@ export class AnnotationService {
     this.sub = this.newRecord$.subscribe((record) => {
       const pos = this.getAnnotationPanelPos(record);
       const comment: UIPannelComment = {
+        saved: false,
+        dirty: true,
         pos,
         record,
       };
@@ -220,7 +252,6 @@ export class AnnotationService {
 
       // give angluar time to add to dom.
       setTimeout(() => this.sortComments());
-      // console.log(' New comment', JSON.stringify(comment, null, 2));
     });
   }
 
@@ -279,16 +310,16 @@ export class AnnotationService {
         type,
       };
 
-      record = Object.assign(
-        {
-          id: event.id,
-          bodyValue: 'My Comment ' + this.cnt++,
-          mark,
-          motivation: 'comment',
-          createdAt: new Date().toISOString(),
-        } as any,
-        this.user
-      );
+      record = {
+        id: event.id,
+        bodyValue: 'My Comment ' + this.cnt++,
+        mark,
+        motivation: 'comment',
+        createdAt: new Date().toISOString(),
+        isPrivate: this.isPrivate,
+        userName: this.user.userName,
+        userId: this.user.userId,
+      };
 
       setBoundingBoxOf(record, event);
       this._addNewRecord(record);

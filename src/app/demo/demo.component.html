@@ -22,6 +22,14 @@
 
     <div class="annotationControlPanel" id="toolbarViewerRight">
       <ng-container *ngIf="annotationsService.isActive()">
+        <mat-checkbox
+          matTooltip="Only you can see private comments "
+          style="margin: 0 12px"
+          [(ngModel)]="annotationsService.isPrivate"
+        >
+        </mat-checkbox>
+        <span style="margin-left: 10px"> private </span>
+
         <mat-icon
           [ngClass]="{
             canpress: true,

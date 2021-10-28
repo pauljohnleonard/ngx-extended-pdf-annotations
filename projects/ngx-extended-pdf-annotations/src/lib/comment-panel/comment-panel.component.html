@@ -2,7 +2,10 @@
   <div *ngFor="let comment of annotationService._comments">
     <div class="comment" [style.top]="comment.pos.yPlot + 'px'">
       <ng-container
-        *ngTemplateOutlet="commentItem; context: { comment: this.comment }"
+        *ngTemplateOutlet="
+          commentItemComponent;
+          context: { comment: this.comment }
+        "
       ></ng-container>
     </div>
   </div>

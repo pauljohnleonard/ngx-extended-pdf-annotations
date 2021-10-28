@@ -55,6 +55,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         this.editComment = false;
         this.highlight = false;
         this.expand = false;
+        this.annotationService.handleItemFocusOff(this.comment);
     }
   }
 
@@ -125,7 +126,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
       if (!doAddNewlineInsteadOfSendingMessage) {
         event.preventDefault(); // Prevent adding a newline
-        this.comnmitComment();
+        // this.comnmitComment();
       }
     }
   }
@@ -134,10 +135,10 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.messageInputFC.setValue('');
   }
 
-  async comnmitComment() {
-    console.log('Commmit comment');
-    this.annotationService._commitComment(this.comment);
-  }
+  // async comnmitComment() {
+  //   console.log('Commmit comment');
+  //   this.annotationService._commitComment(this.comment);
+  // }
 
   // loadEarlierMessages() {
   //   this.chatService.loadEarlierMessages();

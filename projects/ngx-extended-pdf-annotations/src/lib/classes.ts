@@ -52,6 +52,7 @@ export interface AnnotationRecord extends AnnotationUser {
   mark?: AnnotationMark;
   createdAt: string;
   modifiedAt?: string;
+  isPrivate: boolean;
 }
 //
 
@@ -78,6 +79,8 @@ export interface UIPanelItemIterface {
 
 export class UIPannelComment {
   isDeleted?: boolean;
+  saved: boolean;
+  dirty: boolean;
   pos: PanelPosition;
   record: AnnotationRecord;
   // editing: boolean;
@@ -93,4 +96,9 @@ export class AnnotationMessage {
   type: AnnotationMessageEnum;
   record?: AnnotationRecord;
   id?: string;
+}
+
+export interface AnnotationStorage {
+  updateAnnotation(record: AnnotationRecord);
+  addAnnotation(record: AnnotationRecord);
 }

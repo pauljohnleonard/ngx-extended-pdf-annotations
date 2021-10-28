@@ -6,6 +6,7 @@ import {
   AnnotationMode,
   AnnotationService,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
+import { LocalStoreService } from '../local-store.service';
 
 @UntilDestroy()
 @Component({
@@ -16,7 +17,9 @@ import {
 export class DemoComponent implements AfterViewInit {
   highlightPen = false;
 
-  constructor(public annotationsService: AnnotationService) {}
+  constructor(public annotationsService: AnnotationService) {
+    this.annotationsService.setStorage(new LocalStoreService());
+  }
 
   ngAfterViewInit(): void {
     this.annotationsService.modeSubject$
