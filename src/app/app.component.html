@@ -1,3 +1,13 @@
-<app-demo> </app-demo>
+<form *ngIf="!user">
+  <mat-form-field>
+    <mat-select [formControl]="userControl" name="User">
+      <mat-option *ngFor="let user of users" [value]="user">
+        {{ user }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</form>
+
+<app-demo *ngIf="user"> </app-demo>
 
 <!-- <app-debug style="position: fixed; top: 40px; right: 10px"></app-debug> -->

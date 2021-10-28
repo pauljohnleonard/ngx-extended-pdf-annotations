@@ -28,7 +28,7 @@ export type PageEvent = {
   pos?: AnnotationPoint;
 };
 
-export type AnnotationUser = { name: string; id: string };
+export type AnnotationUser = { userName: string; userId: string };
 
 // This is what is drawn on the pdf.
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
@@ -43,17 +43,16 @@ export type AnnotationMark = {
 };
 
 // This is the complete record we need to store.
-export type AnnotationRecord = {
+export interface AnnotationRecord extends AnnotationUser {
   //   type: string;
   id: string;
   bodyValue: string;
   motivation: 'comment' | 'reply';
   parentId?: string;
   mark?: AnnotationMark;
-  creator: AnnotationUser;
   createdAt: string;
   modifiedAt?: string;
-};
+}
 //
 
 export type AnnotationMarkRender = (record: AnnotationRecord) => void;
@@ -83,4 +82,15 @@ export class UIPannelComment {
   record: AnnotationRecord;
   // editing: boolean;
   component?: UIPanelItemIterface;
+}
+
+export enum AnnotationMessageEnum {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+}
+export class AnnotationMessage {
+  type: AnnotationMessageEnum;
+  record?: AnnotationRecord;
+  id?: string;
 }

@@ -38,12 +38,12 @@ export class CommentComponent implements OnInit, OnDestroy {
     this.viewContainer.appendChild(this.elRef.nativeElement);
 
     this._showCommentPanel(true);
-    this.annotationService.subject$
+    this.annotationService.modeSubject$
       .pipe(untilDestroyed(this))
       .subscribe((mode) => {
         switch (mode) {
           case AnnotationMode.OFF:
-            console.log(' STOP annotation ');
+            console.log(' SmodeSubject$tation ');
             this.elRef.nativeElement.style.cursor = 'cursor';
             break;
 

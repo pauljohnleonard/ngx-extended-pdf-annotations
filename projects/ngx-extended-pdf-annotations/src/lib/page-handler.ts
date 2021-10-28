@@ -30,7 +30,7 @@ export class PageHandler {
 
     this.updateCanvas(pageViewer);
 
-    this.penSub = this.annotationService.subject$.subscribe((mode) => {
+    this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
       switch (mode) {
         case AnnotationMode.PEN:
           this.startAnnotation();

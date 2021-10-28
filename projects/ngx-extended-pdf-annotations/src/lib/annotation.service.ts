@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import {
   AnnotationMark,
+  AnnotationMessage,
+  AnnotationMessageEnum,
   AnnotationMode,
   AnnotationRecord,
   AnnotationType,
@@ -11,6 +13,7 @@ import {
   PanelPosition,
   UIPannelComment,
 } from './classes';
+
 import { PageHandler } from './page-handler';
 import { setBoundingBoxOf } from './util';
 
@@ -19,19 +22,18 @@ import { setBoundingBoxOf } from './util';
 })
 export class AnnotationService {
   private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  _comments: UIPannelComment[] = [];
-  private annotationMap: { [id: string]: AnnotationRecord } = {};
 
-  private user: AnnotationUser = { name: 'Guest', id: '1234' };
+  private annotationMap: { [id: string]: AnnotationRecord } = {};
+  private user: AnnotationUser = { userName: 'Guest', userId: '1234' };
   private cnt = 0;
   private sub: Subscription;
   private focusComment: UIPannelComment = null;
   private highlightComment: UIPannelComment = null;
-
   private _mode = AnnotationMode.OFF;
-
-  public subject$ = new Subject<AnnotationMode>();
+  _comments: UIPannelComment[] = [];
+  public modeSubject$ = new Subject<AnnotationMode>();
   public newRecord$ = new Subject<AnnotationRecord>();
+  public subject$ = new Subject<AnnotationMessage>();
 
   constructor() {
     console.log(' PanelHelper INIT');
@@ -65,7 +67,7 @@ export class AnnotationService {
   }
 
   pdfLoaded(evt) {
-    this.subject$.next(AnnotationMode.READY);
+    this.modeSubject$.next(AnnotationMode.READY);
   }
 
   pannelPosHelper(record: AnnotationRecord) {
@@ -99,15 +101,12 @@ export class AnnotationService {
     }
   }
 
-  // delete annotations
-  // if no argument delete all.
-  deleteAnnotations(arg?: { annotationIds: string[] }) {}
-
-  // update the given annotation
-  updateAnnotation(data: AnnotationRecord) {}
-
-  // add new annoations.
-  addAnnotations(arg: AnnotationRecord[]) {}
+  _commitComment(comment: UIPannelComment) {
+    this.subject$.next({
+      type: AnnotationMessageEnum.CREATE,
+      record: comment.record,
+    });
+  }
 
   // get penIsOn() {
   //   return this.mode === AnnotationMode.PEN;
@@ -166,8 +165,8 @@ export class AnnotationService {
     const highlight =
       this.highlightComment && record.id === this.highlightComment.record.id;
 
-    console.log(this.highlightComment);
-    console.log(record);
+    // console.log(this.highlightComment);
+    // console.log(record);
     page.draw(record, highlight);
   }
 
@@ -237,7 +236,7 @@ export class AnnotationService {
       this.focusComment = null;
     }
     this.handleHightlightChange(this.focusComment);
-    this.subject$.next(mode);
+    this.modeSubject$.next(mode);
   }
 
   // Not for external use  ----------------------------------------------------------------------------------------------------------
@@ -280,14 +279,17 @@ export class AnnotationService {
         type,
       };
 
-      record = {
-        id: event.id,
-        bodyValue: 'My Comment ' + this.cnt++,
-        mark,
-        motivation: 'comment',
-        creator: this.user,
-        createdAt: new Date().toISOString(),
-      };
+      record = Object.assign(
+        {
+          id: event.id,
+          bodyValue: 'My Comment ' + this.cnt++,
+          mark,
+          motivation: 'comment',
+          createdAt: new Date().toISOString(),
+        } as any,
+        this.user
+      );
+
       setBoundingBoxOf(record, event);
       this._addNewRecord(record);
     } else {
