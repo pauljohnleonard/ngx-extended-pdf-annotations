@@ -3,6 +3,7 @@ import { AfterViewInit, Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
+  AnnotationControlEventType,
   AnnotationMode,
   AnnotationService,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
@@ -31,15 +32,16 @@ export class DemoComponent implements AfterViewInit {
   }
 
   toogleAnnotations() {
-    this.annotationsService.toggleAnnotations();
+    this.annotationsService.handleControlEvent({
+      type: AnnotationControlEventType.TOGGLE,
+    });
   }
 
   penAnnotate() {
-    const on = this.annotationsService.getMode() === AnnotationMode.PEN;
-    if (!on) {
-      this.annotationsService.startPenAnnoation();
-    } else {
-      this.annotationsService.stopPenAnnoation();
-    }
+    const val = this.annotationsService.getMode() !== AnnotationMode.PEN;
+    this.annotationsService.handleControlEvent({
+      type: AnnotationControlEventType.PEN,
+      val,
+    });
   }
 }

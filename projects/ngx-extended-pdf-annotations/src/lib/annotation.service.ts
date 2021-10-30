@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import {
+  AnnotationControlEvent,
+  AnnotationControlEventType,
   AnnotationItemType,
   AnnotationMark,
   AnnotationMode,
@@ -22,28 +24,44 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class AnnotationService {
   private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-
   private annotationMap: { [id: string]: AnnotationRecord } = {};
   private _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
-  private cnt = 0;
-  private sub: Subscription;
   private focusComment: UIPannelComment = null;
   private highlightComment: UIPannelComment = null;
   private _mode = AnnotationMode.OFF;
+
   _comments: UIPannelComment[] = [];
+
   public modeSubject$ = new Subject<AnnotationMode>();
-  public newRecord$ = new Subject<AnnotationRecord>();
+
   storage: AnnotationStorage = {
     saveAnnotation: (anno: AnnotationRecord) => {
       console.log(' NO STORAGE SET');
     },
   };
+
   isPrivate: true;
   // public subject$ = new Subject<AnnotationMessage>();
 
-  constructor() {
-    // console.log(' PanelHelper INIT');
-    this.initAnnotationListener();
+  constructor() {}
+
+  handleControlEvent(evt: AnnotationControlEvent) {
+    switch (evt.type) {
+      case AnnotationControlEventType.TOGGLE:
+        if (this._mode === AnnotationMode.HIDE) {
+          this.setMode(AnnotationMode.SHOW);
+        } else {
+          this.setMode(AnnotationMode.HIDE);
+        }
+        break;
+      case AnnotationControlEventType.PEN:
+        if (!evt.val) {
+          this.setMode(AnnotationMode.OFF);
+        } else {
+          this.setMode(AnnotationMode.PEN);
+        }
+        break;
+    }
   }
 
   setStorage(storage: AnnotationStorage) {
@@ -83,7 +101,7 @@ export class AnnotationService {
     this.modeSubject$.next(AnnotationMode.READY);
   }
 
-  pannelPosHelper(record: AnnotationRecord) {
+  private pannelPosHelper(record: AnnotationRecord) {
     const page = this.pages[record.mark.page];
     return page.getAnnotationPanelPos(record);
   }
@@ -96,22 +114,6 @@ export class AnnotationService {
 
   isActive(): boolean {
     return this._mode !== AnnotationMode.HIDE;
-  }
-
-  stopPenAnnoation() {
-    this.setMode(AnnotationMode.OFF);
-  }
-
-  startPenAnnoation() {
-    this.setMode(AnnotationMode.PEN);
-  }
-
-  toggleAnnotations() {
-    if (this._mode === AnnotationMode.HIDE) {
-      this.setMode(AnnotationMode.SHOW);
-    } else {
-      this.setMode(AnnotationMode.HIDE);
-    }
   }
 
   // Private and internal  after here -------------------------------------------------------------------------------------
@@ -223,23 +225,6 @@ export class AnnotationService {
     }
   }
 
-  private async initAnnotationListener() {
-    // TODO destory
-    this.sub = this.newRecord$.subscribe((record) => {
-      const pos = this.getAnnotationPanelPos(record);
-      const comment: UIPannelComment = {
-        pos,
-        records: [record],
-      };
-
-      this.focusComment = comment;
-      this._comments.push(comment);
-
-      // give angluar time to add to dom.
-      setTimeout(() => this.sortComments());
-    });
-  }
-
   private setMode(mode: AnnotationMode) {
     this._mode = mode;
     if (
@@ -260,6 +245,7 @@ export class AnnotationService {
   // This is when a user selects an comment
   _focusOnComment(comment: UIPannelComment) {
     if (this.focusComment === comment) {
+      this.modeSubject$.next(AnnotationMode.OFF);
       return;
     }
 
@@ -338,7 +324,19 @@ export class AnnotationService {
   _addNewRecord(record: AnnotationRecord): boolean {
     if (this.annotationMap[record.id]) return false;
     this.annotationMap[record.id] = record;
-    this.newRecord$.next(record);
+
+    const pos = this.getAnnotationPanelPos(record);
+    const comment: UIPannelComment = {
+      pos,
+      records: [record],
+    };
+
+    this.focusComment = comment;
+    this._comments.push(comment);
+
+    // give angluar time to add to dom.
+    setTimeout(() => this.sortComments());
+
     return true;
   }
 

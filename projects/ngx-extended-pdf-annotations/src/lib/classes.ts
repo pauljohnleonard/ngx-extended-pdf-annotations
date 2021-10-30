@@ -8,6 +8,16 @@ export enum AnnotationMode {
   SHOW = 'SHOW',
 }
 
+export enum AnnotationControlEventType {
+  TOGGLE = 'TOOGLE',
+  PEN = 'PEN',
+}
+
+export class AnnotationControlEvent {
+  type: AnnotationControlEventType;
+  val?: any;
+}
+
 export enum PageEventType {
   START = 'START',
   PEN_UP = 'PEN_UP',
