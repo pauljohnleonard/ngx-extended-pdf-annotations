@@ -66,11 +66,11 @@ export class CommentComponent implements OnInit, OnDestroy {
 
   _showCommentPanel(yes) {
     if (yes) {
-      console.log(' TOggle anno  ON ');
+      // console.log(' TOggle anno  ON ');
       this.elRef.nativeElement.style.display = 'block';
       this.viewContainer.style.display = 'flex';
     } else {
-      console.log(' TOggle anno  OFF ');
+      // console.log(' TOggle anno  OFF ');
       this.elRef.nativeElement.style.display = 'none';
       this.viewContainer.style.display = 'block';
     }

@@ -1,19 +1,42 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { TOUCH_BUFFER_MS } from '@angular/cdk/a11y/input-modality/input-modality-detector';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { AnnotationService } from '../annotation.service';
 import {
+  AnnotationBase,
+  AnnotationItemType,
+  AnnotationRecord,
+  AnnotationReply,
   FocusModeEnum,
   UIPanelItemIterface,
   UIPannelComment,
 } from '../classes';
+import { v4 as uuidv4 } from 'uuid';
 
 import { DateUtilService } from '../date-util.service';
+
+enum TextItemType {
+  COMMENT = 'COMMENT',
+  REPLY = 'REPLY',
+}
+class TextItem {
+  bodyText: string;
+  type: TextItemType;
+}
 
 @Component({
   selector: 'ngx-extended-pdf-comment-item',
   templateUrl: './comment-item.component.html',
   styleUrls: ['./comment-item.component.scss'],
+  // encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   @ViewChild(MatInput) messageInput: MatInput;
@@ -21,15 +44,14 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
   isMobileScreen = false;
   FocusMode = FocusModeEnum;
-  messageInputFC = new FormControl({ value: '', disabled: false });
-
+  AnnotationItemType = AnnotationItemType;
+  inputFormControl = new FormControl({ value: '', disabled: false });
+  inputRecord: AnnotationBase;
   windowHeightForMobile: number;
-
-  replyToMessage;
   private focusmode = FocusModeEnum.CREATE;
-  editComment = true;
-  highlight = true;
-  expand = true;
+
+  hasFocus = true;
+  cnt = 0;
 
   constructor(
     public date: DateUtilService,
@@ -37,24 +59,59 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     public annotationService: AnnotationService
   ) {}
 
+  handleFocusOn() {
+    console.log(' handleFocusOn ');
+
+    if (this.hasFocus) {
+      return;
+    }
+    const lastItem = this.comment.records[this.comment.records.length - 1];
+    if (lastItem.dirty || !lastItem.saved) {
+      this.inputRecord = lastItem;
+    } else {
+      let record: AnnotationReply = {
+        type: AnnotationItemType.REPLY,
+        dirty: false,
+        saved: false,
+        id: uuidv4(),
+        parentId: this.comment.records[0].id,
+        bodyValue: '',
+        createdAt: new Date().toISOString(),
+        userName: this.annotationService.getUser().userName,
+        userId: this.annotationService.getUser().userId,
+      };
+      this.comment.records.push(record);
+      this.inputRecord = record;
+      this.inputFormControl.setValue('');
+    }
+    this.hasFocus = true;
+  }
+
+  handleFocusOff() {
+    const lastItem = this.comment.records[this.comment.records.length - 1];
+    if (lastItem.type === AnnotationItemType.REPLY) {
+      if (!lastItem.saved && (!lastItem.dirty || !lastItem.bodyValue)) {
+        this.comment.records.pop();
+      }
+    }
+    this.hasFocus = false;
+    this.inputRecord = null;
+  }
+  // This is responisble for setting the state of annotation when we gain focus
+
   // Set the mode of the item.
   // Do not call directly. Let annotation manager do it.
   setFocusMode(focusMode: FocusModeEnum) {
     this.focusmode = focusMode;
-
     console.log('FOCUS MODE', focusMode, this.comment);
     switch (focusMode) {
       case FocusModeEnum.CREATE:
       case FocusModeEnum.FOCUS:
       case FocusModeEnum.HIGHLIGHT_ON:
-        this.editComment = true;
-        this.highlight = true;
-        this.expand = true;
+        this.handleFocusOn();
         break;
       default:
-        this.editComment = false;
-        this.highlight = false;
-        this.expand = false;
+        this.handleFocusOff();
         this.annotationService.handleItemFocusOff(this.comment);
     }
   }
@@ -68,9 +125,15 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     console.log(this.comment);
     this.comment.component = this;
 
-    this.messageInputFC.valueChanges.subscribe((val) => {
-      this.comment.record.bodyValue = val;
+    this.inputFormControl.valueChanges.subscribe((val) => {
+      this.inputRecord.bodyValue = val;
+      this.inputRecord.dirty = true;
     });
+
+    if (!this.comment.records[0].saved) {
+      this.setFocusMode(FocusModeEnum.CREATE);
+      this.inputRecord = this.comment.records[0];
+    }
   }
 
   getHeight(): number {
@@ -93,79 +156,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  // initiateReplyToMessage(message: UIPannelComment) {
-  //   this.replyingToMessage = message;
-  //   // this.ifAlreadyScrolledToBottomDetectChangesAndScrollToBottomAgain();
-  //   this.messageInput.focus();
-  // }
-
-  // cancelReplyingToMessage() {
-  //   this.replyingToMessage = null;
-  // }
-
-  onKeydownInput(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      const isShiftDown = event.shiftKey;
-      const doAddNewlineInsteadOfSendingMessage =
-        isShiftDown || this.isMobileScreen;
-
-      // [mention] directive has opened and closed events, but the closed event is unreliable.
-      // It doesn't trigger when the mention list is closed by "typing out" of the mentions, as in
-      // typing something that is not a mention label after opening it.
-      // Therefore this more low-level approach to find out if the mentions list is open or not.
-      const mentionDropdownElement = document.querySelector(
-        'ul.mention-dropdown'
-      );
-      const isMentionDropdownOpen =
-        mentionDropdownElement &&
-        !mentionDropdownElement.hasAttribute('hidden');
-      if (isMentionDropdownOpen) {
-        event.preventDefault();
-        return;
-      }
-
-      if (!doAddNewlineInsteadOfSendingMessage) {
-        event.preventDefault(); // Prevent adding a newline
-        // this.comnmitComment();
-      }
-    }
-  }
-
   clearMessage() {
-    this.messageInputFC.setValue('');
+    this.inputFormControl.setValue('');
   }
-
-  // async comnmitComment() {
-  //   console.log('Commmit comment');
-  //   this.annotationService._commitComment(this.comment);
-  // }
-
-  // loadEarlierMessages() {
-  //   this.chatService.loadEarlierMessages();
-  // }
-
-  isProcessingMessage(chatMessage) {
-    return false;
-  }
-
-  isSentByCurrentUser(uiMessage: UIPannelComment) {
-    return true;
-  }
-
-  isReplyToCurrentUser(uiMessage: UIPannelComment) {
-    return true;
-  }
-
-  // isReplyToCurrentUser(uiMessage: UIChatMessage) {
-  //   return uiMessage.replyToMessage?.fromUserId === this.boardmemberService.currentUser._id;
-  // }
-
-  // onDeleteMenuOpenedForMessageId(messageId: string) {
-  //   this.messageIdForWhichDeleteMenuIsOpen = messageId;
-  // }
-
-  // onDeleteMenuClosed() {
-  //   // setTimeout is used to avoid an "expression changed after checked" error
-  //   setTimeout(() => (this.messageIdForWhichDeleteMenuIsOpen = ''), 0);
-  // }
 }

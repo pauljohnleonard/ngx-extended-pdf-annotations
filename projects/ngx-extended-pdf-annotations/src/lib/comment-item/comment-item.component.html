@@ -2,70 +2,88 @@
   [ngClass]="{
     'comment-outer-container': true,
     'mat-elevation-z8': true,
-    'blue-border': highlight
+    'blue-border': hasFocus
   }"
   (click)="clicked()"
 >
   <div class="comment-inner-container">
-    <div class="comment-top-meta-info">
-      <mat-icon style="margin-right: 10px; color: rgb(49, 49, 245)"
-        >gesture</mat-icon
-      >
+    <ng-container
+      *ngFor="let item of comment.records; first as isFirst; last as isLast"
+    >
+      <ng-container *ngIf="isFirst || hasFocus">
+        <div class="comment-top-meta-info">
+          <span style="width: 20px"></span>
+          <div class="comment-name-and-date">
+            <div class="name">{{ item.userName }}</div>
+            <div class="date">
+              {{ date.formatDate(item.createdAt) }}
+            </div>
+          </div>
+          <span class="filler"></span>
 
-      <div class="comment-name-and-date">
-        <div class="name">{{ comment.record.userName }}</div>
-        <div class="date">{{ date.formatDate(comment.record.createdAt) }}</div>
-      </div>
-      <span class="filler"></span>
-      <div class="chat-message-buttons" *ngIf="expand">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="deleteMessageMenu"
-          class="delete-menu-button"
-          [class.delete-menu-button-for-non-admin]="true"
-          aria-label="Delete message menu"
-        >
-          <mat-icon>more_vert</mat-icon>
-        </button>
-
-        <mat-menu #deleteMessageMenu="matMenu">
-          <button
-            mat-menu-item
-            (click)="annotationService._deleteComment(comment)"
-            aria-label="Delete message"
+          <mat-icon
+            *ngIf="item.type === AnnotationItemType.COMMENT"
+            style="margin-right: 10px; color: rgb(49, 49, 245)"
+            >gesture</mat-icon
           >
-            <mat-icon>delete</mat-icon>
-            <span i18n="@@chat_delete-message">Delete message</span>
-          </button>
-        </mat-menu>
-      </div>
-    </div>
+          <div class="chat-message-buttons" *ngIf="hasFocus">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="deleteMessageMenu"
+              class="delete-menu-button"
+              [class.delete-menu-button-for-non-admin]="true"
+              aria-label="Delete message menu"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
 
-    <div class="comment-body-container">
-      <div *ngIf="!editComment" class="comment-body">
-        {{ comment.record.bodyValue }}
-      </div>
+            <mat-menu #deleteMessageMenu="matMenu">
+              <button
+                mat-menu-item
+                (click)="annotationService._deleteComment(comment)"
+                aria-label="Delete message"
+              >
+                <mat-icon>delete</mat-icon>
+                <span i18n="@@chat_delete-message">Delete message</span>
+              </button>
+            </mat-menu>
+          </div>
+        </div>
 
-      <mat-form-field *ngIf="editComment" class="comment-body-formfield">
-        <textarea
-          matInput
-          class="comment-window-textarea-message-input"
-          i18n-placeholder="@@YourCommentPlaceHolder"
-          placeholder="Comment"
-          i18n-placeholder="@@chat_your-message"
-          (keydown)="onKeydownInput($event)"
-          [formControl]="messageInputFC"
-          autocomplete="off"
-          cdkTextareaAutosize
-          cdkAutosizeMinRows="1"
-          cdkAutosizeMaxRows="5"
-          #messageinput
+        <div class="comment-body-container">
+          <div *ngIf="item !== inputRecord" class="comment-body">
+            {{ item.bodyValue }}
+          </div>
+        </div>
+        <!-- {{ item.id }} {{ inputRecord.id }} -->
+        <mat-form-field
+          *ngIf="item === inputRecord"
+          class="comment-body-formfield"
+          appearance="outline"
         >
-        </textarea>
-      </mat-form-field>
-    </div>
-
-    <div class="controls-container" *ngIf="editComment">
+          <textarea
+            matInput
+            class="comment-window-textarea-message-input"
+            i18n-placeholder="@@YourCommentPlaceHolder"
+            [placeholder]="
+              item.type === AnnotationItemType.COMMENT ? 'Comment' : 'Reply'
+            "
+            [formControl]="inputFormControl"
+            autocomplete="off"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+            cdkAutosizeMaxRows="5"
+            #messageinput
+          >
+          </textarea>
+        </mat-form-field>
+        <div
+          *ngIf="!isLast"
+          style="width: 100%; background-color: grey; height: 1px"
+        ></div>
+      </ng-container>
+    </ng-container>
+    <!-- <div class="controls-container" *ngIf="hasFocus">
       <span class="filler"></span>
       <button
         mat-icon-button
@@ -78,7 +96,7 @@
         <mat-icon>clear</mat-icon>
       </button>
 
-      <!-- <button
+      <button
         mat-icon-button
         matSuffix
         (click)="comnmitComment()"
@@ -87,7 +105,7 @@
         i18n-matTooltip="@@chat_send-message"
       >
         <mat-icon>send</mat-icon>
-      </button> -->
-    </div>
+      </button>
+    </div> -->
   </div>
 </div>

@@ -105,7 +105,6 @@ export class PageHandler {
   startAnnotation() {
     this.path = [];
     this.currentAnnotationId = null;
-    // this.annotationCanvas = this.pageViewer.canvas; // not needed ?
     this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
     this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
@@ -113,7 +112,7 @@ export class PageHandler {
   }
 
   mouseDownHandler(e) {
-    console.log('down', { x: e.offsetX, y: e.offsetY });
+    console.log('down ', { page: this.page, x: e.offsetX, y: e.offsetY });
     this.pos = this.cursorToReal(e);
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
@@ -137,7 +136,7 @@ export class PageHandler {
   }
 
   mouseMoveHandler(e) {
-    // console.log('move', e);
+    // console.log('move', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
@@ -151,7 +150,7 @@ export class PageHandler {
   }
 
   mouseUpHandler(e) {
-    // console.log('up', e);
+    console.log('up', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
@@ -168,7 +167,7 @@ export class PageHandler {
   updateCanvas(pageViewer: any) {
     // Add the event listeners for mousedown, mousemove, and mouseup
 
-    console.log(' UPDATE CANVAS ');
+    // console.log(' UPDATE CANVAS ');
 
     this.detachPen();
 

@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import {
+  AnnotationItemType,
   AnnotationMark,
-  AnnotationMessage,
-  AnnotationMessageEnum,
   AnnotationMode,
   AnnotationRecord,
   AnnotationStorage,
@@ -17,7 +16,7 @@ import {
 
 import { PageHandler } from './page-handler';
 import { setBoundingBoxOf } from './util';
-
+import { v4 as uuidv4 } from 'uuid';
 @Injectable({
   providedIn: 'root',
 })
@@ -25,7 +24,7 @@ export class AnnotationService {
   private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
 
   private annotationMap: { [id: string]: AnnotationRecord } = {};
-  private user: AnnotationUser = { userName: 'Guest', userId: '1234' };
+  private _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
   private cnt = 0;
   private sub: Subscription;
   private focusComment: UIPannelComment = null;
@@ -35,10 +34,7 @@ export class AnnotationService {
   public modeSubject$ = new Subject<AnnotationMode>();
   public newRecord$ = new Subject<AnnotationRecord>();
   storage: AnnotationStorage = {
-    addAnnotation: (anno: AnnotationRecord) => {
-      console.log(' NO STORAGE SET');
-    },
-    updateAnnotation: (anno: AnnotationRecord) => {
+    saveAnnotation: (anno: AnnotationRecord) => {
       console.log(' NO STORAGE SET');
     },
   };
@@ -46,7 +42,7 @@ export class AnnotationService {
   // public subject$ = new Subject<AnnotationMessage>();
 
   constructor() {
-    console.log(' PanelHelper INIT');
+    // console.log(' PanelHelper INIT');
     this.initAnnotationListener();
   }
 
@@ -56,10 +52,14 @@ export class AnnotationService {
   getMode() {
     return this._mode;
   }
+
+  getUser() {
+    return this._user;
+  }
   // Interface to ngx-extended-pdf-viewer -----------------------------------------------------------------------------------------
 
   pageRendered(evt) {
-    console.log(' PAGE RENDER  ', evt.pageNumber);
+    // console.log(' PAGE RENDER  ', evt.pageNumber);
     const page = evt.pageNumber;
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
@@ -71,7 +71,7 @@ export class AnnotationService {
   }
 
   zoomChange(evt) {
-    console.log(' ZOOM CHANGE ');
+    // console.log(' ZOOM CHANGE ');
     setTimeout(() => {
       this.rebuildCommentPostions();
       this.sortComments();
@@ -91,7 +91,7 @@ export class AnnotationService {
   // Public interface -----------------------------------------------------------------------------------------
 
   setUser(user: AnnotationUser) {
-    this.user = user;
+    this._user = user;
   }
 
   isActive(): boolean {
@@ -114,36 +114,22 @@ export class AnnotationService {
     }
   }
 
-  private _commitComment(comment: UIPannelComment) {
-    // this.subject$.next({
-    //   type: AnnotationMessageEnum.CREATE,
-    //   record: comment.record,
-    // });
-    if (this.storage) {
-      this.storage.addAnnotation(comment.record);
-    }
-    comment.dirty = false;
-    comment.saved = true;
-  }
-
-  // get penIsOn() {
-  //   return this.mode === AnnotationMode.PEN;
-  // }
-
   // Private and internal  after here -------------------------------------------------------------------------------------
 
+  // If we lose focus then save all the data.
   handleItemFocusOff(comment: UIPannelComment) {
-    if (!comment.saved) {
-      this.storage.addAnnotation(comment.record);
-      comment.saved = true;
-      comment.dirty = false;
-    } else if (comment.dirty) {
-      this.storage.updateAnnotation(comment.record);
-      comment.dirty = false;
+    for (const record of comment.records) {
+      if (this.storage) {
+        if (record.dirty) {
+          this.storage.saveAnnotation(record);
+        }
+        record.dirty = false;
+        record.saved = true;
+      }
     }
   }
 
-  private handleHightlightChange(newHighlight: UIPannelComment) {
+  private handleHighlightChange(newHighlight: UIPannelComment) {
     const oldHighlight: UIPannelComment = this.highlightComment;
 
     if (!newHighlight || newHighlight !== this.highlightComment) {
@@ -184,7 +170,7 @@ export class AnnotationService {
     const y = this.pannelPosHelper(anno);
 
     const pos: PanelPosition = { page: anno.mark.page, rank: 0, y, yPlot: y };
-    console.log('POS ', pos);
+    // console.log('POS ', pos);
     return pos;
   }
 
@@ -193,7 +179,8 @@ export class AnnotationService {
     const page = this.pages[record.mark.page];
 
     const highlight =
-      this.highlightComment && record.id === this.highlightComment.record.id;
+      this.highlightComment &&
+      record.id === this.highlightComment.records[0].id;
 
     // console.log(this.highlightComment);
     // console.log(record);
@@ -232,7 +219,7 @@ export class AnnotationService {
   // Do this if the zoom changes
   private rebuildCommentPostions() {
     for (const c of this._comments) {
-      c.pos = this.getAnnotationPanelPos(c.record);
+      c.pos = this.getAnnotationPanelPos(c.records[0] as AnnotationRecord);
     }
   }
 
@@ -241,10 +228,8 @@ export class AnnotationService {
     this.sub = this.newRecord$.subscribe((record) => {
       const pos = this.getAnnotationPanelPos(record);
       const comment: UIPannelComment = {
-        saved: false,
-        dirty: true,
         pos,
-        record,
+        records: [record],
       };
 
       this.focusComment = comment;
@@ -266,7 +251,7 @@ export class AnnotationService {
       }
       this.focusComment = null;
     }
-    this.handleHightlightChange(this.focusComment);
+    this.handleHighlightChange(this.focusComment);
     this.modeSubject$.next(mode);
   }
 
@@ -290,11 +275,12 @@ export class AnnotationService {
       this.focusComment.component.setFocusMode(FocusModeEnum.FOCUS);
     }
 
-    this.handleHightlightChange(comment);
+    this.handleHighlightChange(comment);
   }
 
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
+    // console.log('PAGE EVEnt  : ', event);
     let record: AnnotationRecord = this.annotationMap[id];
     if (!record) {
       let type: AnnotationType;
@@ -311,14 +297,16 @@ export class AnnotationService {
       };
 
       record = {
+        type: AnnotationItemType.COMMENT,
+        dirty: false,
+        saved: false,
         id: event.id,
-        bodyValue: 'My Comment ' + this.cnt++,
+        bodyValue: '',
         mark,
-        motivation: 'comment',
         createdAt: new Date().toISOString(),
         isPrivate: this.isPrivate,
-        userName: this.user.userName,
-        userId: this.user.userId,
+        userName: this._user.userName,
+        userId: this._user.userId,
       };
 
       setBoundingBoxOf(record, event);
@@ -332,7 +320,7 @@ export class AnnotationService {
 
   // if no page then redraw all
   _redraw(page?: number) {
-    console.log(' _REDRAW', page);
+    // console.log(' _REDRAW', page);
 
     if (page !== undefined) {
       const pageHandler = this.pages[page];
@@ -363,7 +351,7 @@ export class AnnotationService {
     const ii = this._comments.findIndex((x) => x === comment);
     this._comments.splice(ii, 1);
     this.sortComments();
-    const id = comment.record.id;
+    const id = comment.records[0].id;
     delete this.annotationMap[id];
     const page = comment.pos.page;
     this._redraw(page);

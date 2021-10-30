@@ -12,7 +12,9 @@
 }
 
 .comment-body-container {
-  width: 100%;
+  // width: 100%;
+  margin-left: 43px;
+  box-sizing: border-box;
 }
 
 .comment-outer-container {
@@ -50,6 +52,8 @@
 }
 
 .comment-body {
-  margin-top: 15px;
+  margin: 10px;
+  width: 100%;
   color: $greyBold;
+  background-color: white;
 }

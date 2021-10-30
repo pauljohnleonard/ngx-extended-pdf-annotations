@@ -9,7 +9,7 @@ import { AnnotationService } from 'projects/ngx-extended-pdf-annotations/src/pub
 })
 export class AppComponent {
   title = 'ngx-extended-pdf-annotations-demo';
-  users = ['Paul', 'Dag', 'Kaj'];
+  users = ['Paul', 'Dag', 'Kaj', 'Bogan', 'William', 'Peder', 'Eivind'];
 
   userControl = new FormControl('');
   user;
@@ -18,7 +18,7 @@ export class AppComponent {
   ngOnInit() {
     this.userControl.valueChanges.subscribe((name) => {
       const user = { userName: name, userId: this.hashCode(name) };
-      console.log('SELECT:', user, this.hashCode(user));
+      // console.log('SELECT:', user, this.hashCode(user));
       this.annotationsService.setUser(user);
       this.user = user;
     });

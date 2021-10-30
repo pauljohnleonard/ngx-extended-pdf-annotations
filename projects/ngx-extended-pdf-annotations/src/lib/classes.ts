@@ -43,18 +43,28 @@ export type AnnotationMark = {
 };
 
 // This is the complete record we need to store.
-export interface AnnotationRecord extends AnnotationUser {
-  //   type: string;
+
+export enum AnnotationItemType {
+  COMMENT = 'COMMENT',
+  REPLY = 'REPLY',
+}
+export interface AnnotationBase extends AnnotationUser {
   id: string;
+  type: AnnotationItemType;
   bodyValue: string;
-  motivation: 'comment' | 'reply';
-  parentId?: string;
-  mark?: AnnotationMark;
   createdAt: string;
   modifiedAt?: string;
+  saved: boolean;
+  dirty: boolean;
+}
+export interface AnnotationRecord extends AnnotationBase {
+  mark?: AnnotationMark;
   isPrivate: boolean;
 }
-//
+
+export interface AnnotationReply extends AnnotationBase {
+  parentId: string;
+}
 
 export type AnnotationMarkRender = (record: AnnotationRecord) => void;
 
@@ -78,11 +88,8 @@ export interface UIPanelItemIterface {
 }
 
 export class UIPannelComment {
-  isDeleted?: boolean;
-  saved: boolean;
-  dirty: boolean;
   pos: PanelPosition;
-  record: AnnotationRecord;
+  records: AnnotationBase[];
   // editing: boolean;
   component?: UIPanelItemIterface;
 }
@@ -99,6 +106,5 @@ export class AnnotationMessage {
 }
 
 export interface AnnotationStorage {
-  updateAnnotation(record: AnnotationRecord);
-  addAnnotation(record: AnnotationRecord);
+  saveAnnotation(record: AnnotationBase);
 }
