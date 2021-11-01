@@ -14,7 +14,7 @@
         <div class="comment-top-meta-info">
           <mat-icon
             *ngIf="item.type === AnnotationItemType.COMMENT"
-            style="margin-right: 10px; color: rgb(49, 49, 245)"
+            class="myicon"
             >gesture</mat-icon
           >
 
@@ -32,13 +32,15 @@
             <mat-icon
               *ngIf="!item.isPrivate"
               class="myicon"
-              matTooltip="Public comment."
+              matTooltip="Public comment. Click to make private."
+              (click)="toogleVisibility()"
               >visibility</mat-icon
             >
             <mat-icon
               *ngIf="item.isPrivate"
               class="myicon"
-              matTooltip="Private comment."
+              matTooltip="Private comment. Click to make public."
+              (click)="toogleVisibility()"
               >visibility_off</mat-icon
             >
           </ng-container>
@@ -51,7 +53,7 @@
               [class.delete-menu-button-for-non-admin]="true"
               aria-label="Delete comment menu"
             >
-              <mat-icon>more_vert</mat-icon>
+              <mat-icon>more_horiz</mat-icon>
             </button>
 
             <mat-menu #deleteMessageMenu="matMenu">
@@ -96,7 +98,12 @@
         </mat-form-field>
         <div
           *ngIf="!isLast"
-          style="width: 100%; background-color: grey; height: 1px"
+          style="
+            width: 100%;
+            background-color: grey;
+            height: 1px;
+            margin-bottom: 10px;
+          "
         ></div>
       </ng-container>
     </ng-container>

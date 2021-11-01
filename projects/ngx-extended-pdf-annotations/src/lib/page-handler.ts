@@ -74,8 +74,8 @@ export class PageHandler {
 
     // const clinetRect = this.canvas.getBoundingClientRect();
     // const canvasTop = clinetRect.top;
-    const x = (anno.mark.boundingBox.x1 + anno.mark.boundingBox.x2) / 2;
-    const y = (anno.mark.boundingBox.y1 + anno.mark.boundingBox.y2) / 2;
+    const x = anno.mark.boundingBox.x1; // + anno.mark.boundingBox.x2) / 2;
+    const y = anno.mark.boundingBox.y2; // + anno.mark.boundingBox.y2) / 2;
     const z = this.realToCanvas({ x, y });
 
     const pageDiv = this.annotationCanvas.parentElement.parentElement;

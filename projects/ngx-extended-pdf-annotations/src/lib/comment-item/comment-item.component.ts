@@ -92,6 +92,12 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     // this.hasFocus = true;
   }
 
+  toogleVisibility() {
+    this.comment.records[0].isPrivate = !this.comment.records[0].isPrivate;
+    this.comment.records[0].dirty = true;
+    this.annotationService.saveComment(this.comment);
+  }
+
   handleFocusOff() {
     const lastItem = this.comment.records[this.comment.records.length - 1];
     if (lastItem.type === AnnotationItemType.REPLY) {

@@ -163,6 +163,10 @@ export class AnnotationService {
 
   // If we lose focus then save all the data.
   handleItemFocusOff(comment: UIPannelComment) {
+    this.saveComment(comment);
+  }
+
+  saveComment(comment: UIPannelComment) {
     for (const record of comment.records) {
       if (this.storage) {
         if (
