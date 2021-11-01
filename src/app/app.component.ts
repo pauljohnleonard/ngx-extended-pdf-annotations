@@ -9,7 +9,16 @@ import { AnnotationService } from 'projects/ngx-extended-pdf-annotations/src/pub
 })
 export class AppComponent {
   title = 'ngx-extended-pdf-annotations-demo';
-  users = ['Paul', 'Dag', 'Kaj', 'Bogan', 'William', 'Peder', 'Eivind'];
+  users = [
+    'Paul',
+    'Dag',
+    'Peder',
+    'Kaj',
+    'Bogan',
+    'William',
+    'Peder',
+    'Eivind',
+  ];
 
   userControl = new FormControl('');
   user;
