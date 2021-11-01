@@ -16,7 +16,9 @@
 
 <ng-template #additionalButtons>
   <div id="myToolbarViewer" class="mytoolbar">
-    <div class="annotationControlPanel" id="toolbarViewerLeft"></div>
+    <div class="annotationControlPanel" id="toolbarViewerLeft">
+      {{ annotationsService.getUser().userName }}
+    </div>
 
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
 

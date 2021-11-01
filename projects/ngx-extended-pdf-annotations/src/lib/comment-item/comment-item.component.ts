@@ -65,12 +65,14 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
   handleFocusOn() {
     console.log(' handleFocusOn ');
-
     // if (this.hasFocus) {
     //   return;
     // }
     const lastItem = this.comment.records[this.comment.records.length - 1];
     if (lastItem.dirty || !lastItem.saved) {
+      this.inputRecord = lastItem;
+      this.isMobileScreen;
+    } else if (lastItem.userId === this.annotationService.getUser().userId) {
       this.inputRecord = lastItem;
     } else {
       let record: AnnotationReply = {
