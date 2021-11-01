@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import {
-  AnnotationRecord,
+  AnnotationComment,
   AnnotationStorage,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
 
@@ -10,31 +10,56 @@ import {
 })
 export class LocalStoreService implements AnnotationStorage {
   db: IDBDatabase;
-  store: IDBObjectStore;
 
-  constructor() {
-    const request = indexedDB.open('DB');
+  constructor() {}
 
-    request.onupgradeneeded = () => {
-      this.db = request.result;
-      this.store = this.db.createObjectStore('annotation', { keyPath: 'id' });
-    };
+  async initialize() {
+    return new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('AnnotationDB');
 
-    request.onsuccess = () => {
-      this.db = request.result;
-    };
+      request.onupgradeneeded = () => {
+        this.db = request.result;
+        const store = this.db.createObjectStore('records', {
+          keyPath: 'id',
+        });
+        store.createIndex('documentId', 'documentId', { unique: false });
+      };
+
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+    });
   }
 
-  saveAnnotation(anno: AnnotationRecord) {
-    var transaction = this.db.transaction(['annotation'], 'readwrite');
-    var objectStore = transaction.objectStore('annotation');
+  saveAnnotation(anno: AnnotationComment) {
+    var transaction = this.db.transaction('records', 'readwrite');
+    var objectStore = transaction.objectStore('records');
     objectStore.put(anno);
   }
 
-  updateAnnotation(anno: AnnotationRecord) {
-    var transaction = this.db.transaction(['annotation'], 'readwrite');
-    var objectStore = transaction.objectStore('annotation');
+  updateAnnotation(anno: AnnotationComment) {
+    var transaction = this.db.transaction('records', 'readwrite');
+    var objectStore = transaction.objectStore('records');
     objectStore.put(anno);
+  }
+
+  async fetchDocument(
+    documentId: string,
+    userId: string
+  ): Promise<AnnotationComment[]> {
+    return new Promise((resolve) => {
+      var tx = this.db.transaction('records', 'readonly');
+      var store = tx.objectStore('records');
+
+      let docIndex = store.index('documentId');
+      const request = docIndex.getAll(documentId);
+
+      request.onsuccess = (res) => {
+        console.log(request.result);
+        resolve(request.result);
+      };
+    });
   }
 
   deleteAnnotation(anno) {}

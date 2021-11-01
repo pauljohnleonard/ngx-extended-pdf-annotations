@@ -1,11 +1,12 @@
 import { ConstantPool } from '@angular/compiler';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, Input } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   AnnotationControlEventType,
   AnnotationMode,
   AnnotationService,
+  AnnotationUser,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
 import { LocalStoreService } from '../local-store.service';
 
@@ -16,13 +17,26 @@ import { LocalStoreService } from '../local-store.service';
   styleUrls: ['./demo.component.scss'],
 })
 export class DemoComponent implements AfterViewInit {
+  @Input() user: AnnotationUser;
+
   highlightPen = false;
 
-  constructor(public annotationsService: AnnotationService) {
-    this.annotationsService.setStorage(new LocalStoreService());
-  }
+  constructor(
+    public annotationsService: AnnotationService,
+    public storage: LocalStoreService
+  ) {}
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit() {
+    const documentId = '1234';
+
+    await this.storage.initialize();
+
+    await this.annotationsService.initialize({
+      storage: this.storage,
+      user: this.user,
+      documentId,
+    });
+
     this.annotationsService.modeSubject$
       .pipe(untilDestroyed(this))
       .subscribe(() => {

@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import {
+  AnnotationRecord,
   AnnotationControlEvent,
   AnnotationControlEventType,
   AnnotationItemType,
   AnnotationMark,
   AnnotationMode,
-  AnnotationRecord,
+  AnnotationComment,
+  AnnotationReply,
   AnnotationStorage,
   AnnotationType,
   AnnotationUser,
@@ -18,15 +20,15 @@ import {
 
 import { PageHandler } from './page-handler';
 import { setBoundingBoxOf } from './util';
-import { v4 as uuidv4 } from 'uuid';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AnnotationService {
   private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  private annotationMap: { [id: string]: AnnotationRecord } = {};
+  private annotationMap: { [id: string]: AnnotationComment } = {};
   private _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
-  private focusComment: UIPannelComment = null;
+  focusComment: UIPannelComment = null;
   private highlightComment: UIPannelComment = null;
   private _mode = AnnotationMode.OFF;
 
@@ -34,16 +36,58 @@ export class AnnotationService {
 
   public modeSubject$ = new Subject<AnnotationMode>();
 
-  storage: AnnotationStorage = {
-    saveAnnotation: (anno: AnnotationRecord) => {
-      console.log(' NO STORAGE SET');
-    },
-  };
+  storage: AnnotationStorage;
 
-  isPrivate: true;
+  isPrivate = true;
+  documentId: string;
   // public subject$ = new Subject<AnnotationMessage>();
 
   constructor() {}
+
+  async initialize({
+    user,
+    storage,
+    documentId,
+  }: {
+    user: AnnotationUser;
+    storage: AnnotationStorage;
+    documentId: string;
+  }) {
+    this.storage = storage;
+    this._user = user;
+    this.documentId = documentId;
+    const records = await this.storage.fetchDocument(
+      documentId,
+      this._user.userId
+    );
+
+    const commentRecords: {
+      [id: string]: AnnotationRecord[];
+    } = {};
+
+    for (const record of records) {
+      if (record.type === AnnotationItemType.COMMENT) {
+        commentRecords[record.id] = [record];
+        this.annotationMap[record.id] = record as AnnotationComment;
+      }
+    }
+
+    for (const record of records) {
+      if (record.type === AnnotationItemType.REPLY) {
+        commentRecords[(record as AnnotationReply).parentId].push(record);
+      }
+    }
+
+    for (const key of Object.keys(commentRecords)) {
+      const records = commentRecords[key];
+
+      // const pos = this.getAnnotationPanelPos(records[0] as AnnotationComment);
+
+      this._comments.push({ records });
+    }
+
+    console.log('COMMENTS LOADED FROM STORE');
+  }
 
   handleControlEvent(evt: AnnotationControlEvent) {
     switch (evt.type) {
@@ -64,9 +108,6 @@ export class AnnotationService {
     }
   }
 
-  setStorage(storage: AnnotationStorage) {
-    this.storage = storage;
-  }
   getMode() {
     return this._mode;
   }
@@ -77,14 +118,18 @@ export class AnnotationService {
   // Interface to ngx-extended-pdf-viewer -----------------------------------------------------------------------------------------
 
   pageRendered(evt) {
-    // console.log(' PAGE RENDER  ', evt.pageNumber);
+    console.log(' PAGE RENDER  ', evt.pageNumber);
     const page = evt.pageNumber;
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
       this.pages[page] = pageHandler;
+      this.zoomChange(null);
     } else {
       this.pages[page].updateCanvas(evt.source);
-      setTimeout(() => this._redraw(page));
+      setTimeout(() => {
+        this.zoomChange(null);
+        this._redraw(page);
+      });
     }
   }
 
@@ -98,19 +143,17 @@ export class AnnotationService {
   }
 
   pdfLoaded(evt) {
+    console.log(' PDF LOADED ');
     this.modeSubject$.next(AnnotationMode.READY);
   }
 
-  private pannelPosHelper(record: AnnotationRecord) {
+  private pannelPosHelper(record: AnnotationComment) {
     const page = this.pages[record.mark.page];
+    if (!page) return 0;
     return page.getAnnotationPanelPos(record);
   }
 
   // Public interface -----------------------------------------------------------------------------------------
-
-  setUser(user: AnnotationUser) {
-    this._user = user;
-  }
 
   isActive(): boolean {
     return this._mode !== AnnotationMode.HIDE;
@@ -122,11 +165,14 @@ export class AnnotationService {
   handleItemFocusOff(comment: UIPannelComment) {
     for (const record of comment.records) {
       if (this.storage) {
-        if (record.dirty) {
+        if (
+          record.dirty ||
+          (!record.saved && record.type === AnnotationItemType.COMMENT)
+        ) {
+          record.dirty = false;
+          record.saved = true;
           this.storage.saveAnnotation(record);
         }
-        record.dirty = false;
-        record.saved = true;
       }
     }
   }
@@ -161,7 +207,7 @@ export class AnnotationService {
     });
   }
 
-  private getAnnotationPanelPos(anno: AnnotationRecord): PanelPosition {
+  private getAnnotationPanelPos(anno: AnnotationComment): PanelPosition {
     // if (!this.panelPositionHelper) {
     //   throw new Error(
     //     'AnnotationService: you must provide a PanelPositionHelper'
@@ -176,9 +222,8 @@ export class AnnotationService {
     return pos;
   }
 
-  private renderer(record: AnnotationRecord) {
+  private renderer(record: AnnotationComment) {
     if (!record.mark) return;
-    const page = this.pages[record.mark.page];
 
     const highlight =
       this.highlightComment &&
@@ -186,7 +231,12 @@ export class AnnotationService {
 
     // console.log(this.highlightComment);
     // console.log(record);
-    page.draw(record, highlight);
+
+    const page = this.pages[record.mark.page];
+
+    if (page) {
+      page.draw(record, highlight);
+    }
   }
 
   private sortComments() {
@@ -221,7 +271,7 @@ export class AnnotationService {
   // Do this if the zoom changes
   private rebuildCommentPostions() {
     for (const c of this._comments) {
-      c.pos = this.getAnnotationPanelPos(c.records[0] as AnnotationRecord);
+      c.pos = this.getAnnotationPanelPos(c.records[0] as AnnotationComment);
     }
   }
 
@@ -267,7 +317,7 @@ export class AnnotationService {
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
     // console.log('PAGE EVEnt  : ', event);
-    let record: AnnotationRecord = this.annotationMap[id];
+    let record: AnnotationComment = this.annotationMap[id];
     if (!record) {
       let type: AnnotationType;
 
@@ -283,6 +333,7 @@ export class AnnotationService {
       };
 
       record = {
+        documentId: this.documentId,
         type: AnnotationItemType.COMMENT,
         dirty: false,
         saved: false,
@@ -321,7 +372,7 @@ export class AnnotationService {
     }
   }
 
-  _addNewRecord(record: AnnotationRecord): boolean {
+  _addNewRecord(record: AnnotationComment): boolean {
     if (this.annotationMap[record.id]) return false;
     this.annotationMap[record.id] = record;
 

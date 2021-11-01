@@ -19,7 +19,6 @@ export class AppComponent {
     this.userControl.valueChanges.subscribe((name) => {
       const user = { userName: name, userId: this.hashCode(name) };
       // console.log('SELECT:', user, this.hashCode(user));
-      this.annotationsService.setUser(user);
       this.user = user;
     });
   }

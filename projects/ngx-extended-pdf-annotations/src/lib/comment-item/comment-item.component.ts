@@ -11,9 +11,9 @@ import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { AnnotationService } from '../annotation.service';
 import {
-  AnnotationBase,
-  AnnotationItemType,
   AnnotationRecord,
+  AnnotationItemType,
+  AnnotationComment,
   AnnotationReply,
   FocusModeEnum,
   UIPanelItemIterface,
@@ -46,11 +46,11 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   FocusMode = FocusModeEnum;
   AnnotationItemType = AnnotationItemType;
   inputFormControl = new FormControl({ value: '', disabled: false });
-  inputRecord: AnnotationBase;
+  inputRecord: AnnotationRecord;
   windowHeightForMobile: number;
-  private focusmode = FocusModeEnum.CREATE;
+  focusmode = FocusModeEnum.CREATE;
+  AnnotationComment: AnnotationComment;
 
-  hasFocus = true;
   cnt = 0;
 
   constructor(
@@ -59,17 +59,22 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     public annotationService: AnnotationService
   ) {}
 
+  get hasFocus() {
+    return this.annotationService.focusComment === this.comment;
+  }
+
   handleFocusOn() {
     console.log(' handleFocusOn ');
 
-    if (this.hasFocus) {
-      return;
-    }
+    // if (this.hasFocus) {
+    //   return;
+    // }
     const lastItem = this.comment.records[this.comment.records.length - 1];
     if (lastItem.dirty || !lastItem.saved) {
       this.inputRecord = lastItem;
     } else {
       let record: AnnotationReply = {
+        documentId: this.annotationService.documentId,
         type: AnnotationItemType.REPLY,
         dirty: false,
         saved: false,
@@ -84,7 +89,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       this.inputRecord = record;
       this.inputFormControl.setValue('');
     }
-    this.hasFocus = true;
+    // this.hasFocus = true;
   }
 
   handleFocusOff() {
@@ -94,7 +99,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         this.comment.records.pop();
       }
     }
-    this.hasFocus = false;
+    // this.hasFocus = false;
     this.inputRecord = null;
   }
   // This is responisble for setting the state of annotation when we gain focus

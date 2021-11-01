@@ -58,7 +58,8 @@ export enum AnnotationItemType {
   COMMENT = 'COMMENT',
   REPLY = 'REPLY',
 }
-export interface AnnotationBase extends AnnotationUser {
+export interface AnnotationRecord extends AnnotationUser {
+  documentId: string;
   id: string;
   type: AnnotationItemType;
   bodyValue: string;
@@ -66,17 +67,17 @@ export interface AnnotationBase extends AnnotationUser {
   modifiedAt?: string;
   saved: boolean;
   dirty: boolean;
+  isPrivate?: boolean;
 }
-export interface AnnotationRecord extends AnnotationBase {
+export interface AnnotationComment extends AnnotationRecord {
   mark?: AnnotationMark;
-  isPrivate: boolean;
 }
 
-export interface AnnotationReply extends AnnotationBase {
+export interface AnnotationReply extends AnnotationRecord {
   parentId: string;
 }
 
-export type AnnotationMarkRender = (record: AnnotationRecord) => void;
+export type AnnotationMarkRender = (record: AnnotationComment) => void;
 
 export type PanelPosition = {
   page: number;
@@ -98,8 +99,8 @@ export interface UIPanelItemIterface {
 }
 
 export class UIPannelComment {
-  pos: PanelPosition;
-  records: AnnotationBase[];
+  pos?: PanelPosition;
+  records: AnnotationRecord[];
   // editing: boolean;
   component?: UIPanelItemIterface;
 }
@@ -111,10 +112,14 @@ export enum AnnotationMessageEnum {
 }
 export class AnnotationMessage {
   type: AnnotationMessageEnum;
-  record?: AnnotationRecord;
+  record?: AnnotationComment;
   id?: string;
 }
 
 export interface AnnotationStorage {
-  saveAnnotation(record: AnnotationBase);
+  fetchDocument(
+    documentId: string,
+    userId: string
+  ): Promise<AnnotationRecord[]>;
+  saveAnnotation(record: AnnotationRecord);
 }

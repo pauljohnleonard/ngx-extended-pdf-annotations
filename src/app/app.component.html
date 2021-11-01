@@ -1,13 +1,26 @@
-<form *ngIf="!user">
-  <mat-form-field>
-    <mat-select [formControl]="userControl" name="User">
-      <mat-option *ngFor="let user of users" [value]="user">
-        {{ user }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-</form>
+<div
+  *ngIf="!user"
+  style="
+    width: 300px;
+    text-align: center;
+    position: absolute;
+    top: 40vh;
+    left: 30vw;
+    border: 2px solid grey;
+  "
+>
+  <form>
+    <h1>Logon</h1>
+    <mat-form-field>
+      <mat-select [formControl]="userControl" name="User">
+        <mat-option *ngFor="let user of users" [value]="user">
+          {{ user }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+</div>
 
-<app-demo *ngIf="user"> </app-demo>
+<app-demo *ngIf="user" [user]="user"> </app-demo>
 
 <!-- <app-debug style="position: fixed; top: 40px; right: 10px"></app-debug> -->

@@ -4,7 +4,7 @@ import {
   AnnotationMode,
   AnnotationPath,
   AnnotationPoint,
-  AnnotationRecord,
+  AnnotationComment,
   PageEventType as PageEventType,
 } from './classes';
 import { AnnotationService } from './annotation.service';
@@ -62,7 +62,7 @@ export class PageHandler {
   // }
 
   // Y center of annotation bounding box in terms of full viewport.
-  getAnnotationPanelPos(anno: AnnotationRecord): number {
+  getAnnotationPanelPos(anno: AnnotationComment): number {
     if (!anno.mark) {
       throw Error(' Expected annotation record to have a mark');
     }
@@ -150,7 +150,7 @@ export class PageHandler {
   }
 
   mouseUpHandler(e) {
-    console.log('up', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log('up', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
       const pos2 = this.cursorToReal(e);
       this.path.push({ pos1: this.pos, pos2 });
@@ -201,7 +201,7 @@ export class PageHandler {
     }
   }
 
-  draw(record: AnnotationRecord, highlight) {
+  draw(record: AnnotationComment, highlight) {
     const path = record.mark.path;
 
     const ctx = this.annotationCanvas.getContext('2d');

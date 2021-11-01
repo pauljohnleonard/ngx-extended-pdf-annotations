@@ -1,7 +1,7 @@
-import { AnnotationRecord, PageEvent } from './classes';
+import { AnnotationComment, PageEvent } from './classes';
 
 export function setBoundingBoxOf(
-  record: AnnotationRecord,
+  record: AnnotationComment,
   event: PageEvent
 ): void {
   let x1 = Number.MAX_SAFE_INTEGER,

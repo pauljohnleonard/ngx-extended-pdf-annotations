@@ -1,6 +1,6 @@
 <div class="commentPannelOuterContainer">
   <div *ngFor="let comment of annotationService._comments">
-    <div class="comment" [style.top]="comment.pos.yPlot + 'px'">
+    <div class="comment" [style.top]="comment.pos?.yPlot + 'px'">
       <ng-container
         *ngTemplateOutlet="
           commentItemComponent;

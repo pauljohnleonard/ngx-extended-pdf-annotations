@@ -12,6 +12,12 @@
     >
       <ng-container *ngIf="isFirst || hasFocus">
         <div class="comment-top-meta-info">
+          <mat-icon
+            *ngIf="item.type === AnnotationItemType.COMMENT"
+            style="margin-right: 10px; color: rgb(49, 49, 245)"
+            >gesture</mat-icon
+          >
+
           <span style="width: 20px"></span>
           <div class="comment-name-and-date">
             <div class="name">{{ item.userName }}</div>
@@ -19,20 +25,31 @@
               {{ date.formatDate(item.createdAt) }}
             </div>
           </div>
+
           <span class="filler"></span>
 
-          <mat-icon
-            *ngIf="item.type === AnnotationItemType.COMMENT"
-            style="margin-right: 10px; color: rgb(49, 49, 245)"
-            >gesture</mat-icon
-          >
+          <ng-container *ngIf="item.type === AnnotationItemType.COMMENT">
+            <mat-icon
+              *ngIf="!item.isPrivate"
+              class="myicon"
+              matTooltip="Public comment."
+              >visibility</mat-icon
+            >
+            <mat-icon
+              *ngIf="item.isPrivate"
+              class="myicon"
+              matTooltip="Private comment."
+              >visibility_off</mat-icon
+            >
+          </ng-container>
+
           <div class="chat-message-buttons" *ngIf="hasFocus && isFirst">
             <button
               mat-icon-button
               [matMenuTriggerFor]="deleteMessageMenu"
               class="delete-menu-button"
               [class.delete-menu-button-for-non-admin]="true"
-              aria-label="Delete message menu"
+              aria-label="Delete comment menu"
             >
               <mat-icon>more_vert</mat-icon>
             </button>
@@ -41,7 +58,7 @@
               <button
                 mat-menu-item
                 (click)="annotationService._deleteComment(comment)"
-                aria-label="Delete message"
+                aria-label="Delete comment"
               >
                 <mat-icon>delete</mat-icon>
                 <span i18n="@@chat_delete-message">Delete message</span>
