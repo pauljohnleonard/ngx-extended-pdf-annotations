@@ -109,6 +109,9 @@ export class PageHandler {
     this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
     this.annotationCanvas.style.cursor = 'crosshair';
+    // ("url('http://localhost:4200/assets/pencil.png'),auto");
+    // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
+    //("url('/assets/pencil.png'),pointer"); // " //'crosshair';
   }
 
   mouseDownHandler(e) {
