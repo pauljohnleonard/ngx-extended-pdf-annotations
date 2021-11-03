@@ -7,7 +7,7 @@
   [page]="1"
   [handTool]="false"
   [showHandToolButton]="true"
-  [textLayer]="false"
+  [textLayer]="textLayer"
   (pageRendered)="annotationsService.pageRendered($event)"
   (pdfLoaded)="annotationsService.pdfLoaded($event)"
   [customToolbar]="additionalButtons"
@@ -56,6 +56,17 @@
           (click)="penAnnotate()"
           matTooltip="Annotate with Pen"
           >gesture</mat-icon
+        >
+
+        <mat-icon
+          [ngClass]="{
+            canpress: true,
+            highlight: highlightPen,
+            iconButton: true
+          }"
+          (click)="textAnnotate()"
+          matTooltip="Annotate text"
+          >title</mat-icon
         >
       </ng-container>
 

@@ -20,6 +20,7 @@ export class DemoComponent implements AfterViewInit {
   @Input() user: AnnotationUser;
 
   highlightPen = false;
+  textLayer = false;
 
   constructor(
     public annotationsService: AnnotationService,
@@ -55,6 +56,16 @@ export class DemoComponent implements AfterViewInit {
     const val = this.annotationsService.getMode() !== AnnotationMode.PEN;
     this.annotationsService.handleControlEvent({
       type: AnnotationControlEventType.PEN,
+      val,
+    });
+  }
+
+  textAnnotate() {
+    const val = this.annotationsService.getMode() !== AnnotationMode.TEXT;
+
+    this.textLayer = val;
+    this.annotationsService.handleControlEvent({
+      type: AnnotationControlEventType.TEXT,
       val,
     });
   }
