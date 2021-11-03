@@ -68,6 +68,7 @@ export interface AnnotationRecord extends AnnotationUser {
   saved: boolean;
   dirty: boolean;
   isPrivate?: boolean;
+  deleted?: boolean;
 }
 export interface AnnotationComment extends AnnotationRecord {
   mark?: AnnotationMark;

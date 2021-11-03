@@ -14,8 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HttpClientModule } from '@angular/common/http';
-import { AnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib/annotations.module';
-
+import { NgxExtendPdfAnnotationsModule } from 'projects/ngx-extended-pdf-annotations/src/lib/ngx-extended-pdf-annotations.module';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { DebugComponent } from './debug/debug.component';
@@ -25,7 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
   declarations: [AppComponent, DemoComponent, DebugComponent],
   imports: [
     BrowserModule,
-    AnnotationsModule,
+    NgxExtendPdfAnnotationsModule,
     NgxExtendedPdfViewerModule,
     BrowserAnimationsModule,
     ReactiveFormsModule,

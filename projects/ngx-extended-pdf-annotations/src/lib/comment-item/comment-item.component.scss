@@ -4,6 +4,11 @@
   display: flex;
   width: 100%;
   align-items: center;
+  justify-content: space-between;
+}
+
+.filler {
+  flex: 1 0;
 }
 
 .comment-name-and-date {

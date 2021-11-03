@@ -7,7 +7,7 @@
   [page]="1"
   [handTool]="false"
   [showHandToolButton]="true"
-  [textLayer]="false"
+  [textLayer]="textLayer"
   (pageRendered)="annotationsService.pageRendered($event)"
   (pdfLoaded)="annotationsService.pdfLoaded($event)"
   [customToolbar]="additionalButtons"

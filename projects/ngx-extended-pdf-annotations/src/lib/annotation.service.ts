@@ -61,6 +61,7 @@ export class AnnotationService {
       this._user.userId
     );
 
+    console.log(` Loaded  ${records.length}  records`);
     const commentRecords: {
       [id: string]: AnnotationRecord[];
     } = {};
@@ -134,7 +135,7 @@ export class AnnotationService {
   }
 
   zoomChange(evt) {
-    // console.log(' ZOOM CHANGE ');
+    console.log(' ZOOM CHANGE ');
     setTimeout(() => {
       this.rebuildCommentPostions();
       this.sortComments();
@@ -232,9 +233,6 @@ export class AnnotationService {
     const highlight =
       this.highlightComment &&
       record.id === this.highlightComment.records[0].id;
-
-    // console.log(this.highlightComment);
-    // console.log(record);
 
     const page = this.pages[record.mark.page];
 
@@ -361,8 +359,6 @@ export class AnnotationService {
 
   // if no page then redraw all
   _redraw(page?: number) {
-    // console.log(' _REDRAW', page);
-
     if (page !== undefined) {
       const pageHandler = this.pages[page];
       pageHandler.clear();

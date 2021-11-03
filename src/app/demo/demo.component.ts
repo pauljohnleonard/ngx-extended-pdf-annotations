@@ -1,6 +1,4 @@
-import { ConstantPool } from '@angular/compiler';
 import { AfterViewInit, Component, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   AnnotationControlEventType,
