@@ -50,7 +50,7 @@
         <mat-icon
           [ngClass]="{
             canpress: true,
-            highlight: highlightPen,
+            highlight: this.annotationsService.getMode() === AnnotationMode.PEN,
             iconButton: true
           }"
           (click)="penAnnotate()"
@@ -61,7 +61,8 @@
         <mat-icon
           [ngClass]="{
             canpress: true,
-            highlight: highlightPen,
+            highlight:
+              this.annotationsService.getMode() === AnnotationMode.TEXT,
             iconButton: true
           }"
           (click)="textAnnotate()"

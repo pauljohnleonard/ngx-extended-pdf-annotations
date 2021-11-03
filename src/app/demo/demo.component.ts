@@ -1,9 +1,6 @@
-import { ConstantPool } from '@angular/compiler';
 import { AfterViewInit, Component, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import {
-  AnnotationControlEventType,
   AnnotationMode,
   AnnotationService,
   AnnotationUser,
@@ -19,13 +16,27 @@ import { LocalStoreService } from '../local-store.service';
 export class DemoComponent implements AfterViewInit {
   @Input() user: AnnotationUser;
 
-  highlightPen = false;
-  textLayer = false;
-
+  textLayer = true;
+  AnnotationMode = AnnotationMode;
   constructor(
     public annotationsService: AnnotationService,
     public storage: LocalStoreService
-  ) {}
+  ) {
+    // addEventListener version
+    document.addEventListener('selectionchange', () => {
+      console.log('-----------------------------------');
+      const selection = document.getSelection();
+      const rangeCount = selection.rangeCount;
+      for (let i = 0; i < rangeCount; i++) {
+        const range = selection.getRangeAt(i);
+        const rects: DOMRectList = range.getClientRects();
+        for (let i = 0; i < rects.length; i++) {
+          let rect = rects[i];
+          console.log(rect);
+        }
+      }
+    });
+  }
 
   async ngAfterViewInit() {
     const documentId = '1234';
@@ -37,35 +48,28 @@ export class DemoComponent implements AfterViewInit {
       user: this.user,
       documentId,
     });
-
-    this.annotationsService.modeSubject$
-      .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        this.highlightPen =
-          this.annotationsService.getMode() === AnnotationMode.PEN;
-      });
   }
 
   toogleAnnotations() {
     this.annotationsService.handleControlEvent({
-      type: AnnotationControlEventType.TOGGLE,
+      type: AnnotationMode.TOGGLE,
     });
   }
 
   penAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationMode.PEN;
     this.annotationsService.handleControlEvent({
-      type: AnnotationControlEventType.PEN,
+      type: AnnotationMode.PEN,
       val,
     });
   }
 
   textAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationMode.TEXT;
-
     this.textLayer = val;
+    console.log('TEXT LAYER ', this.textLayer);
     this.annotationsService.handleControlEvent({
-      type: AnnotationControlEventType.TEXT,
+      type: AnnotationMode.TEXT,
       val,
     });
   }

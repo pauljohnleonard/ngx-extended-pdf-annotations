@@ -3,7 +3,6 @@ import { Subject } from 'rxjs';
 import {
   AnnotationRecord,
   AnnotationControlEvent,
-  AnnotationControlEventType,
   AnnotationItemType,
   AnnotationMark,
   AnnotationMode,
@@ -91,18 +90,19 @@ export class AnnotationService {
 
   handleControlEvent(evt: AnnotationControlEvent) {
     switch (evt.type) {
-      case AnnotationControlEventType.TOGGLE:
+      case AnnotationMode.TOGGLE:
         if (this._mode === AnnotationMode.HIDE) {
           this.setMode(AnnotationMode.SHOW);
         } else {
           this.setMode(AnnotationMode.HIDE);
         }
         break;
-      case AnnotationControlEventType.PEN:
+      case AnnotationMode.PEN:
+      case AnnotationMode.TEXT:
         if (!evt.val) {
           this.setMode(AnnotationMode.OFF);
         } else {
-          this.setMode(AnnotationMode.PEN);
+          this.setMode(evt.type);
         }
         break;
     }

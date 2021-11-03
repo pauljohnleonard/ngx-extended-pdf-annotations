@@ -7,16 +7,11 @@ export enum AnnotationMode {
   HIDE = 'HIDE',
   SHOW = 'SHOW',
   TEXT = 'TEXT',
-}
-
-export enum AnnotationControlEventType {
   TOGGLE = 'TOOGLE',
-  PEN = 'PEN',
-  TEXT = 'TEXT',
 }
 
 export class AnnotationControlEvent {
-  type: AnnotationControlEventType;
+  type: AnnotationMode;
   val?: any;
 }
 
