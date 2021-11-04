@@ -213,10 +213,10 @@ export class PageHandler {
     ctx.lineJoin = 'round';
     let lastPos = null;
     for (const line of path) {
-      if (!lastPos || lastPos.x !== line.pos1.x || lastPos.y !== line.pos1.y) {
-        const start = this.realToCanvas(line.pos1);
-        ctx.moveTo(start.x, start.y);
-      }
+      // if (!lastPos || lastPos.x !== line.pos1.x || lastPos.y !== line.pos1.y) {
+      const start = this.realToCanvas(line.pos1);
+      ctx.moveTo(start.x, start.y);
+      // }
       const end = this.realToCanvas(line.pos2);
       ctx.lineTo(end.x, end.y);
       lastPos = line.pos2;
