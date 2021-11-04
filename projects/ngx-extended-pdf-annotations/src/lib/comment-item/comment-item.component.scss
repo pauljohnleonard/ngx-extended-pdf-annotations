@@ -5,6 +5,8 @@
   width: 100%;
   align-items: center;
   justify-content: space-between;
+  padding: 0 2px;
+  box-sizing: border-box;
 }
 
 .filler {
@@ -25,7 +27,7 @@
 .comment-outer-container {
   background-color: $commentBackground;
   width: 400px;
-  border: 1px solid $greyLight;
+  border: 1px solid $lightGrey;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -48,22 +50,30 @@
 }
 
 .name {
-  color: $greyMedium;
+  color: $mediumGrey;
 }
 
 .date {
-  color: $greyLight;
+  color: $lightGrey;
   font-size: smaller;
 }
 
 .comment-body {
   margin: 10px;
   width: 100%;
-  color: $greyBold;
+  color: $darkGrey;
   background-color: white;
 }
 
 .myicon {
-  margin-right: 10px;
-  color: $iconcolor;
+  margin-right: 5px;
+  color: $primaryColor;
+}
+
+.menu-button {
+  margin-right: -12px;
+}
+
+.menu-button:focus {
+  border: none !important;
 }

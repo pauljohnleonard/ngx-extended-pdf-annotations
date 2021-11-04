@@ -17,8 +17,6 @@
             class="myicon"
             >gesture</mat-icon
           >
-
-          <span style="width: 20px"></span>
           <div class="comment-name-and-date">
             <div class="name">{{ item.userName }}</div>
             <div class="date">
@@ -48,15 +46,14 @@
           <div class="chat-message-buttons" *ngIf="hasFocus && isFirst">
             <button
               mat-icon-button
-              [matMenuTriggerFor]="deleteMessageMenu"
-              class="delete-menu-button"
-              [class.delete-menu-button-for-non-admin]="true"
-              aria-label="Delete comment menu"
+              [matMenuTriggerFor]="commentMenu"
+              class="menu-button"
+              aria-label="Menu"
             >
               <mat-icon>more_vert</mat-icon>
             </button>
 
-            <mat-menu #deleteMessageMenu="matMenu">
+            <mat-menu #commentMenu="matMenu">
               <button
                 mat-menu-item
                 (click)="annotationService._deleteComment(comment)"

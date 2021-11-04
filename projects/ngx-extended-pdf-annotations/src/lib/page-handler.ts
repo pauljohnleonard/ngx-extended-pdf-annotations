@@ -210,15 +210,28 @@ export class PageHandler {
     const ctx = this.annotationCanvas.getContext('2d');
     ctx.beginPath();
     const s = this.pageViewer.outputScale;
+    ctx.lineJoin = 'round';
+    let lastPos = null;
     for (const line of path) {
-      const start = this.realToCanvas(line.pos1);
-      ctx.moveTo(start.x, start.y);
+      if (!lastPos || lastPos.x !== line.pos1.x || lastPos.y !== line.pos1.y) {
+        const start = this.realToCanvas(line.pos1);
+        ctx.moveTo(start.x, start.y);
+      }
       const end = this.realToCanvas(line.pos2);
       ctx.lineTo(end.x, end.y);
+      lastPos = line.pos2;
     }
     ctx.closePath();
-    ctx.lineWidth = 5;
+
+    const p1 = this.realToCanvas({ x: 0, y: 0 });
+    const p2 = this.realToCanvas({ x: 1, y: 1 });
+
+    const unitCanvas = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+
+    ctx.lineWidth = Math.max(unitCanvas | 0, 1);
+
     ctx.strokeStyle = 'rgba(255,0,0,0.7)';
+
     ctx.stroke();
 
     if (highlight) {
@@ -246,7 +259,7 @@ export class PageHandler {
         h + HIGHLIGHT_BORDER * 2
       );
       ctx.lineWidth = 6;
-      ctx.strokeStyle = 'rgba(0,0,255,0.5)';
+      ctx.strokeStyle = '#0097a7';
       ctx.stroke();
     }
   }
