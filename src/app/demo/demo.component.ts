@@ -16,7 +16,7 @@ import { LocalStoreService } from '../local-store.service';
 export class DemoComponent implements AfterViewInit {
   @Input() user: AnnotationUser;
 
-  textLayer = true;
+  textLayer = false;
   AnnotationMode = AnnotationMode;
   constructor(
     public annotationsService: AnnotationService,
