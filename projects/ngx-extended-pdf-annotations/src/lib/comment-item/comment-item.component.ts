@@ -64,7 +64,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   }
 
   handleFocusOn() {
-    console.log(' handleFocusOn ');
+    // console.log(' handleFocusOn ');
     // if (this.hasFocus) {
     //   return;
     // }
@@ -116,7 +116,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   // Do not call directly. Let annotation manager do it.
   setFocusMode(focusMode: FocusModeEnum) {
     this.focusmode = focusMode;
-    console.log('FOCUS MODE', focusMode, this.comment);
+    // console.log('FOCUS MODE', focusMode, this.comment);
     switch (focusMode) {
       case FocusModeEnum.CREATE:
       case FocusModeEnum.FOCUS:
@@ -135,7 +135,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   }
 
   ngOnInit(): void {
-    console.log(this.comment);
+    // console.log(this.comment);
     this.comment.component = this;
 
     this.inputFormControl.valueChanges.subscribe((val) => {

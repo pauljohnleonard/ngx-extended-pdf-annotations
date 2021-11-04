@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 import { CommentItemComponent } from './comment-item/comment-item.component';
 import { CommentComponent } from './comment-panel/annotations-panel-wrapper.component';
 import { InlineSVGModule } from 'ng-inline-svg';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -21,8 +20,6 @@ import { MatInputModule } from '@angular/material/input';
   imports: [
     CommonModule,
     InlineSVGModule,
-
-    BrowserAnimationsModule,
     ReactiveFormsModule,
     MatInputModule,
     MatIconModule,
@@ -41,4 +38,5 @@ import { MatInputModule } from '@angular/material/input';
   ],
   exports: [CommentComponent, CommentItemComponent],
 })
-export class AnnotationsModule {}
+export class NgxExtendPdfAnnotationsModule {}
+export { CommentItemComponent } from './comment-item/comment-item.component';

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import {
   AnnotationComment,
+  AnnotationRecord,
   AnnotationStorage,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
 
@@ -32,16 +33,16 @@ export class LocalStoreService implements AnnotationStorage {
     });
   }
 
-  saveAnnotation(anno: AnnotationComment) {
+  saveAnnotation(record: AnnotationRecord) {
     var transaction = this.db.transaction('records', 'readwrite');
     var objectStore = transaction.objectStore('records');
-    objectStore.put(anno);
+    objectStore.put(record);
   }
 
-  updateAnnotation(anno: AnnotationComment) {
+  updateAnnotation(record: AnnotationRecord) {
     var transaction = this.db.transaction('records', 'readwrite');
     var objectStore = transaction.objectStore('records');
-    objectStore.put(anno);
+    objectStore.put(record);
   }
 
   async fetchDocument(

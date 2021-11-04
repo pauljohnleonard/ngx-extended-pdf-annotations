@@ -43,12 +43,10 @@ export class CommentComponent implements OnInit, OnDestroy {
       .subscribe((mode) => {
         switch (mode) {
           case AnnotationMode.OFF:
-            console.log(' SmodeSubject$tation ');
             this.elRef.nativeElement.style.cursor = 'cursor';
             break;
 
           case AnnotationMode.PEN:
-            console.log(' START annotation ');
             this.elRef.nativeElement.style.cursor = 'pen';
             break;
 
@@ -66,11 +64,9 @@ export class CommentComponent implements OnInit, OnDestroy {
 
   _showCommentPanel(yes) {
     if (yes) {
-      console.log(' TOggle anno  ON ');
       this.elRef.nativeElement.style.display = 'block';
       this.viewContainer.style.display = 'flex';
     } else {
-      console.log(' TOggle anno  OFF ');
       this.elRef.nativeElement.style.display = 'none';
       this.viewContainer.style.display = 'block';
     }
