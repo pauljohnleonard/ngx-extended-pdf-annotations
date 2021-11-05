@@ -24,7 +24,7 @@
 
     <div class="annotationControlPanel" id="toolbarViewerRight">
       <ng-container *ngIf="annotationsService.isActive()">
-        <mat-icon
+        <!-- <mat-icon
           *ngIf="!annotationsService.isPrivate"
           style="margin-right: 10px; color: rgb(49, 49, 245)"
           matTooltip="New comments will be public. Click to default to private."
@@ -37,7 +37,7 @@
           matTooltip="New comments will be private. Click to default to public."
           (click)="annotationsService.isPrivate = false"
           >visibility_off</mat-icon
-        >
+        > -->
 
         <!-- <mat-checkbox
           matTooltip="Only you can see private comments "

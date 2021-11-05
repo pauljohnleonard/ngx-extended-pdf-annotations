@@ -37,7 +37,7 @@ export class AnnotationService {
 
   storage: AnnotationStorage;
 
-  isPrivate = true;
+  // isPrivate = true;
   documentId: string;
   // public subject$ = new Subject<AnnotationMessage>();
 
@@ -66,6 +66,9 @@ export class AnnotationService {
     } = {};
 
     for (const record of records) {
+      if (record.deleted) {
+        continue;
+      }
       if (record.type === AnnotationItemType.COMMENT) {
         commentRecords[record.id] = [record];
         this.annotationMap[record.id] = record as AnnotationComment;
@@ -73,7 +76,13 @@ export class AnnotationService {
     }
 
     for (const record of records) {
+      if (record.deleted) {
+        continue;
+      }
       if (record.type === AnnotationItemType.REPLY) {
+        if (!commentRecords[(record as AnnotationReply).parentId]) {
+          continue;
+        }
         commentRecords[(record as AnnotationReply).parentId].push(record);
       }
     }
@@ -85,8 +94,23 @@ export class AnnotationService {
 
       this._comments.push({ records });
     }
+    setTimeout(() => {
+      this.zoomChange(null);
+      this._redraw();
+      this.startAutoSave();
+    });
+    // console.log('COMMENTS LOADED FROM STORE');
+  }
 
-    console.log('COMMENTS LOADED FROM STORE');
+  saveAllComments() {
+    for (const comment of this._comments) {
+      this.saveComment(comment);
+    }
+  }
+  startAutoSave() {
+    setInterval(() => {
+      this.saveAllComments();
+    }, 5000);
   }
 
   handleControlEvent(evt: AnnotationControlEvent) {
@@ -163,22 +187,29 @@ export class AnnotationService {
   // Private and internal  after here -------------------------------------------------------------------------------------
 
   // If we lose focus then save all the data.
-  handleItemFocusOff(comment: UIPannelComment) {
-    this.saveComment(comment);
+  async handleItemFocusOff(comment: UIPannelComment) {
+    await this.saveComment(comment);
   }
 
-  saveComment(comment: UIPannelComment) {
+  // Auto loop saves (publish button handled else where)
+  async saveComment(comment: UIPannelComment) {
     for (const record of comment.records) {
       if (this.storage) {
-        if (
-          record.dirty ||
-          (!record.saved && record.type === AnnotationItemType.COMMENT)
-        ) {
+        if (!record.published && record.dirty) {
           record.dirty = false;
-          record.saved = true;
-          this.storage.saveAnnotation(record);
+          record.virgin = false;
+          await this.storage.saveAnnotation(record);
         }
       }
+    }
+  }
+
+  // Forcefully save a record.
+  async saveRecord(record: AnnotationRecord) {
+    if (this.storage) {
+      record.dirty = false;
+      record.virgin = false;
+      await this.storage.saveAnnotation(record);
     }
   }
 
@@ -338,12 +369,12 @@ export class AnnotationService {
         documentId: this.documentId,
         type: AnnotationItemType.COMMENT,
         dirty: false,
-        saved: false,
+        virgin: true,
+        published: false,
         id: event.id,
         bodyValue: '',
         mark,
         createdAt: new Date().toISOString(),
-        isPrivate: this.isPrivate,
         userName: this._user.userName,
         userId: this._user.userId,
       };
@@ -393,7 +424,12 @@ export class AnnotationService {
 
   // _layoutChange() {}
 
-  _deleteComment(comment: UIPannelComment) {
+  async _deleteComment(comment: UIPannelComment) {
+    for (const record of comment.records) {
+      record.deleted = true;
+      await this.saveRecord(record);
+    }
+
     if (this._mode !== AnnotationMode.HIDE) {
       this.setMode(AnnotationMode.OFF);
     }

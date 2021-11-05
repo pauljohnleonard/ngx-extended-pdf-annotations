@@ -46,7 +46,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   FocusMode = FocusModeEnum;
   AnnotationItemType = AnnotationItemType;
   inputFormControl = new FormControl({ value: '', disabled: false });
-  inputRecord: AnnotationRecord;
+  _inputRecord: AnnotationRecord;
   windowHeightForMobile: number;
   focusmode = FocusModeEnum.CREATE;
   AnnotationComment: AnnotationComment;
@@ -59,27 +59,36 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     public annotationService: AnnotationService
   ) {}
 
+  get inputRecord() {
+    return (
+      this.annotationService.focusComment === this.comment && this._inputRecord
+    );
+  }
+
+  initInput() {
+    if (!this._inputRecord) {
+      this.inputFormControl.setValue('');
+    } else {
+      this.inputFormControl.setValue(this._inputRecord.bodyValue);
+    }
+  }
+
   get hasFocus() {
     return this.annotationService.focusComment === this.comment;
   }
 
   handleFocusOn() {
-    // console.log(' handleFocusOn ');
-    // if (this.hasFocus) {
-    //   return;
-    // }
     const lastItem = this.comment.records[this.comment.records.length - 1];
-    if (lastItem.dirty || !lastItem.saved) {
-      this.inputRecord = lastItem;
-      this.isMobileScreen;
-    } else if (lastItem.userId === this.annotationService.getUser().userId) {
-      this.inputRecord = lastItem;
+
+    if (lastItem.userId === this.annotationService.getUser().userId) {
+      this._inputRecord = lastItem;
     } else {
       let record: AnnotationReply = {
         documentId: this.annotationService.documentId,
         type: AnnotationItemType.REPLY,
         dirty: false,
-        saved: false,
+        virgin: true,
+        published: false,
         id: uuidv4(),
         parentId: this.comment.records[0].id,
         bodyValue: '',
@@ -88,14 +97,13 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         userId: this.annotationService.getUser().userId,
       };
       this.comment.records.push(record);
-      this.inputRecord = record;
-      this.inputFormControl.setValue('');
+      this._inputRecord = record;
     }
-    // this.hasFocus = true;
+    this.initInput();
   }
 
   toogleVisibility() {
-    this.comment.records[0].isPrivate = !this.comment.records[0].isPrivate;
+    this.comment.records[0].published = !this.comment.records[0].published;
     this.comment.records[0].dirty = true;
     this.annotationService.saveComment(this.comment);
   }
@@ -103,14 +111,37 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   handleFocusOff() {
     const lastItem = this.comment.records[this.comment.records.length - 1];
     if (lastItem.type === AnnotationItemType.REPLY) {
-      if (!lastItem.saved && (!lastItem.dirty || !lastItem.bodyValue)) {
+      if (lastItem.virgin && (!lastItem.dirty || !lastItem.bodyValue)) {
         this.comment.records.pop();
       }
     }
     // this.hasFocus = false;
-    this.inputRecord = null;
+    this._inputRecord = null;
+    this.initInput();
   }
   // This is responisble for setting the state of annotation when we gain focus
+
+  async publishItem(record: AnnotationRecord) {
+    record.published = true;
+    record.dirty = true;
+    await this.annotationService.saveRecord(record);
+  }
+
+  getPublishToolTip(item: AnnotationRecord): string {
+    if (item.published) {
+      if (item.dirty) {
+        return 'Publish your edits';
+      } else {
+        return 'Comment is public';
+      }
+    } else {
+      if (item.dirty) {
+        return 'Publish this comment to make publicly visible';
+      } else {
+        return 'No edits to save.';
+      }
+    }
+  }
 
   // Set the mode of the item.
   // Do not call directly. Let annotation manager do it.
@@ -139,13 +170,16 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.comment.component = this;
 
     this.inputFormControl.valueChanges.subscribe((val) => {
-      this.inputRecord.bodyValue = val;
-      this.inputRecord.dirty = true;
+      if (this._inputRecord.bodyValue !== val) {
+        this._inputRecord.dirty = true;
+        this._inputRecord.bodyValue = val;
+      }
     });
 
-    if (!this.comment.records[0].saved) {
+    if (this.comment.records[0].virgin) {
       this.setFocusMode(FocusModeEnum.CREATE);
-      this.inputRecord = this.comment.records[0];
+      this._inputRecord = this.comment.records[0];
+      this.initInput();
     }
   }
 

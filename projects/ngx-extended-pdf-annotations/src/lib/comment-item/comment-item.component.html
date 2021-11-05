@@ -28,17 +28,16 @@
 
           <ng-container *ngIf="item.type === AnnotationItemType.COMMENT">
             <mat-icon
-              *ngIf="!item.isPrivate"
+              *ngIf="item.published"
               class="myicon"
               matTooltip="Public comment. Click to make private."
               (click)="toogleVisibility()"
               >visibility</mat-icon
             >
             <mat-icon
-              *ngIf="item.isPrivate"
+              *ngIf="!item.published"
               class="myicon"
-              matTooltip="Private comment. Click to make public."
-              (click)="toogleVisibility()"
+              matTooltip="Comment is private. Publish to share."
               >visibility_off</mat-icon
             >
           </ng-container>
@@ -72,27 +71,44 @@
           </div>
         </div>
         <!-- {{ item.id }} {{ inputRecord.id }} -->
-        <mat-form-field
-          *ngIf="item === inputRecord"
-          class="comment-body-formfield"
-          appearance="outline"
-        >
-          <textarea
-            matInput
-            class="comment-window-textarea-message-input"
-            i18n-placeholder="@@YourCommentPlaceHolder"
-            [placeholder]="
-              item.type === AnnotationItemType.COMMENT ? 'Comment' : 'Reply'
+
+        <ng-container *ngIf="item === inputRecord">
+          <mat-form-field class="comment-body-formfield" appearance="outline">
+            <textarea
+              matInput
+              class="comment-window-textarea-message-input"
+              i18n-placeholder="@@YourCommentPlaceHolder"
+              [placeholder]="
+                item.type === AnnotationItemType.COMMENT ? 'Comment' : 'Reply'
+              "
+              [formControl]="inputFormControl"
+              autocomplete="off"
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="5"
+              #messageinput
+            >
+            </textarea>
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            (click)="publishItem(item)"
+            [disabled]="
+              (item.published && !item.dirty) ||
+              (!item.published && !item.bodyValue)
             "
-            [formControl]="inputFormControl"
-            autocomplete="off"
-            cdkTextareaAutosize
-            cdkAutosizeMinRows="1"
-            cdkAutosizeMaxRows="5"
-            #messageinput
+            [matTooltip]="getPublishToolTip(item)"
+            color="primary"
           >
-          </textarea>
-        </mat-form-field>
+            Publish
+          </button>
+        </ng-container>
+
+        <!-- dirty: {{ item.dirty }} published:{{ item.published }} virgin:{{
+          item.virgin
+        }} -->
+
         <div
           *ngIf="!isLast"
           style="
@@ -104,29 +120,5 @@
         ></div>
       </ng-container>
     </ng-container>
-    <!-- <div class="controls-container" *ngIf="hasFocus">
-      <span class="filler"></span>
-      <button
-        mat-icon-button
-        class="is-replying-info-cancel-button"
-        aria-label="Cancel replying to message"
-        (click)="clearMessage()"
-        i18n-matTooltip="@@ClearCommentBottonng s"
-        matTooltip="clear"
-      >
-        <mat-icon>clear</mat-icon>
-      </button>
-
-      <button
-        mat-icon-button
-        matSuffix
-        (click)="comnmitComment()"
-        [attr.aria-label]="'Send message'"
-        matTooltip="Send message"
-        i18n-matTooltip="@@chat_send-message"
-      >
-        <mat-icon>send</mat-icon>
-      </button>
-    </div> -->
   </div>
 </div>

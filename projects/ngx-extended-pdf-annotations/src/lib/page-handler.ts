@@ -226,7 +226,7 @@ export class PageHandler {
     const p1 = this.realToCanvas({ x: 0, y: 0 });
     const p2 = this.realToCanvas({ x: 1, y: 1 });
 
-    const unitCanvas = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+    const unitCanvas = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2) * 1.5;
 
     ctx.lineWidth = Math.max(unitCanvas | 0, 1);
 

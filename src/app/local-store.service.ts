@@ -57,8 +57,13 @@ export class LocalStoreService implements AnnotationStorage {
       const request = docIndex.getAll(documentId);
 
       request.onsuccess = (res) => {
-        console.log(request.result);
-        resolve(request.result);
+        let records: AnnotationRecord[] = request.result;
+        records = records.filter(
+          (record) =>
+            !record.deleted && (record.published || record.userId === userId)
+        );
+
+        resolve(records);
       };
     });
   }

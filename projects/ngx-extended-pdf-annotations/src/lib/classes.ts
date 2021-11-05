@@ -62,10 +62,10 @@ export interface AnnotationRecord extends AnnotationUser {
   bodyValue: string;
   createdAt: string;
   modifiedAt?: string;
-  saved: boolean;
+  virgin: boolean;
   dirty: boolean;
-  isPrivate?: boolean;
   deleted?: boolean;
+  published: boolean;
 }
 export interface AnnotationComment extends AnnotationRecord {
   mark?: AnnotationMark;
