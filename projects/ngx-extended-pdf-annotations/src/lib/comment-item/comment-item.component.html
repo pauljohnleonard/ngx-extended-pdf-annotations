@@ -65,11 +65,12 @@
           </div>
         </div>
 
-        <div class="comment-body-container">
-          <div *ngIf="item !== inputRecord" class="comment-body">
+        <div *ngIf="item !== inputRecord" class="comment-body-container">
+          <div class="comment-body">
             {{ item.bodyValue }}
           </div>
         </div>
+
         <!-- {{ item.id }} {{ inputRecord.id }} -->
 
         <ng-container *ngIf="item === inputRecord">
@@ -92,6 +93,7 @@
           </mat-form-field>
 
           <button
+            style="margin-top: 10px"
             mat-raised-button
             (click)="publishItem(item)"
             [disabled]="
@@ -109,15 +111,15 @@
           item.virgin
         }} -->
 
-        <div
-          *ngIf="!isLast"
+        <!-- <div
+          *ngIf="0 && !isLast"
           style="
             width: 100%;
             background-color: grey;
             height: 1px;
             margin-bottom: 10px;
           "
-        ></div>
+        ></div> -->
       </ng-container>
     </ng-container>
   </div>

@@ -96,10 +96,8 @@ export class PageHandler {
     let z = this.pageViewer.viewport.convertToViewportPoint(pos.x, pos.y);
     return {
       x: z[0] * this.pageViewer.outputScale.sx,
-      y: z[1] * this.pageViewer.outputScale.sx,
+      y: z[1] * this.pageViewer.outputScale.sy,
     };
-
-    // { x: pos.x * this.pageViewer.outputScale.sx, y: pos.y * this.pageViewer.outputScale.sy };
   }
 
   startAnnotation() {
