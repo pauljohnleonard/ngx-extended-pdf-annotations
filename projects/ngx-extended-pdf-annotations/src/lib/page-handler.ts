@@ -4,10 +4,13 @@ import {
   AnnotationMode,
   AnnotationPath,
   AnnotationPoint,
-  AnnotationComment,
-  PageEventType as PageEventType,
+  AnnotationPageRect,
+  PageEventType,
+  AnnotationPenMark,
+  AnnotationRecord,
 } from './classes';
 import { AnnotationService } from './annotation.service';
+import { getPosOfElement } from './util';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -26,13 +29,14 @@ export class PageHandler {
     public page: number,
     public annotationService: AnnotationService
   ) {
-    this.page = page;
-
     this.updateCanvas(pageViewer);
 
     this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
       switch (mode) {
         case AnnotationMode.PEN:
+          this.startAnnotation();
+          break;
+        case AnnotationMode.TEXT:
           this.startAnnotation();
           break;
 
@@ -48,8 +52,56 @@ export class PageHandler {
           this.visible(true);
           break;
       }
+
+      this.enableTextLayer(mode !== AnnotationMode.PEN);
     });
+
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
+  }
+
+  mapToPageRect(rect: DOMRect): AnnotationPageRect {
+    const pageRect =
+      this.pageViewer.textLayer.textLayerDiv.getBoundingClientRect();
+
+    if (!(rect.y >= pageRect.top && rect.y <= pageRect.bottom)) {
+      return null;
+    }
+
+    if (rect.x <= pageRect.x) {
+      return null;
+    }
+
+    if (rect.x <= pageRect.x) {
+      return null;
+    }
+    if (rect.x + rect.width >= pageRect.x + pageRect.width) {
+      return null;
+    }
+
+    // console.log({ pageRect, rect });
+    // const { xOffset, yOffset } = getPosOfElement(this.pageViewer.canvas);
+    const xOffset = pageRect.x;
+    const yOffset = pageRect.y;
+
+    // const n = 2;
+    const pos1 = this.cursorToReal({
+      offsetX: rect.x - xOffset,
+      offsetY: rect.y - yOffset,
+    });
+
+    const pos2 = this.cursorToReal({
+      offsetX: rect.x + rect.width - xOffset,
+      offsetY: rect.y + rect.height - yOffset,
+    });
+
+    return { page: this.page, pos1, pos2 };
+  }
+
+  enableTextLayer(yes) {
+    console.log(' Enable text ', yes);
+    this.pageViewer.textLayer.textLayerDiv.style['pointer-events'] = yes
+      ? 'auto'
+      : 'none';
   }
 
   // showTops() {
@@ -62,7 +114,8 @@ export class PageHandler {
   // }
 
   // Y center of annotation bounding box in terms of full viewport.
-  getAnnotationPanelPos(anno: AnnotationComment): number {
+  getAnnotationPanelPos(anno: AnnotationRecord): number {
+    const mark = anno.mark as AnnotationPenMark;
     if (!anno.mark) {
       throw Error(' Expected annotation record to have a mark');
     }
@@ -74,8 +127,16 @@ export class PageHandler {
 
     // const clinetRect = this.canvas.getBoundingClientRect();
     // const canvasTop = clinetRect.top;
-    const x = anno.mark.boundingBox.x1; // + anno.mark.boundingBox.x2) / 2;
-    const y = anno.mark.boundingBox.y2; // + anno.mark.boundingBox.y2) / 2;
+
+    let x, y;
+    if (mark.pos) {
+      x = mark.pos.x;
+      y = mark.pos.y;
+    } else {
+      x = mark.boundingBox.x1; // + anno.mark.boundingBox.x2) / 2;
+      y = mark.boundingBox.y2; // + anno.mark.boundingBox.y2) / 2;
+    }
+
     const z = this.realToCanvas({ x, y });
 
     const pageDiv = this.annotationCanvas.parentElement.parentElement;
@@ -127,12 +188,6 @@ export class PageHandler {
         page: this.page,
       });
     }
-    //     console.log('down', {
-    //       x: e.offsetX,
-    //       y: e.offsetY,
-    //       x1: this.pos.x,
-    //       y1: this.pos.y,
-    //     });
     this.isDrawing = true;
   }
 
@@ -202,8 +257,26 @@ export class PageHandler {
     }
   }
 
-  draw(record: AnnotationComment, highlight) {
-    const path = record.mark.path;
+  drawTextBox(pageRect: AnnotationPageRect) {
+    const ctx = this.annotationCanvas.getContext('2d');
+
+    const pos1 = this.realToCanvas(pageRect.pos1);
+    const pos2 = this.realToCanvas(pageRect.pos2);
+
+    let width = Math.abs(pos2.x - pos1.x);
+    let x = Math.min(pos1.x, pos2.x);
+
+    let height = Math.abs(pos2.y - pos1.y);
+    let y = Math.min(pos1.y, pos2.y);
+    ctx.fillStyle = '#0000FF';
+    ctx.globalAlpha = 0.05;
+    ctx.fillRect(x, y, width, height);
+  }
+
+  drawPenMark(record: AnnotationRecord, highlight) {
+    const mark = record.mark as AnnotationPenMark;
+
+    const path = mark.path;
 
     const ctx = this.annotationCanvas.getContext('2d');
     ctx.beginPath();
@@ -233,13 +306,13 @@ export class PageHandler {
     ctx.stroke();
 
     if (highlight) {
-      const x1 = record.mark.boundingBox.x1;
-      const y1 = record.mark.boundingBox.y1;
+      const x1 = mark.boundingBox.x1;
+      const y1 = mark.boundingBox.y1;
 
       const c1 = this.realToCanvas({ x: x1, y: y1 });
 
-      const x2 = record.mark.boundingBox.x2;
-      const y2 = record.mark.boundingBox.y2;
+      const x2 = mark.boundingBox.x2;
+      const y2 = mark.boundingBox.y2;
 
       const c2 = this.realToCanvas({ x: x2, y: y2 });
       const w = Math.abs(c2.x - c1.x);

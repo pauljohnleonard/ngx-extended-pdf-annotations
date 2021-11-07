@@ -22,10 +22,20 @@ export enum PageEventType {
 }
 
 export enum AnnotationType {
-  PATH = 'PATH',
+  PEN = 'PEN',
+  TEXT = 'TEXT',
 }
 
 export type AnnotationPoint = { x: number; y: number };
+
+export type AnnotationPageRect = {
+  page: number;
+  pos1: AnnotationPoint;
+  pos2: AnnotationPoint;
+};
+
+export type AnnotationTextSelection = AnnotationPageRect[];
+
 export type PageEvent = {
   id: string;
   type: PageEventType;
@@ -41,13 +51,21 @@ export type AnnotationUser = { userName: string; userId: string };
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
 
 export type BoundingBox = { x1: number; y1: number; x2: number; y2: number };
-export type AnnotationMark = {
-  page: number;
-  boundingBox?: BoundingBox;
+
+export interface AnnotationMark {
   type: AnnotationType;
-  pos?: AnnotationPoint;
-  path?: AnnotationPath;
-};
+  page: number; // first page if bounds mulitple pages.
+  pos?: AnnotationPoint; // calculated pater
+}
+
+export interface AnnotationPenMark extends AnnotationMark {
+  boundingBox?: BoundingBox; // calculated later
+  path: AnnotationPath;
+}
+
+export interface AnnotationTextMark extends AnnotationMark {
+  pageRects: AnnotationPageRect[];
+}
 
 // This is the complete record we need to store.
 
@@ -60,22 +78,17 @@ export interface AnnotationRecord extends AnnotationUser {
   id: string;
   type: AnnotationItemType;
   bodyValue: string;
-  createdAt: string;
-  modifiedAt?: string;
   virgin: boolean;
   dirty: boolean;
+  published?: boolean;
+  createdAt: string;
+  modifiedAt?: string;
   deleted?: boolean;
-  published: boolean;
-}
-export interface AnnotationComment extends AnnotationRecord {
   mark?: AnnotationMark;
+  parentId?: string;
 }
 
-export interface AnnotationReply extends AnnotationRecord {
-  parentId: string;
-}
-
-export type AnnotationMarkRender = (record: AnnotationComment) => void;
+export type AnnotationMarkRender = (record: AnnotationRecord) => void;
 
 export type PanelPosition = {
   page: number;
@@ -110,7 +123,7 @@ export enum AnnotationMessageEnum {
 }
 export class AnnotationMessage {
   type: AnnotationMessageEnum;
-  record?: AnnotationComment;
+  record?: AnnotationRecord;
   id?: string;
 }
 

@@ -1,22 +1,14 @@
 import { TOUCH_BUFFER_MS } from '@angular/cdk/a11y/input-modality/input-modality-detector';
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { AnnotationService } from '../annotation.service';
 import {
   AnnotationRecord,
   AnnotationItemType,
-  AnnotationComment,
-  AnnotationReply,
   FocusModeEnum,
   UIPanelItemIterface,
+  AnnotationType,
   UIPannelComment,
 } from '../classes';
 import { v4 as uuidv4 } from 'uuid';
@@ -49,8 +41,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   _inputRecord: AnnotationRecord;
   windowHeightForMobile: number;
   focusmode = FocusModeEnum.CREATE;
-  AnnotationComment: AnnotationComment;
-
+  AnnotationType = AnnotationType;
   cnt = 0;
 
   constructor(
@@ -83,7 +74,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     if (lastItem.userId === this.annotationService.getUser().userId) {
       this._inputRecord = lastItem;
     } else {
-      let record: AnnotationReply = {
+      let record: AnnotationRecord = {
         documentId: this.annotationService.documentId,
         type: AnnotationItemType.REPLY,
         dirty: false,
@@ -170,7 +161,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.comment.component = this;
 
     this.inputFormControl.valueChanges.subscribe((val) => {
-      if (this._inputRecord.bodyValue !== val) {
+      if (this._inputRecord && this._inputRecord.bodyValue !== val) {
         this._inputRecord.dirty = true;
         this._inputRecord.bodyValue = val;
       }

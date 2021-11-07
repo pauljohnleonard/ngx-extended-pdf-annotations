@@ -1,9 +1,10 @@
-import { AnnotationComment, PageEvent } from './classes';
+import { AnnotationRecord, AnnotationPenMark, PageEvent } from './classes';
 
 export function setBoundingBoxOf(
-  record: AnnotationComment,
+  record: AnnotationRecord,
   event: PageEvent
 ): void {
+  const mark = record.mark as AnnotationPenMark;
   let x1 = Number.MAX_SAFE_INTEGER,
     y1 = Number.MAX_SAFE_INTEGER,
     x2 = Number.MIN_SAFE_INTEGER,
@@ -23,8 +24,9 @@ export function setBoundingBoxOf(
     }
   }
 
-  if (record.mark) {
-    for (const l of record.mark.path) {
+  if (mark && mark.path) {
+    // WTF ???
+    for (const l of mark.path) {
       x1 = Math.min(l.pos1.x, x1);
       x2 = Math.max(l.pos2.x, x2);
       y1 = Math.min(l.pos1.y, y1);
@@ -32,5 +34,19 @@ export function setBoundingBoxOf(
     }
   }
 
-  record.mark.boundingBox = { x1, x2, y1, y2 };
+  mark.boundingBox = { x1, x2, y1, y2 };
+}
+
+export function getPosOfElement(elm: HTMLElement): {
+  xOffset: number;
+  yOffset: number;
+} {
+  var xOffset = 0;
+  var yOffset = 0;
+  while (elm != null) {
+    xOffset += elm.offsetTop;
+    yOffset += elm.offsetLeft;
+    elm = elm.offsetParent as HTMLElement;
+  }
+  return { xOffset, yOffset };
 }

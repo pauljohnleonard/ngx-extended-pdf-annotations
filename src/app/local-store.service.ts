@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import {
-  AnnotationComment,
   AnnotationRecord,
   AnnotationStorage,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
@@ -48,7 +47,7 @@ export class LocalStoreService implements AnnotationStorage {
   async fetchDocument(
     documentId: string,
     userId: string
-  ): Promise<AnnotationComment[]> {
+  ): Promise<AnnotationRecord[]> {
     return new Promise((resolve) => {
       var tx = this.db.transaction('records', 'readonly');
       var store = tx.objectStore('records');

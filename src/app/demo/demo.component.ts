@@ -21,22 +21,7 @@ export class DemoComponent implements AfterViewInit {
   constructor(
     public annotationsService: AnnotationService,
     public storage: LocalStoreService
-  ) {
-    // addEventListener version
-    document.addEventListener('selectionchange', () => {
-      console.log('-----------------------------------');
-      const selection = document.getSelection();
-      const rangeCount = selection.rangeCount;
-      for (let i = 0; i < rangeCount; i++) {
-        const range = selection.getRangeAt(i);
-        const rects: DOMRectList = range.getClientRects();
-        for (let i = 0; i < rects.length; i++) {
-          let rect = rects[i];
-          console.log(rect);
-        }
-      }
-    });
-  }
+  ) {}
 
   async ngAfterViewInit() {
     const documentId = '1234';
