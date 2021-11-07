@@ -1,10 +1,10 @@
-import { AnnotationRecord, AnnotationPenMark, PageEvent } from './classes';
+import { AnnotationRecord, PageEvent } from './classes';
 
 export function setBoundingBoxOf(
   record: AnnotationRecord,
   event: PageEvent
 ): void {
-  const mark = record.mark as AnnotationPenMark;
+  const mark = record.mark;
   let x1 = Number.MAX_SAFE_INTEGER,
     y1 = Number.MAX_SAFE_INTEGER,
     x2 = Number.MIN_SAFE_INTEGER,

@@ -1,16 +1,15 @@
 import { Subscription } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  AnnotationMode,
+  AnnotationType,
   AnnotationPath,
   AnnotationPoint,
   AnnotationPageRect,
   PageEventType,
-  AnnotationPenMark,
   AnnotationRecord,
+  AnnotationMark,
 } from './classes';
 import { AnnotationService } from './annotation.service';
-import { getPosOfElement } from './util';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -23,6 +22,7 @@ export class PageHandler {
 
   private annotationCanvas: HTMLCanvasElement;
   private pdfCanvas: HTMLCanvasElement;
+  noteImg: HTMLImageElement;
 
   constructor(
     public pageViewer,
@@ -33,27 +33,28 @@ export class PageHandler {
 
     this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
       switch (mode) {
-        case AnnotationMode.PEN:
-          this.startAnnotation();
-          break;
-        case AnnotationMode.TEXT:
+        case AnnotationType.PEN:
+        case AnnotationType.NOTE:
+        case AnnotationType.TEXT:
           this.startAnnotation();
           break;
 
-        case AnnotationMode.OFF:
+        case AnnotationType.OFF:
           this.endAnnotation();
           break;
 
-        case AnnotationMode.HIDE:
+        case AnnotationType.HIDE:
           this.visible(false);
           break;
 
-        case AnnotationMode.SHOW:
+        case AnnotationType.SHOW:
           this.visible(true);
           break;
       }
 
-      this.enableTextLayer(mode !== AnnotationMode.PEN);
+      this.enableTextLayer(
+        mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
+      );
     });
 
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
@@ -115,7 +116,7 @@ export class PageHandler {
 
   // Y center of annotation bounding box in terms of full viewport.
   getAnnotationPanelPos(anno: AnnotationRecord): number {
-    const mark = anno.mark as AnnotationPenMark;
+    const mark = anno.mark;
     if (!anno.mark) {
       throw Error(' Expected annotation record to have a mark');
     }
@@ -167,8 +168,18 @@ export class PageHandler {
     this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
     this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
-    this.annotationCanvas.style.cursor = 'crosshair';
-    // ("url('http://localhost:4200/assets/pencil.png'),auto");
+
+    switch (this.annotationService.getMode()) {
+      case AnnotationType.PEN:
+        this.annotationCanvas.style.cursor =
+          "url('/assets/pencil.png')  0 32 ,auto";
+        break;
+
+      case AnnotationType.NOTE:
+        this.annotationCanvas.style.cursor =
+          "url('/assets/note.png')  0 32 ,auto";
+        break;
+    }
     // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
     //("url('/assets/pencil.png'),pointer"); // " //'crosshair';
   }
@@ -178,17 +189,31 @@ export class PageHandler {
     this.pos = this.cursorToReal(e);
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
-      this.path = [];
-      this.annotationService._handlePageEvent({
-        id: this.currentAnnotationId,
-        type: PageEventType.START,
-        pos: this.pos,
-        mode: AnnotationMode.PEN,
-        path: this.path,
-        page: this.page,
-      });
+      switch (this.annotationService.getMode()) {
+        case AnnotationType.PEN:
+          this.path = [];
+          this.annotationService._handlePageEvent({
+            id: this.currentAnnotationId,
+            type: PageEventType.START,
+            pos: this.pos,
+            mode: AnnotationType.PEN,
+            path: this.path,
+            page: this.page,
+          });
+          this.isDrawing = true;
+          break;
+
+        case AnnotationType.NOTE:
+          this.annotationService._handlePageEvent({
+            id: this.currentAnnotationId,
+            type: PageEventType.START,
+            pos: this.pos,
+            mode: AnnotationType.NOTE,
+            page: this.page,
+          });
+          break;
+      }
     }
-    this.isDrawing = true;
   }
 
   mouseMoveHandler(e) {
@@ -269,12 +294,25 @@ export class PageHandler {
     let height = Math.abs(pos2.y - pos1.y);
     let y = Math.min(pos1.y, pos2.y);
     ctx.fillStyle = '#0000FF';
-    ctx.globalAlpha = 0.05;
+    ctx.globalAlpha = 0.1;
     ctx.fillRect(x, y, width, height);
+    ctx.globalAlpha = 1.0;
+  }
+
+  drawNoteMark(record: AnnotationRecord, highlight: boolean) {
+    const ctx = this.annotationCanvas.getContext('2d');
+    const pos = this.realToCanvas(record.mark.pos);
+    ctx.drawImage(
+      this.annotationService.noteImg,
+      pos.x - 100,
+      pos.y - 100,
+      100,
+      100
+    );
   }
 
   drawPenMark(record: AnnotationRecord, highlight) {
-    const mark = record.mark as AnnotationPenMark;
+    const mark = record.mark;
 
     const path = mark.path;
 

@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { PageEventType, AnnotationMode, AnnotationPath } from '../classes';
+import { PageEventType, AnnotationType, AnnotationPath } from '../classes';
 
 import { AnnotationService } from '../annotation.service';
 
@@ -42,21 +42,21 @@ export class CommentComponent implements OnInit, OnDestroy {
       .pipe(untilDestroyed(this))
       .subscribe((mode) => {
         switch (mode) {
-          case AnnotationMode.OFF:
+          case AnnotationType.OFF:
             this.elRef.nativeElement.style.cursor = 'cursor';
             break;
 
-          case AnnotationMode.PEN:
-            this.elRef.nativeElement.style.cursor = 'pen';
-            break;
+          // case AnnotationType.PEN:
+          //   this.elRef.nativeElement.style.cursor = 'pen';
+          //   break;
 
-          case AnnotationMode.READY:
+          case AnnotationType.READY:
             this.viewContainer = document.getElementById('viewerContainer');
             break;
 
-          case AnnotationMode.SHOW:
-          case AnnotationMode.HIDE:
-            this._showCommentPanel(mode === AnnotationMode.SHOW);
+          case AnnotationType.SHOW:
+          case AnnotationType.HIDE:
+            this._showCommentPanel(mode === AnnotationType.SHOW);
             break;
         }
       });

@@ -50,7 +50,7 @@
         <mat-icon
           [ngClass]="{
             canpress: true,
-            highlight: this.annotationsService.getMode() === AnnotationMode.PEN,
+            highlight: this.annotationsService.getMode() === AnnotationType.PEN,
             iconButton: true
           }"
           (click)="penAnnotate()"
@@ -62,12 +62,24 @@
           [ngClass]="{
             canpress: true,
             highlight:
-              this.annotationsService.getMode() === AnnotationMode.TEXT,
+              this.annotationsService.getMode() === AnnotationType.TEXT,
             iconButton: true
           }"
           (click)="textAnnotate()"
           matTooltip="Annotate text"
           >title</mat-icon
+        >
+
+        <mat-icon
+          [ngClass]="{
+            canpress: true,
+            highlight:
+              this.annotationsService.getMode() === AnnotationType.TEXT,
+            iconButton: true
+          }"
+          (click)="noteAnnotate()"
+          matTooltip="Note"
+          >chat_bubble_outline</mat-icon
         >
       </ng-container>
 

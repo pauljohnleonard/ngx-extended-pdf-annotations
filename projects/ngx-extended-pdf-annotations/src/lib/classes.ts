@@ -1,6 +1,6 @@
 import { ElementRef } from '@angular/core';
 
-export enum AnnotationMode {
+export enum AnnotationType {
   OFF = 'OFF',
   PEN = 'PEN',
   READY = 'READY',
@@ -8,10 +8,11 @@ export enum AnnotationMode {
   SHOW = 'SHOW',
   TEXT = 'TEXT',
   TOGGLE = 'TOOGLE',
+  NOTE = 'NOTE',
 }
 
 export class AnnotationControlEvent {
-  type: AnnotationMode;
+  type: AnnotationType;
   val?: any;
 }
 
@@ -21,10 +22,11 @@ export enum PageEventType {
   UPDATE = 'UPDATE',
 }
 
-export enum AnnotationType {
-  PEN = 'PEN',
-  TEXT = 'TEXT',
-}
+// export enum AnnotationType {
+//   PEN = 'PEN',
+//   TEXT = 'TEXT',
+//   NOTE = "NOTE"
+// }
 
 export type AnnotationPoint = { x: number; y: number };
 
@@ -39,7 +41,7 @@ export type AnnotationTextSelection = AnnotationPageRect[];
 export type PageEvent = {
   id: string;
   type: PageEventType;
-  mode?: AnnotationMode;
+  mode?: AnnotationType;
   page?: number;
   path?: AnnotationPath;
   pos?: AnnotationPoint;
@@ -56,15 +58,9 @@ export interface AnnotationMark {
   type: AnnotationType;
   page: number; // first page if bounds mulitple pages.
   pos?: AnnotationPoint; // calculated pater
-}
-
-export interface AnnotationPenMark extends AnnotationMark {
   boundingBox?: BoundingBox; // calculated later
-  path: AnnotationPath;
-}
-
-export interface AnnotationTextMark extends AnnotationMark {
-  pageRects: AnnotationPageRect[];
+  path?: AnnotationPath;
+  pageRects?: AnnotationPageRect[];
 }
 
 // This is the complete record we need to store.

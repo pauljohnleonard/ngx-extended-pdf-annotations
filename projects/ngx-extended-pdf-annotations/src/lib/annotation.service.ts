@@ -4,17 +4,15 @@ import {
   AnnotationRecord,
   AnnotationControlEvent,
   AnnotationItemType,
-  AnnotationMode,
-  AnnotationStorage,
   AnnotationType,
+  AnnotationStorage,
   AnnotationUser,
   FocusModeEnum,
   PageEvent,
   PanelPosition,
   UIPannelComment,
   AnnotationPageRect,
-  AnnotationPenMark,
-  AnnotationTextMark,
+  AnnotationMark,
 } from './classes';
 
 import { PageHandler } from './page-handler';
@@ -29,20 +27,24 @@ export class AnnotationService {
   private _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
   focusComment: UIPannelComment = null;
   private highlightComment: UIPannelComment = null;
-  private _mode = AnnotationMode.OFF;
+  private _mode = AnnotationType.OFF;
   public textLayer$ = new BehaviorSubject<boolean>(false);
   _comments: UIPannelComment[] = [];
   _selections: DOMRectList[];
 
-  public modeSubject$ = new Subject<AnnotationMode>();
+  public modeSubject$ = new Subject<AnnotationType>();
 
   storage: AnnotationStorage;
 
   // isPrivate = true;
   documentId: string;
+  noteImg: HTMLImageElement;
   // public subject$ = new Subject<AnnotationMessage>();
 
-  constructor() {}
+  constructor() {
+    this.noteImg = new Image();
+    this.noteImg.src = '/assets/comment_yellow.svg';
+  }
 
   async initialize({
     user,
@@ -107,7 +109,7 @@ export class AnnotationService {
 
   initTextHandler() {
     window.addEventListener('mouseup', () => {
-      if (this._mode === AnnotationMode.TEXT) {
+      if (this._mode === AnnotationType.TEXT) {
         this.createTextAnnotation();
       }
     });
@@ -137,7 +139,7 @@ export class AnnotationService {
       }
     }
 
-    const mark: AnnotationTextMark = {
+    const mark: AnnotationMark = {
       page,
       pos,
       type: AnnotationType.TEXT,
@@ -158,7 +160,7 @@ export class AnnotationService {
       userId: this._user.userId,
     };
 
-    this.setMode(AnnotationMode.OFF);
+    this.setMode(AnnotationType.OFF);
     this._addNewRecord(record);
     this.renderer(record);
   }
@@ -187,17 +189,18 @@ export class AnnotationService {
 
   handleControlEvent(evt: AnnotationControlEvent) {
     switch (evt.type) {
-      case AnnotationMode.TOGGLE:
-        if (this._mode === AnnotationMode.HIDE) {
-          this.setMode(AnnotationMode.SHOW);
+      case AnnotationType.TOGGLE:
+        if (this._mode === AnnotationType.HIDE) {
+          this.setMode(AnnotationType.SHOW);
         } else {
-          this.setMode(AnnotationMode.HIDE);
+          this.setMode(AnnotationType.HIDE);
         }
         break;
-      case AnnotationMode.PEN:
-      case AnnotationMode.TEXT:
+      case AnnotationType.PEN:
+      case AnnotationType.TEXT:
+      case AnnotationType.NOTE:
         if (!evt.val) {
-          this.setMode(AnnotationMode.OFF);
+          this.setMode(AnnotationType.OFF);
         } else {
           this.setMode(evt.type);
         }
@@ -241,7 +244,7 @@ export class AnnotationService {
 
   pdfLoaded(evt) {
     console.log(' PDF LOADED ');
-    this.modeSubject$.next(AnnotationMode.READY);
+    this.modeSubject$.next(AnnotationType.READY);
   }
 
   private pannelPosHelper(record: AnnotationRecord) {
@@ -253,7 +256,7 @@ export class AnnotationService {
   // Public interface -----------------------------------------------------------------------------------------
 
   isActive(): boolean {
-    return this._mode !== AnnotationMode.HIDE;
+    return this._mode !== AnnotationType.HIDE;
   }
 
   // Private and internal  after here -------------------------------------------------------------------------------------
@@ -328,16 +331,24 @@ export class AnnotationService {
       this.highlightComment &&
       record.id === this.highlightComment.records[0].id;
 
+    let pageHandler: PageHandler;
     switch (record.mark.type) {
       case AnnotationType.PEN:
-        const page = this.pages[record.mark.page];
-        if (page) {
-          page.drawPenMark(record, highlight);
+        pageHandler = this.pages[record.mark.page];
+        if (pageHandler) {
+          pageHandler.drawPenMark(record, highlight);
+        }
+        break;
+
+      case AnnotationType.NOTE:
+        pageHandler = this.pages[record.mark.page];
+        if (pageHandler) {
+          pageHandler.drawNoteMark(record, highlight);
         }
         break;
 
       case AnnotationType.TEXT:
-        const textMark: AnnotationTextMark = record.mark as AnnotationTextMark;
+        const textMark: AnnotationMark = record.mark;
         for (const pageRect of textMark.pageRects) {
           const pageHandler = this.pages[pageRect.page];
           if (pageHandler) {
@@ -383,11 +394,11 @@ export class AnnotationService {
     }
   }
 
-  private setMode(mode: AnnotationMode) {
+  private setMode(mode: AnnotationType) {
     this._mode = mode;
     if (
-      this._mode === AnnotationMode.OFF ||
-      this._mode === AnnotationMode.HIDE
+      this._mode === AnnotationType.OFF ||
+      this._mode === AnnotationType.HIDE
     ) {
       if (this.focusComment) {
         this.focusComment.component.setFocusMode(FocusModeEnum.CLOSED);
@@ -403,11 +414,11 @@ export class AnnotationService {
   // This is when a user selects an comment
   _focusOnComment(comment: UIPannelComment) {
     if (this.focusComment === comment) {
-      this.modeSubject$.next(AnnotationMode.OFF);
+      this.modeSubject$.next(AnnotationType.OFF);
       return;
     }
 
-    this.setMode(AnnotationMode.OFF);
+    this.setMode(AnnotationType.OFF);
 
     if (this.focusComment) {
       this.focusComment.component.setFocusMode(FocusModeEnum.CLOSED);
@@ -428,34 +439,63 @@ export class AnnotationService {
     let record: AnnotationRecord = this.annotationMap[id];
     if (!record) {
       let type: AnnotationType;
-
+      let mark: AnnotationMark;
       switch (event.mode) {
-        case AnnotationMode.PEN:
-          type = AnnotationType.PEN;
+        case AnnotationType.PEN:
+          type = event.mode;
+
+          mark = {
+            page: event.page,
+            path: event.path,
+            type,
+          };
+
+          record = {
+            documentId: this.documentId,
+            type: AnnotationItemType.COMMENT,
+            dirty: false,
+            virgin: true,
+            published: false,
+            id: event.id,
+            bodyValue: '',
+            mark,
+            createdAt: new Date().toISOString(),
+            userName: this._user.userName,
+            userId: this._user.userId,
+          };
+
+          setBoundingBoxOf(record, event);
+          this._addNewRecord(record);
+          break;
+
+        case AnnotationType.NOTE:
+          type = event.mode;
+
+          mark = {
+            page: event.page,
+            pos: event.pos,
+            type,
+          };
+
+          record = {
+            documentId: this.documentId,
+            type: AnnotationItemType.COMMENT,
+            dirty: false,
+            virgin: true,
+            published: false,
+            id: event.id,
+            bodyValue: '',
+            mark,
+            createdAt: new Date().toISOString(),
+            userName: this._user.userName,
+            userId: this._user.userId,
+          };
+
+          setBoundingBoxOf(record, event);
+          this._addNewRecord(record);
+          setTimeout(() => this.setMode(AnnotationType.OFF));
+          break;
       }
-
-      const mark: AnnotationPenMark = {
-        page: event.page,
-        path: event.path,
-        type,
-      };
-
-      record = {
-        documentId: this.documentId,
-        type: AnnotationItemType.COMMENT,
-        dirty: false,
-        virgin: true,
-        published: false,
-        id: event.id,
-        bodyValue: '',
-        mark,
-        createdAt: new Date().toISOString(),
-        userName: this._user.userName,
-        userId: this._user.userId,
-      };
-
-      setBoundingBoxOf(record, event);
-      this._addNewRecord(record);
     } else {
       setBoundingBoxOf(record, event);
     }
@@ -505,8 +545,8 @@ export class AnnotationService {
       await this.saveRecord(record);
     }
 
-    if (this._mode !== AnnotationMode.HIDE) {
-      this.setMode(AnnotationMode.OFF);
+    if (this._mode !== AnnotationType.HIDE) {
+      this.setMode(AnnotationType.OFF);
     }
     const ii = this._comments.findIndex((x) => x === comment);
     this._comments.splice(ii, 1);

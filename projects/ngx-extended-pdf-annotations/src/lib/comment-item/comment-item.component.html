@@ -23,6 +23,11 @@
               class="myicon"
               >title</mat-icon
             >
+            <mat-icon
+              *ngIf="item.mark.type === AnnotationType.NOTE"
+              class="myicon"
+              >chat_bubble_outline</mat-icon
+            >
           </ng-container>
           <div class="comment-name-and-date">
             <div class="name">{{ item.userName }}</div>

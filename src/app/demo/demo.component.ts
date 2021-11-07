@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import {
-  AnnotationMode,
+  AnnotationType,
   AnnotationService,
   AnnotationUser,
 } from 'projects/ngx-extended-pdf-annotations/src/public-api';
@@ -17,7 +17,7 @@ export class DemoComponent implements AfterViewInit {
   @Input() user: AnnotationUser;
 
   textLayer = false;
-  AnnotationMode = AnnotationMode;
+  AnnotationType = AnnotationType;
   constructor(
     public annotationsService: AnnotationService,
     public storage: LocalStoreService
@@ -37,24 +37,33 @@ export class DemoComponent implements AfterViewInit {
 
   toogleAnnotations() {
     this.annotationsService.handleControlEvent({
-      type: AnnotationMode.TOGGLE,
+      type: AnnotationType.TOGGLE,
     });
   }
 
   penAnnotate() {
-    const val = this.annotationsService.getMode() !== AnnotationMode.PEN;
+    const val = this.annotationsService.getMode() !== AnnotationType.PEN;
     this.annotationsService.handleControlEvent({
-      type: AnnotationMode.PEN,
+      type: AnnotationType.PEN,
       val,
     });
   }
 
   textAnnotate() {
-    const val = this.annotationsService.getMode() !== AnnotationMode.TEXT;
+    const val = this.annotationsService.getMode() !== AnnotationType.TEXT;
     this.textLayer = val;
     console.log('TEXT LAYER ', this.textLayer);
     this.annotationsService.handleControlEvent({
-      type: AnnotationMode.TEXT,
+      type: AnnotationType.TEXT,
+      val,
+    });
+  }
+
+  noteAnnotate() {
+    const val = this.annotationsService.getMode() !== AnnotationType.NOTE;
+
+    this.annotationsService.handleControlEvent({
+      type: AnnotationType.NOTE,
       val,
     });
   }
