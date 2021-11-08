@@ -38,57 +38,57 @@
 
           <span class="filler"></span>
 
-          <ng-container *ngIf="item.type === AnnotationItemType.COMMENT">
+          <ng-container *ngIf="item.userId === annotationService._user.userId">
             <mat-icon
-              *ngIf="item.shared"
+              *ngIf="isFirst && item.shared"
               class="myicon"
               matTooltip="Public comment. Click to make private."
-              (click)="toogleVisibility()"
+              (click)="toogleVisibility(item)"
               >visibility</mat-icon
             >
             <mat-icon
               *ngIf="!item.shared"
               class="myicon"
-              matTooltip="Comment is private. Publish to share."
-              (click)="toogleVisibility()"
+              matTooltip="Comment is private. Click to share."
+              (click)="toogleVisibility(item)"
               >visibility_off</mat-icon
             >
+
+            <div class="chat-message-buttons">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="commentMenu"
+                class="menu-button"
+                aria-label="Menu"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+
+              <mat-menu #commentMenu="matMenu">
+                <button
+                  mat-menu-item
+                  (click)="editItem(item)"
+                  aria-label="Edit Comment"
+                >
+                  <mat-icon>edit</mat-icon>
+                  <span i18n="@@annotation_edit_record">Edit</span>
+                </button>
+
+                <button
+                  mat-menu-item
+                  (click)="deleteItem(item)"
+                  aria-label="Delete comment"
+                >
+                  <mat-icon>delete</mat-icon>
+                  <span i18n="@@chat_delete-message">Delete</span>
+                </button>
+              </mat-menu>
+            </div>
           </ng-container>
-
-          <div class="chat-message-buttons" *ngIf="isFirst">
-            <button
-              mat-icon-button
-              [matMenuTriggerFor]="commentMenu"
-              class="menu-button"
-              aria-label="Menu"
-            >
-              <mat-icon>more_vert</mat-icon>
-            </button>
-
-            <mat-menu #commentMenu="matMenu">
-              <button
-                mat-menu-item
-                (click)="editItem(item)"
-                aria-label="Edit Comment"
-              >
-                <mat-icon>edit</mat-icon>
-                <span i18n="@@annotation_edit_record">Edit</span>
-              </button>
-
-              <button
-                mat-menu-item
-                (click)="deleteItem(item)"
-                aria-label="Delete comment"
-              >
-                <mat-icon>delete</mat-icon>
-                <span i18n="@@chat_delete-message">Delete</span>
-              </button>
-            </mat-menu>
-          </div>
         </div>
 
         <div
-          *ngIf="item !== inputRecord || !editing"
+          *ngIf="(item !== inputRecord || !editing) && !!item.bodyValue"
           class="comment-body-container"
         >
           <div class="comment-body">
@@ -121,7 +121,7 @@
             style="margin-top: 10px"
             mat-raised-button
             (click)="saveItem(item)"
-            [disabled]="!item.dirty"
+            [disabled]="!inputFormControl.dirty"
             [matTooltip]="getSaveToolTip(item)"
             color="primary"
           >
@@ -134,7 +134,7 @@
         }} -->
 
         <div
-          *ngIf="0 && !isLast"
+          *ngIf="!isLast && hasFocus"
           style="
             width: 100%;
             background-color: grey;
@@ -142,6 +142,20 @@
             margin-bottom: 10px;
           "
         ></div>
+
+        <div
+          *ngIf="!hasFocus && comment.records.length > 1"
+          style="display: flex; width: 100%; justify-content: flex-end"
+        >
+          <mat-icon
+            [matBadge]="comment.records.length - 1"
+            matBadgeOverlap="false"
+            matBadgeSize="medium"
+            matBadgePosition="before"
+          >
+            expand_more</mat-icon
+          >
+        </div>
       </ng-container>
     </ng-container>
   </div>

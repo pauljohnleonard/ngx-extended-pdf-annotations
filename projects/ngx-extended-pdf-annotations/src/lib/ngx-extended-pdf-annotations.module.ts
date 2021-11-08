@@ -5,14 +5,10 @@ import { CommentComponent } from './comment-panel/annotations-panel-wrapper.comp
 import { InlineSVGModule } from 'ng-inline-svg';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatTableModule } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { HttpClientModule } from '@angular/common/http';
-
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 @NgModule({
@@ -24,17 +20,12 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
     MatIconModule,
     MatMenuModule,
-    MatDialogModule,
     FormsModule,
     MatFormFieldModule,
-    FormsModule,
-    HttpClientModule,
-    MatCheckboxModule,
-    MatDialogModule,
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatTableModule,
+    MatBadgeModule,
   ],
   exports: [CommentComponent, CommentItemComponent],
 })

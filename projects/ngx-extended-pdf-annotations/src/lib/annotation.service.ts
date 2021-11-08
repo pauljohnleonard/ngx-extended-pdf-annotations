@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class AnnotationService {
   private pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
   private annotationMap: { [id: string]: AnnotationRecord } = {};
-  private _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
+  _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
   focusComment: UIPannelComment = null;
   private highlightComment: UIPannelComment = null;
   private _mode = AnnotationType.OFF;
@@ -100,7 +100,7 @@ export class AnnotationService {
     setTimeout(() => {
       this.zoomChange(null);
       this._redraw();
-      this.startAutoSave();
+      // this.startAutoSave();
     });
     // console.log('COMMENTS LOADED FROM STORE');
 
@@ -176,16 +176,17 @@ export class AnnotationService {
     return null;
   }
 
-  saveAllComments() {
-    for (const comment of this._comments) {
-      this.saveComment(comment);
-    }
-  }
-  startAutoSave() {
-    setInterval(() => {
-      this.saveAllComments();
-    }, 5000);
-  }
+  // saveAllComments() {
+  //   for (const comment of this._comments) {
+  //     this.saveComment(comment);
+  //   }
+  // }
+
+  // startAutoSave() {
+  //   setInterval(() => {
+  //     this.saveAllComments();
+  //   }, 5000);
+  // }
 
   handleControlEvent(evt: AnnotationControlEvent) {
     switch (evt.type) {
@@ -262,22 +263,22 @@ export class AnnotationService {
   // Private and internal  after here -------------------------------------------------------------------------------------
 
   // If we lose focus then save all the data.
-  async handleItemFocusOff(comment: UIPannelComment) {
-    await this.saveComment(comment);
-  }
+  // async handleItemFocusOff(comment: UIPannelComment) {
+  //   await this.saveComment(comment);
+  // }
 
-  // Auto loop saves (publish button handled else where)
-  async saveComment(comment: UIPannelComment) {
-    for (const record of comment.records) {
-      if (this.storage) {
-        if (record.dirty) {
-          record.dirty = false;
-          record.virgin = false;
-          await this.storage.saveAnnotation(record);
-        }
-      }
-    }
-  }
+  // // Auto loop saves (publish button handled else where)
+  // async saveComment(comment: UIPannelComment) {
+  //   for (const record of comment.records) {
+  //     if (this.storage) {
+  //       if (record.dirty) {
+  //         record.dirty = false;
+  //         record.virgin = false;
+  //         await this.storage.saveAnnotation(record);
+  //       }
+  //     }
+  //   }
+  // }
 
   // Forcefully save a record.
   async saveRecord(record: AnnotationRecord) {
@@ -358,7 +359,7 @@ export class AnnotationService {
     }
   }
 
-  private sortComments() {
+  sortComments() {
     setTimeout(() => {
       let yPlot = -1;
       this._comments.sort((a, b) => {

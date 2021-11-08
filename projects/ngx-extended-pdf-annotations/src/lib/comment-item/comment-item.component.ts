@@ -60,6 +60,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   initInput() {
     if (!this._inputRecord) {
       this.inputFormControl.setValue('');
+      this.inputFormControl.markAsPristine();
     } else {
       this.inputFormControl.setValue(this._inputRecord.bodyValue);
     }
@@ -80,7 +81,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         type: AnnotationItemType.REPLY,
         dirty: false,
         virgin: true,
-        shared: false,
+        shared: this.comment.records.length > 0,
         id: uuidv4(),
         parentId: this.comment.records[0].id,
         bodyValue: '',
@@ -94,10 +95,10 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.initInput();
   }
 
-  toogleVisibility() {
-    this.comment.records[0].shared = !this.comment.records[0].shared;
-    this.comment.records[0].dirty = true;
-    this.annotationService.saveComment(this.comment);
+  toogleVisibility(item: AnnotationRecord) {
+    item.shared = !item.shared;
+    item.dirty = true;
+    this.annotationService.saveRecord(item);
   }
 
   handleFocusOff() {
@@ -109,6 +110,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
     // this.hasFocus = false;
     this._inputRecord = null;
+    this.editing = false;
     this.initInput();
   }
 
@@ -124,6 +126,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     // record.shared = true;
     record.dirty = true;
     this.editing = false;
+    record.bodyValue = this.inputFormControl.value;
     await this.annotationService.saveRecord(record);
   }
 
@@ -160,7 +163,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         break;
       default:
         this.handleFocusOff();
-        this.annotationService.handleItemFocusOff(this.comment);
+      // this.annotationService.handleItemFocusOff(this.comment);
     }
   }
 
@@ -172,6 +175,9 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   editItem(item: AnnotationRecord) {
     this.editing = true;
     this._inputRecord = item;
+    this.inputFormControl.setValue(item.bodyValue);
+    this.inputFormControl.markAsPristine();
+    this.annotationService.sortComments();
   }
 
   deleteItem(item: AnnotationRecord) {
@@ -180,7 +186,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       this._inputRecord = null;
     }
     item.deleted = true;
-    this.annotationService.saveComment(this.comment);
+    this.annotationService.saveRecord(item);
   }
 
   ngOnInit(): void {
@@ -188,16 +194,17 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.comment.component = this;
 
     this.inputFormControl.valueChanges.subscribe((val) => {
-      if (this._inputRecord && this._inputRecord.bodyValue !== val) {
-        this._inputRecord.dirty = true;
-        this._inputRecord.bodyValue = val;
-      }
+      // if (this._inputRecord && this._inputRecord.bodyValue !== val) {
+      //   this._inputRecord.dirty = true;
+      //   this._inputRecord.bodyValue = val;
+      // }
     });
 
     if (this.comment.records[0].virgin) {
       this.setFocusMode(FocusModeEnum.CREATE);
       this._inputRecord = this.comment.records[0];
       this.initInput();
+      this.annotationService.saveRecord(this._inputRecord);
     }
   }
 
