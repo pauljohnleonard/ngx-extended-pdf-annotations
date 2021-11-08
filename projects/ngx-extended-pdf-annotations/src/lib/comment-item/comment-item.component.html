@@ -40,16 +40,17 @@
 
           <ng-container *ngIf="item.type === AnnotationItemType.COMMENT">
             <mat-icon
-              *ngIf="item.published"
+              *ngIf="item.shared"
               class="myicon"
               matTooltip="Public comment. Click to make private."
               (click)="toogleVisibility()"
               >visibility</mat-icon
             >
             <mat-icon
-              *ngIf="!item.published"
+              *ngIf="!item.shared"
               class="myicon"
               matTooltip="Comment is private. Publish to share."
+              (click)="toogleVisibility()"
               >visibility_off</mat-icon
             >
           </ng-container>
@@ -67,17 +68,29 @@
             <mat-menu #commentMenu="matMenu">
               <button
                 mat-menu-item
-                (click)="annotationService._deleteComment(comment)"
+                (click)="editItem(item)"
+                aria-label="Edit Comment"
+              >
+                <mat-icon>edit</mat-icon>
+                <span i18n="@@annotation_edit_record">Edit</span>
+              </button>
+
+              <button
+                mat-menu-item
+                (click)="deleteItem(item)"
                 aria-label="Delete comment"
               >
                 <mat-icon>delete</mat-icon>
-                <span i18n="@@chat_delete-message">Delete message</span>
+                <span i18n="@@chat_delete-message">Delete</span>
               </button>
             </mat-menu>
           </div>
         </div>
 
-        <div *ngIf="item !== inputRecord" class="comment-body-container">
+        <div
+          *ngIf="item !== inputRecord || !editing"
+          class="comment-body-container"
+        >
           <div class="comment-body">
             {{ item.bodyValue }}
           </div>
@@ -85,7 +98,7 @@
 
         <!-- {{ item.id }} {{ inputRecord.id }} -->
 
-        <ng-container *ngIf="item === inputRecord">
+        <ng-container *ngIf="item === inputRecord && editing">
           <mat-form-field class="comment-body-formfield" appearance="outline">
             <textarea
               matInput
@@ -107,23 +120,20 @@
           <button
             style="margin-top: 10px"
             mat-raised-button
-            (click)="publishItem(item)"
-            [disabled]="
-              (item.published && !item.dirty) ||
-              (!item.published && !item.bodyValue)
-            "
-            [matTooltip]="getPublishToolTip(item)"
+            (click)="saveItem(item)"
+            [disabled]="!item.dirty"
+            [matTooltip]="getSaveToolTip(item)"
             color="primary"
           >
-            Publish
+            Save
           </button>
         </ng-container>
 
-        <!-- dirty: {{ item.dirty }} published:{{ item.published }} virgin:{{
+        <!-- dirty: {{ item.dirty }} published:{{ item.shared }} virgin:{{
           item.virgin
         }} -->
 
-        <!-- <div
+        <div
           *ngIf="0 && !isLast"
           style="
             width: 100%;
@@ -131,7 +141,7 @@
             height: 1px;
             margin-bottom: 10px;
           "
-        ></div> -->
+        ></div>
       </ng-container>
     </ng-container>
   </div>

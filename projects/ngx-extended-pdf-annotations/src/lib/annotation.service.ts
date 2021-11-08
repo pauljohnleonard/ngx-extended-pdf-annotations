@@ -151,7 +151,7 @@ export class AnnotationService {
       type: AnnotationItemType.COMMENT,
       dirty: false,
       virgin: true,
-      published: false,
+      shared: false,
       id: uuidv4(),
       bodyValue: '',
       mark,
@@ -270,7 +270,7 @@ export class AnnotationService {
   async saveComment(comment: UIPannelComment) {
     for (const record of comment.records) {
       if (this.storage) {
-        if (!record.published && record.dirty) {
+        if (record.dirty) {
           record.dirty = false;
           record.virgin = false;
           await this.storage.saveAnnotation(record);
@@ -455,7 +455,7 @@ export class AnnotationService {
             type: AnnotationItemType.COMMENT,
             dirty: false,
             virgin: true,
-            published: false,
+            shared: false,
             id: event.id,
             bodyValue: '',
             mark,
@@ -482,7 +482,7 @@ export class AnnotationService {
             type: AnnotationItemType.COMMENT,
             dirty: false,
             virgin: true,
-            published: false,
+            shared: false,
             id: event.id,
             bodyValue: '',
             mark,

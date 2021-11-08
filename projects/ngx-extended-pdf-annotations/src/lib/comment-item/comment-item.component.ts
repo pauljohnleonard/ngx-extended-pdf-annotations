@@ -43,6 +43,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   focusmode = FocusModeEnum.CREATE;
   AnnotationType = AnnotationType;
   cnt = 0;
+  editing = false;
 
   constructor(
     public date: DateUtilService,
@@ -79,7 +80,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         type: AnnotationItemType.REPLY,
         dirty: false,
         virgin: true,
-        published: false,
+        shared: false,
         id: uuidv4(),
         parentId: this.comment.records[0].id,
         bodyValue: '',
@@ -94,7 +95,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   }
 
   toogleVisibility() {
-    this.comment.records[0].published = !this.comment.records[0].published;
+    this.comment.records[0].shared = !this.comment.records[0].shared;
     this.comment.records[0].dirty = true;
     this.annotationService.saveComment(this.comment);
   }
@@ -110,16 +111,24 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this._inputRecord = null;
     this.initInput();
   }
+
   // This is responisble for setting the state of annotation when we gain focus
 
-  async publishItem(record: AnnotationRecord) {
-    record.published = true;
+  // async publishItem(record: AnnotationRecord) {
+  //   record.shared = true;
+  //   record.dirty = true;
+  //   await this.annotationService.saveRecord(record);
+  // }
+
+  async saveItem(record: AnnotationRecord) {
+    // record.shared = true;
     record.dirty = true;
+    this.editing = false;
     await this.annotationService.saveRecord(record);
   }
 
   getPublishToolTip(item: AnnotationRecord): string {
-    if (item.published) {
+    if (item.shared) {
       if (item.dirty) {
         return 'Publish your edits';
       } else {
@@ -132,6 +141,10 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         return 'No edits to save.';
       }
     }
+  }
+
+  getSaveToolTip(item: AnnotationRecord): string {
+    return 'save';
   }
 
   // Set the mode of the item.
@@ -154,6 +167,20 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   clicked() {
     // this.comment.editing = true;
     this.annotationService._focusOnComment(this.comment);
+  }
+
+  editItem(item: AnnotationRecord) {
+    this.editing = true;
+    this._inputRecord = item;
+  }
+
+  deleteItem(item: AnnotationRecord) {
+    if (this._inputRecord === item) {
+      this.editing = false;
+      this._inputRecord = null;
+    }
+    item.deleted = true;
+    this.annotationService.saveComment(this.comment);
   }
 
   ngOnInit(): void {

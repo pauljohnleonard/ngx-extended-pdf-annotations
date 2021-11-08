@@ -32,6 +32,10 @@ export class LocalStoreService implements AnnotationStorage {
     });
   }
 
+  deleteDataBase() {
+    indexedDB.deleteDatabase('AnnotationDB');
+  }
+
   saveAnnotation(record: AnnotationRecord) {
     var transaction = this.db.transaction('records', 'readwrite');
     var objectStore = transaction.objectStore('records');
@@ -59,7 +63,7 @@ export class LocalStoreService implements AnnotationStorage {
         let records: AnnotationRecord[] = request.result;
         records = records.filter(
           (record) =>
-            !record.deleted && (record.published || record.userId === userId)
+            !record.deleted && (record.shared || record.userId === userId)
         );
 
         resolve(records);

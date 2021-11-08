@@ -18,8 +18,17 @@
   <div id="myToolbarViewer" class="mytoolbar">
     <div class="annotationControlPanel" id="toolbarViewerLeft">
       {{ annotationsService.getUser().userName }}
-    </div>
 
+      <button
+        mat-raised-button
+        (click)="storage.deleteDataBase()"
+        matTooltip="CLear alll local data"
+        style="margin: 0 20px"
+        color="primary"
+      >
+        CLEAR DATABASE
+      </button>
+    </div>
     <pdf-zoom-toolbar></pdf-zoom-toolbar>
 
     <div class="annotationControlPanel" id="toolbarViewerRight">
@@ -74,7 +83,7 @@
           [ngClass]="{
             canpress: true,
             highlight:
-              this.annotationsService.getMode() === AnnotationType.TEXT,
+              this.annotationsService.getMode() === AnnotationType.NOTE,
             iconButton: true
           }"
           (click)="noteAnnotate()"

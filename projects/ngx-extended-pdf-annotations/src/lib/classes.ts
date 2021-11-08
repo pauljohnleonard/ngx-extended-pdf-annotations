@@ -76,7 +76,7 @@ export interface AnnotationRecord extends AnnotationUser {
   bodyValue: string;
   virgin: boolean;
   dirty: boolean;
-  published?: boolean;
+  shared?: boolean;
   createdAt: string;
   modifiedAt?: string;
   deleted?: boolean;
