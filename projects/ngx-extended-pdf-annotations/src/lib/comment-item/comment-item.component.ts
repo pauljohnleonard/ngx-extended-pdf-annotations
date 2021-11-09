@@ -186,7 +186,17 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       this._inputRecord = null;
     }
     item.deleted = true;
+    this.removeRecord(item);
     this.annotationService.saveRecord(item);
+  }
+
+  removeRecord(item: AnnotationRecord) {
+    const ii = this.comment.records.indexOf(item);
+
+    if (ii) {
+      this.comment.records.splice(ii, 1);
+      this.annotationService.sortComments();
+    }
   }
 
   ngOnInit(): void {
