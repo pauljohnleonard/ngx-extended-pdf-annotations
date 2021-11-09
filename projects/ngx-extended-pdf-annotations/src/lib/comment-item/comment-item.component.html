@@ -142,21 +142,50 @@
             margin-bottom: 10px;
           "
         ></div>
-
-        <div
-          *ngIf="!hasFocus && comment.records.length > 1"
-          style="display: flex; width: 100%; justify-content: flex-end"
-        >
-          <mat-icon
-            [matBadge]="comment.records.length - 1"
-            matBadgeOverlap="false"
-            matBadgeSize="medium"
-            matBadgePosition="before"
-          >
-            expand_more</mat-icon
-          >
-        </div>
       </ng-container>
     </ng-container>
+
+    <ng-container *ngIf="1 || (hasFocus && editing && !inputRecord)">
+      <!-- <mat-form-field class="comment-body-formfield" appearance="outline">
+        <textarea
+          matInput
+          class="comment-window-textarea-message-input"
+          i18n-placeholder="@@YourCommentPlaceHolder"
+          [placeholder]="comment.records.length === 0 ? 'Comment' : 'Reply'"
+          [formControl]="inputFormControl"
+          autocomplete="off"
+          cdkTextareaAutosize
+          cdkAutosizeMinRows="1"
+          cdkAutosizeMaxRows="5"
+          #messageinput
+        >
+        </textarea>
+      </mat-form-field>
+
+      <button
+        style="margin-top: 10px"
+        mat-raised-button
+        (click)="saveNewItem()"
+        [disabled]="!inputFormControl.dirty"
+        matTooltip="Save comment"
+        color="primary"
+      >
+        Save
+      </button> -->
+    </ng-container>
+
+    <div
+      *ngIf="!hasFocus && comment.records.length > 1"
+      style="display: flex; width: 100%; justify-content: flex-end"
+    >
+      <mat-icon
+        [matBadge]="comment.records.length - 1"
+        matBadgeOverlap="false"
+        matBadgeSize="medium"
+        matBadgePosition="before"
+      >
+        expand_more</mat-icon
+      >
+    </div>
   </div>
 </div>

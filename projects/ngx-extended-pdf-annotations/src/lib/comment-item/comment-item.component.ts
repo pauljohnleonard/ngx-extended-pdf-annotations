@@ -93,6 +93,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       this._inputRecord = record;
     }
     this.initInput();
+    if (!lastItem.bodyValue) this.editItem(lastItem);
   }
 
   toogleVisibility(item: AnnotationRecord) {
@@ -188,6 +189,10 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     item.deleted = true;
     this.removeRecord(item);
     this.annotationService.saveRecord(item);
+
+    if (item.type === AnnotationItemType.COMMENT) {
+      this.annotationService._deleteComment(this.comment);
+    }
   }
 
   removeRecord(item: AnnotationRecord) {

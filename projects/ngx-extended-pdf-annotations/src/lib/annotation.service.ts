@@ -287,6 +287,9 @@ export class AnnotationService {
       record.virgin = false;
       await this.storage.saveAnnotation(record);
     }
+    if (record.type === AnnotationItemType.COMMENT && record.deleted) {
+      delete this.annotationMap[record.id];
+    }
   }
 
   private handleHighlightChange(newHighlight: UIPannelComment) {
