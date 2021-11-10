@@ -2,7 +2,7 @@
 
 // My rects are 2 points but the the second pos2.y <   pos1.y
 // (this is because the are originally screen rects  but mapped onto the pdf cordinates which flips the y)
-// To make this work with
+// To make this work you may need to flip some +/-
 
 import { AnnotationEdge, AnnotationPageRect } from './classes';
 
