@@ -13,11 +13,13 @@ import {
   UIPannelComment,
   AnnotationPageRect,
   AnnotationMark,
+  AnnotationEdge,
 } from './classes';
 
 import { PageHandler } from './page-handler';
 import { setBoundingBoxOf } from './util';
 import { v4 as uuidv4 } from 'uuid';
+import { extractEdgesFromRects } from './combineRects';
 @Injectable({
   providedIn: 'root',
 })
@@ -121,6 +123,9 @@ export class AnnotationService {
     const rangeCount = selection.rangeCount;
     let page;
     let pos;
+
+    const pageMap = {};
+
     for (let i = 0; i < rangeCount; i++) {
       const range = selection.getRangeAt(i);
       let rects = range.getClientRects();
@@ -131,6 +136,9 @@ export class AnnotationService {
         if (!pageRect) {
           continue;
         }
+
+        pageMap[pageRect.page] = true;
+
         if (!page) {
           page = pageRect.page;
           pos = pageRect.pos1;
@@ -139,11 +147,17 @@ export class AnnotationService {
       }
     }
 
+    const pages = Object.keys(pageMap).map((page) => +page);
+
+    const edges: AnnotationEdge[] = extractEdgesFromRects(pageRects);
+
     const mark: AnnotationMark = {
       page,
       pos,
       type: AnnotationType.TEXT,
       pageRects,
+      edges,
+      pages,
     };
 
     let record: AnnotationRecord = {
@@ -175,18 +189,6 @@ export class AnnotationService {
     }
     return null;
   }
-
-  // saveAllComments() {
-  //   for (const comment of this._comments) {
-  //     this.saveComment(comment);
-  //   }
-  // }
-
-  // startAutoSave() {
-  //   setInterval(() => {
-  //     this.saveAllComments();
-  //   }, 5000);
-  // }
 
   handleControlEvent(evt: AnnotationControlEvent) {
     switch (evt.type) {
@@ -340,23 +342,38 @@ export class AnnotationService {
       case AnnotationType.PEN:
         pageHandler = this.pages[record.mark.page];
         if (pageHandler) {
-          pageHandler.drawPenMark(record, highlight);
+          pageHandler.drawPenMark(record);
+          if (highlight) {
+            pageHandler.drawHighlightBox(record.mark.boundingBox);
+          }
         }
         break;
 
       case AnnotationType.NOTE:
         pageHandler = this.pages[record.mark.page];
         if (pageHandler) {
-          pageHandler.drawNoteMark(record, highlight);
+          pageHandler.drawNoteMark(record);
+          if (highlight) {
+            pageHandler.drawNoteHighLight(record);
+          }
         }
         break;
 
       case AnnotationType.TEXT:
         const textMark: AnnotationMark = record.mark;
+
         for (const pageRect of textMark.pageRects) {
           const pageHandler = this.pages[pageRect.page];
           if (pageHandler) {
             pageHandler.drawTextBox(pageRect);
+          }
+        }
+        if (highlight) {
+          for (const page of textMark.pages) {
+            const pageHandler = this.pages[page];
+            if (pageHandler) {
+              pageHandler.drawTextHighLight(record.mark);
+            }
           }
         }
     }

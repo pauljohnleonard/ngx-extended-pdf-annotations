@@ -36,6 +36,10 @@ export type AnnotationPageRect = {
   pos2: AnnotationPoint;
 };
 
+export type AnnotationEdge = {
+  pos1: AnnotationPoint;
+  pos2: AnnotationPoint;
+};
 export type AnnotationTextSelection = AnnotationPageRect[];
 
 export type PageEvent = {
@@ -54,13 +58,24 @@ export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];
 
 export type BoundingBox = { x1: number; y1: number; x2: number; y2: number };
 
+export type AnnotationPagePoly = {
+  page: number;
+  boundingPoly: AnnotationPoint[];
+};
+
 export interface AnnotationMark {
   type: AnnotationType;
   page: number; // first page if bounds mulitple pages.
+  pages?: number[];
   pos?: AnnotationPoint; // calculated pater
   boundingBox?: BoundingBox; // calculated later
+
+  // PEN
   path?: AnnotationPath;
+
+  // TEXT MARK
   pageRects?: AnnotationPageRect[];
+  edges?: AnnotationEdge[];
 }
 
 // This is the complete record we need to store.

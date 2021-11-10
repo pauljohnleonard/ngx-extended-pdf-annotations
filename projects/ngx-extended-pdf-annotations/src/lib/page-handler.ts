@@ -8,8 +8,19 @@ import {
   PageEventType,
   AnnotationRecord,
   AnnotationMark,
+  BoundingBox,
+  AnnotationEdge,
 } from './classes';
 import { AnnotationService } from './annotation.service';
+import {
+  HIGHLIGHT_BORDER,
+  HIGHLIGHT_COLOUR as BORDER_HIGHLIGHT_COLOUR,
+  HIGHLIGHT_LINE_WIDTH as BORDER_HIGHLIGHT_LINE_WIDTH,
+  NOTE_ICON_HEIGHT,
+  NOTE_ICON_WIDTH,
+  TEXT_RECT_ALPHA,
+  TEXT_RECT_COLOUR,
+} from './constants';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -99,6 +110,11 @@ export class PageHandler {
   }
 
   enableTextLayer(yes) {
+    if (!this.pageViewer.textLayer) {
+      return;
+    }
+    this.pageViewer.textLayer.textLayerDiv;
+
     console.log(' Enable text ', yes);
     this.pageViewer.textLayer.textLayerDiv.style['pointer-events'] = yes
       ? 'auto'
@@ -177,7 +193,7 @@ export class PageHandler {
 
       case AnnotationType.NOTE:
         this.annotationCanvas.style.cursor =
-          "url('/assets/note.png')  0 32 ,auto";
+          "url('/assets/note.png')  0 0 ,auto";
         break;
     }
     // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
@@ -207,7 +223,7 @@ export class PageHandler {
           this.annotationService._handlePageEvent({
             id: this.currentAnnotationId,
             type: PageEventType.START,
-            pos: this.pos,
+            pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
             mode: AnnotationType.NOTE,
             page: this.page,
           });
@@ -293,25 +309,56 @@ export class PageHandler {
 
     let height = Math.abs(pos2.y - pos1.y);
     let y = Math.min(pos1.y, pos2.y);
-    ctx.fillStyle = '#0000FF';
-    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = TEXT_RECT_COLOUR;
+    ctx.globalAlpha = TEXT_RECT_ALPHA;
     ctx.fillRect(x, y, width, height);
     ctx.globalAlpha = 1.0;
   }
 
-  drawNoteMark(record: AnnotationRecord, highlight: boolean) {
+  drawTextHighLight(mark: AnnotationMark) {
+    const edges = mark.edges;
+
+    const ctx = this.annotationCanvas.getContext('2d');
+    ctx.beginPath();
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    for (const edge of edges) {
+      const pos1 = this.realToCanvas(edge.pos1);
+      ctx.moveTo(pos1.x, pos1.y);
+      const pos2 = this.realToCanvas(edge.pos2);
+      ctx.lineTo(pos2.x, pos2.y);
+    }
+    ctx.stroke();
+  }
+
+  drawNoteMark(record: AnnotationRecord) {
     const ctx = this.annotationCanvas.getContext('2d');
     const pos = this.realToCanvas(record.mark.pos);
     ctx.drawImage(
       this.annotationService.noteImg,
-      pos.x - 100,
-      pos.y - 100,
-      100,
-      100
+      pos.x,
+      pos.y,
+      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
+      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
     );
   }
 
-  drawPenMark(record: AnnotationRecord, highlight) {
+  drawNoteHighLight(record: AnnotationRecord) {
+    const ctx = this.annotationCanvas.getContext('2d');
+    const pos = this.realToCanvas(record.mark.pos);
+    ctx.beginPath();
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    ctx.rect(
+      pos.x,
+      pos.y,
+      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
+      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
+    );
+    ctx.stroke();
+  }
+
+  drawPenMark(record: AnnotationRecord) {
     const mark = record.mark;
 
     const path = mark.path;
@@ -342,36 +389,59 @@ export class PageHandler {
     ctx.strokeStyle = 'rgba(255,0,0,0.7)';
 
     ctx.stroke();
-
-    if (highlight) {
-      const x1 = mark.boundingBox.x1;
-      const y1 = mark.boundingBox.y1;
-
-      const c1 = this.realToCanvas({ x: x1, y: y1 });
-
-      const x2 = mark.boundingBox.x2;
-      const y2 = mark.boundingBox.y2;
-
-      const c2 = this.realToCanvas({ x: x2, y: y2 });
-      const w = Math.abs(c2.x - c1.x);
-      const h = Math.abs(c2.y - c1.y);
-
-      const x = Math.min(c2.x, c1.x);
-      const y = Math.min(c2.y, c1.y);
-
-      ctx.beginPath();
-      const HIGHLIGHT_BORDER = 12;
-      ctx.rect(
-        x - HIGHLIGHT_BORDER,
-        y - HIGHLIGHT_BORDER,
-        w + HIGHLIGHT_BORDER * 2,
-        h + HIGHLIGHT_BORDER * 2
-      );
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#0097a7';
-      ctx.stroke();
-    }
   }
+
+  drawHighlightBox(boundingBox: BoundingBox) {
+    const ctx = this.annotationCanvas.getContext('2d');
+
+    const x1 = boundingBox.x1;
+    const y1 = boundingBox.y1;
+
+    const c1 = this.realToCanvas({ x: x1, y: y1 });
+
+    const x2 = boundingBox.x2;
+    const y2 = boundingBox.y2;
+
+    const c2 = this.realToCanvas({ x: x2, y: y2 });
+    const w = Math.abs(c2.x - c1.x);
+    const h = Math.abs(c2.y - c1.y);
+
+    const x = Math.min(c2.x, c1.x);
+    const y = Math.min(c2.y, c1.y);
+
+    ctx.beginPath();
+
+    ctx.rect(
+      x - HIGHLIGHT_BORDER,
+      y - HIGHLIGHT_BORDER,
+      w + HIGHLIGHT_BORDER * 2,
+      h + HIGHLIGHT_BORDER * 2
+    );
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    ctx.stroke();
+  }
+
+  // drawBoundingPoly(boundingPoly: AnnotationPoint[]) {
+  //   const ctx = this.annotationCanvas.getContext('2d');
+  //   ctx.beginPath();
+  //   let first = true;
+  //   for (const pt of boundingPoly) {
+  //     const pt1 = this.realToCanvas(pt);
+  //     if (first) {
+  //       ctx.moveTo(pt1.x, pt1.y);
+  //       first = false;
+  //     } else {
+  //       ctx.moveTo(pt1.x, pt1.y);
+  //     }
+
+  //     ctx.lineWidth = 6;
+  //     ctx.strokeStyle = '#0097a7';
+  //     ctx.stroke();
+  //   }
+
+  //   ctx.stroke();
+  // }
 
   clear() {
     const context = this.annotationCanvas.getContext('2d');
