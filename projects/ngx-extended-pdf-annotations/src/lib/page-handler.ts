@@ -284,12 +284,15 @@ export class PageHandler {
     this.annotationCanvas.style.height = this.pdfCanvas.style.height;
 
     this.pdfCanvas.style.position = 'absolute';
+
     this.annotationCanvas.style.position = 'absolute';
     this.annotationCanvas.id = 'mycanvas';
     // this.canvas.style['z-index'] = '30';
     // this.pdfCanvas.style['z-index'] = '20';
 
     this.pdfCanvas.parentElement.appendChild(this.annotationCanvas);
+
+    // Copy source contents to annotation canvas.
 
     // console.log(this.canvas);
 
@@ -311,8 +314,10 @@ export class PageHandler {
     let y = Math.min(pos1.y, pos2.y);
     ctx.fillStyle = TEXT_RECT_COLOUR;
     ctx.globalAlpha = TEXT_RECT_ALPHA;
+    ctx.globalCompositeOperation = 'darken';
     ctx.fillRect(x, y, width, height);
     ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   drawTextHighLight(mark: AnnotationMark) {
@@ -451,6 +456,12 @@ export class PageHandler {
       this.annotationCanvas.width,
       this.annotationCanvas.height
     );
+
+    const ctx = this.annotationCanvas.getContext('2d');
+
+    ctx.drawImage(this.pdfCanvas, 0, 0);
+
+    this.pdfCanvas.style.display = 'none';
   }
 
   visible(yes) {

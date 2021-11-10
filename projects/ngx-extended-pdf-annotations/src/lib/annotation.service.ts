@@ -529,6 +529,10 @@ export class AnnotationService {
     if (page !== undefined) {
       const pageHandler = this.pages[page];
       pageHandler.clear();
+    } else {
+      for (const key of Object.keys(this.pages)) {
+        this.pages[key].clear();
+      }
     }
 
     for (const id of Object.keys(this.annotationMap)) {

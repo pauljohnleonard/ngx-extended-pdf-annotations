@@ -6,4 +6,4 @@ export const HIGHLIGHT_LINE_WIDTH = 6;
 export const HIGHLIGHT_BORDER = 12;
 
 export const TEXT_RECT_COLOUR = '#ffff00';
-export const TEXT_RECT_ALPHA = 0.15;
+export const TEXT_RECT_ALPHA = 0.3;
