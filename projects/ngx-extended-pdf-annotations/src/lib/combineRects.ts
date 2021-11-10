@@ -1,14 +1,18 @@
 // https://stackoverflow.com/questions/289779/calculating-a-boundary-around-several-linked-rectangles
 
-import { AnnotationPageRect } from 'dist/ngx-extended-pdf-annotations/public-api';
-import { AnnotationEdge } from './classes';
+// My rects are 2 points but the the second pos2.y <   pos1.y
+// (this is because the are originally screen rects  but mapped onto the pdf cordinates which flips the y)
+// To make this work with
+
+import { AnnotationEdge, AnnotationPageRect } from './classes';
 
 // Return the edges of the union of rects.
 export function extractEdgesFromRects(inputRects: AnnotationPageRect[]) {
-  // These extremes mean we don't get rects n the boundary
+  // Adding these extremes mean we don't get rects on the boundary and it makes the edge logic simpler.
   let x = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
   let y = [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER];
 
+  // My rects don't overlap (they come from text selection) so I make them bigger (hack hack hack)
   const borderX = 5;
   const borderY = 10;
   const rects = inputRects.map((rect) => {
