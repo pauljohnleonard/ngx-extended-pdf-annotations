@@ -33,10 +33,15 @@
                 "glob": "**/*",
                 "input": "node_modules/ngx-extended-pdf-viewer/assets/",
                 "output": "/assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/ngx-extended-pdf-annotations/src/assets/",
+                "output": "/assets/"
               }
             ],
             "styles": [
-              "src/assets/theme.css",
+              "projects/ngx-extended-pdf-annotations/src/assets/ngx-extended-pdf-annotations/theme.css",
               "src/styles.scss"
             ],
             "scripts": []

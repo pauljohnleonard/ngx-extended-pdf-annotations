@@ -99,6 +99,8 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   toogleVisibility(item: AnnotationRecord) {
     item.shared = !item.shared;
     item.dirty = true;
+
+    console.log(' DEPRECATE THIS SAFE');
     this.annotationService.saveRecord(item);
   }
 

@@ -72,6 +72,9 @@ export class PageHandler {
   }
 
   mapToPageRect(rect: DOMRect): AnnotationPageRect {
+    if (!this.pageViewer.textLayer) {
+      return null;
+    }
     const pageRect =
       this.pageViewer.textLayer.textLayerDiv.getBoundingClientRect();
 
@@ -188,12 +191,12 @@ export class PageHandler {
     switch (this.annotationService.getMode()) {
       case AnnotationType.PEN:
         this.annotationCanvas.style.cursor =
-          "url('/assets/pencil.png')  0 32 ,auto";
+          "url('/assets/ngx-extended-pdf-annotations/pencil.png')  0 32 ,auto";
         break;
 
       case AnnotationType.NOTE:
         this.annotationCanvas.style.cursor =
-          "url('/assets/note.png')  0 0 ,auto";
+          "url('/assets/ngx-extended-pdf-annotations/note.png')  0 0 ,auto";
         break;
     }
     // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
@@ -227,7 +230,10 @@ export class PageHandler {
             mode: AnnotationType.NOTE,
             page: this.page,
           });
+          this.isDrawing = false;
           break;
+        default:
+          this.isDrawing = false;
       }
     }
   }

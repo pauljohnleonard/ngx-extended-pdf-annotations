@@ -45,7 +45,8 @@ export class AnnotationService {
 
   constructor() {
     this.noteImg = new Image();
-    this.noteImg.src = '/assets/comment_yellow.svg';
+    this.noteImg.src =
+      '/assets/ngx-extended-pdf-annotations/comment_yellow.svg';
   }
 
   async initialize({
@@ -102,13 +103,16 @@ export class AnnotationService {
     setTimeout(() => {
       this.zoomChange(null);
       this._redraw();
-      // this.startAutoSave();
+      this.startAutoSave();
     });
     // console.log('COMMENTS LOADED FROM STORE');
 
     this.initTextHandler();
   }
 
+  startAutoSave() {
+    setInterval(() => this.autoSaveAnnotations(), 500);
+  }
   initTextHandler() {
     window.addEventListener('mouseup', () => {
       if (this._mode === AnnotationType.TEXT) {
@@ -270,17 +274,24 @@ export class AnnotationService {
   // }
 
   // // Auto loop saves (publish button handled else where)
-  // async saveComment(comment: UIPannelComment) {
-  //   for (const record of comment.records) {
-  //     if (this.storage) {
-  //       if (record.dirty) {
-  //         record.dirty = false;
-  //         record.virgin = false;
-  //         await this.storage.saveAnnotation(record);
-  //       }
-  //     }
-  //   }
-  // }
+  async autoSaveAnnotations() {
+    let savedCnt = 0;
+    for (const comment of this._comments) {
+      for (const record of comment.records) {
+        if (this.storage) {
+          if (record.dirty) {
+            record.dirty = false;
+            record.virgin = false;
+            savedCnt++;
+            await this.storage.saveAnnotation(record);
+          }
+        }
+      }
+    }
+    if (savedCnt) {
+      console.log(` autosaved ${savedCnt} records`);
+    }
+  }
 
   // Forcefully save a record.
   async saveRecord(record: AnnotationRecord) {
@@ -456,7 +467,6 @@ export class AnnotationService {
 
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
-    // console.log('PAGE EVEnt  : ', event);
     let record: AnnotationRecord = this.annotationMap[id];
     if (!record) {
       let type: AnnotationType;
@@ -474,7 +484,7 @@ export class AnnotationService {
           record = {
             documentId: this.documentId,
             type: AnnotationItemType.COMMENT,
-            dirty: false,
+            dirty: true,
             virgin: true,
             shared: false,
             id: event.id,
@@ -501,7 +511,7 @@ export class AnnotationService {
           record = {
             documentId: this.documentId,
             type: AnnotationItemType.COMMENT,
-            dirty: false,
+            dirty: true,
             virgin: true,
             shared: false,
             id: event.id,
@@ -518,6 +528,7 @@ export class AnnotationService {
           break;
       }
     } else {
+      record.dirty = true;
       setBoundingBoxOf(record, event);
     }
 
