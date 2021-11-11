@@ -36,12 +36,12 @@
               },
               {
                 "glob": "**/*",
-                "input": "projects/ngx-extended-pdf-annotations/src/assets/",
+                "input": "projects/ngx-extended-pdf-annotations/assets/",
                 "output": "/assets/"
               }
             ],
             "styles": [
-              "projects/ngx-extended-pdf-annotations/src/assets/ngx-extended-pdf-annotations/theme.css",
+              "projects/ngx-extended-pdf-annotations/assets/ngx-extended-pdf-annotations/theme.css",
               "src/styles.scss"
             ],
             "scripts": []

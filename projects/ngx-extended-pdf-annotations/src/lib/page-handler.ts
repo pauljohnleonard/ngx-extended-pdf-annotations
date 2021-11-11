@@ -466,8 +466,6 @@ export class PageHandler {
     const ctx = this.annotationCanvas.getContext('2d');
 
     ctx.drawImage(this.pdfCanvas, 0, 0);
-
-    this.pdfCanvas.style.display = 'none';
   }
 
   visible(yes) {

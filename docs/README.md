@@ -21,3 +21,15 @@ ng s
 # Demo
 
 [Demo](http://ngx-annotations.s3-website-eu-west-1.amazonaws.com/)
+
+# Usage
+
+Inlcude the assets in your `angular.json`
+
+```
+                {
+                  "glob": "**/*",
+                  "input": "node_modules/ngx-extended-pdf-annotations/assets/",
+                  "output": "/assets/"
+                }
+```
