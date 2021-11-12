@@ -1,4 +1,5 @@
 import { ElementRef } from '@angular/core';
+import { Subject } from 'rxjs';
 
 export enum AnnotationType {
   OFF = 'OFF',
@@ -139,9 +140,23 @@ export class AnnotationMessage {
 }
 
 export interface AnnotationStorage {
+  // Use this for real time updates.
+  update$: Subject<AnnotationPayload>;
+
+  // Get the document annotations from storage
   fetchDocument(
     documentId: string,
     userId: string
   ): Promise<AnnotationRecord[]>;
-  saveAnnotation(record: AnnotationRecord);
+
+  // Add or update an annotation.
+  updateAnnotation(record: AnnotationRecord);
 }
+
+export type AnnotationPayload = {
+  record?: AnnotationRecord;
+  annotationIds?: string[];
+  documentId?: string;
+  clientHash: string;
+  type: 'DELETE' | 'UPDATE';
+};

@@ -14,6 +14,7 @@ import {
   AnnotationPageRect,
   AnnotationMark,
   AnnotationEdge,
+  AnnotationPayload,
 } from './classes';
 
 import { PageHandler } from './page-handler';
@@ -108,11 +109,38 @@ export class AnnotationService {
     // console.log('COMMENTS LOADED FROM STORE');
 
     this.initTextHandler();
+
+    this.storage.update$.subscribe((payload) => {
+      console.log(' annotation update ', payload);
+      this.handleRemoteUpdate(payload);
+    });
   }
+
+  handleRemoteUpdate(payload: AnnotationPayload) {
+    const id = payload.record.id;
+    let record = payload.record;
+    // stop any silly saving of this new record.
+    record.dirty = false;
+    let existingRecord: AnnotationRecord = this.annotationMap[id];
+    if (!existingRecord) {
+      this._addNewRecord(record);
+    } else {
+      this.updateRecord(existingRecord, record);
+    }
+
+    this.renderer(record);
+  }
+
+  updateRecord(existing, record) {
+    Object.assign(existing, record);
+  }
+
+  // if no page then redraw all
 
   startAutoSave() {
     setInterval(() => this.autoSaveAnnotations(), 500);
   }
+
   initTextHandler() {
     window.addEventListener('mouseup', () => {
       if (this._mode === AnnotationType.TEXT) {
@@ -283,7 +311,7 @@ export class AnnotationService {
             record.dirty = false;
             record.virgin = false;
             savedCnt++;
-            await this.storage.saveAnnotation(record);
+            await this.storage.updateAnnotation(record);
           }
         }
       }
@@ -298,7 +326,7 @@ export class AnnotationService {
     if (this.storage) {
       record.dirty = false;
       record.virgin = false;
-      await this.storage.saveAnnotation(record);
+      await this.storage.updateAnnotation(record);
     }
     if (record.type === AnnotationItemType.COMMENT && record.deleted) {
       delete this.annotationMap[record.id];
