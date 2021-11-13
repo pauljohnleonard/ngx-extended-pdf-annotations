@@ -118,7 +118,6 @@ export class PageHandler {
     }
     this.pageViewer.textLayer.textLayerDiv;
 
-    console.log(' Enable text ', yes);
     this.pageViewer.textLayer.textLayerDiv.style['pointer-events'] = yes
       ? 'auto'
       : 'none';

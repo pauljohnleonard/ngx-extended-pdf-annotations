@@ -7,3 +7,6 @@ export const HIGHLIGHT_BORDER = 12;
 
 export const TEXT_RECT_COLOUR = '#ffff00';
 export const TEXT_RECT_ALPHA = 0.3;
+
+// Save changes periodically with this interval.
+export const AUTO_SAVE_INTERVAL = 1000;

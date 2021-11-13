@@ -21,6 +21,7 @@ import { PageHandler } from './page-handler';
 import { setBoundingBoxOf } from './util';
 import { v4 as uuidv4 } from 'uuid';
 import { extractEdgesFromRects } from './combineRects';
+import { AUTO_SAVE_INTERVAL } from './constants';
 @Injectable({
   providedIn: 'root',
 })
@@ -104,7 +105,7 @@ export class AnnotationService {
     setTimeout(() => {
       this.zoomChange(null);
       this._redraw();
-      this.startAutoSave();
+      setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
     });
     // console.log('COMMENTS LOADED FROM STORE');
 
@@ -125,20 +126,10 @@ export class AnnotationService {
     if (!existingRecord) {
       this._addNewRecord(record);
     } else {
-      this.updateRecord(existingRecord, record);
+      Object.assign(existingRecord, record);
     }
 
     this.renderer(record);
-  }
-
-  updateRecord(existing, record) {
-    Object.assign(existing, record);
-  }
-
-  // if no page then redraw all
-
-  startAutoSave() {
-    setInterval(() => this.autoSaveAnnotations(), 500);
   }
 
   initTextHandler() {
@@ -223,6 +214,7 @@ export class AnnotationService {
   }
 
   handleControlEvent(evt: AnnotationControlEvent) {
+    this._focusOnComment(null);
     switch (evt.type) {
       case AnnotationType.TOGGLE:
         if (this._mode === AnnotationType.HIDE) {
@@ -335,6 +327,11 @@ export class AnnotationService {
 
   private handleHighlightChange(newHighlight: UIPannelComment) {
     const oldHighlight: UIPannelComment = this.highlightComment;
+    console.log(
+      `Hightlight change   ${
+        oldHighlight ? oldHighlight.records[0].id : 'NONE'
+      }   ${newHighlight ? newHighlight.records[0].id : 'NONE'}`
+    );
 
     if (!newHighlight || newHighlight !== this.highlightComment) {
       if (this.highlightComment) {
@@ -342,6 +339,10 @@ export class AnnotationService {
           FocusModeEnum.HIGHLIGHT_OFF
         );
       }
+      console.log(
+        ' Set highlight ',
+        newHighlight ? newHighlight.records[0].id : ' NONE'
+      );
       this.highlightComment = newHighlight;
       if (newHighlight) {
         this.highlightComment.component.setFocusMode(
@@ -475,6 +476,7 @@ export class AnnotationService {
   _focusOnComment(comment: UIPannelComment) {
     if (this.focusComment === comment) {
       this.modeSubject$.next(AnnotationType.OFF);
+      this.handleHighlightChange(comment);
       return;
     }
 
@@ -558,9 +560,20 @@ export class AnnotationService {
     } else {
       record.dirty = true;
       setBoundingBoxOf(record, event);
+      this._handleHighlightRecord(record);
     }
 
     this.renderer(record);
+  }
+
+  _handleHighlightRecord(record: AnnotationRecord) {
+    const parentId = record.parentId || record.id;
+
+    const comment = this._comments.find((x) => x.records[0].id === parentId);
+
+    if (comment) {
+      this.handleHighlightChange(comment);
+    }
   }
 
   // if no page then redraw all
@@ -595,8 +608,12 @@ export class AnnotationService {
     this.focusComment = comment;
     this._comments.push(comment);
 
+    //
     // give angluar time to add to dom.
-    setTimeout(() => this.sortComments());
+    setTimeout(() => {
+      this.sortComments();
+      this.handleHighlightChange(comment);
+    });
 
     return true;
   }
