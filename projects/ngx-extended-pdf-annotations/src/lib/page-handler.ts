@@ -42,31 +42,33 @@ export class PageHandler {
   ) {
     this.updateCanvas(pageViewer);
 
-    this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
-      switch (mode) {
-        case AnnotationType.PEN:
-        case AnnotationType.NOTE:
-        case AnnotationType.TEXT:
-          this.startAnnotation();
-          break;
+    this.penSub = this.annotationService.focusHelper.modeSubject$.subscribe(
+      (mode) => {
+        switch (mode) {
+          case AnnotationType.PEN:
+          case AnnotationType.NOTE:
+          case AnnotationType.TEXT:
+            this.startAnnotation();
+            break;
 
-        case AnnotationType.OFF:
-          this.endAnnotation();
-          break;
+          case AnnotationType.OFF:
+            this.endAnnotation();
+            break;
 
-        case AnnotationType.HIDE:
-          this.visible(false);
-          break;
+          case AnnotationType.HIDE:
+            this.visible(false);
+            break;
 
-        case AnnotationType.SHOW:
-          this.visible(true);
-          break;
+          case AnnotationType.SHOW:
+            this.visible(true);
+            break;
+        }
+
+        this.enableTextLayer(
+          mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
+        );
       }
-
-      this.enableTextLayer(
-        mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
-      );
-    });
+    );
 
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
   }

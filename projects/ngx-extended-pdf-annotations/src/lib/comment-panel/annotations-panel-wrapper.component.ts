@@ -38,7 +38,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     this.viewContainer.appendChild(this.elRef.nativeElement);
 
     this._showCommentPanel(true);
-    this.annotationService.modeSubject$
+    this.annotationService.focusHelper.modeSubject$
       .pipe(untilDestroyed(this))
       .subscribe((mode) => {
         switch (mode) {

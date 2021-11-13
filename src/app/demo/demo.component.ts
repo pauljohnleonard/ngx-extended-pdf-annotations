@@ -36,14 +36,14 @@ export class DemoComponent implements AfterViewInit {
   }
 
   toogleAnnotations() {
-    this.annotationsService.handleControlEvent({
+    this.annotationsService.focusHelper.handleControlEvent({
       type: AnnotationType.TOGGLE,
     });
   }
 
   penAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationType.PEN;
-    this.annotationsService.handleControlEvent({
+    this.annotationsService.focusHelper.handleControlEvent({
       type: AnnotationType.PEN,
       val,
     });
@@ -53,7 +53,7 @@ export class DemoComponent implements AfterViewInit {
     const val = this.annotationsService.getMode() !== AnnotationType.TEXT;
     this.textLayer = val;
     console.log('TEXT LAYER ', this.textLayer);
-    this.annotationsService.handleControlEvent({
+    this.annotationsService.focusHelper.handleControlEvent({
       type: AnnotationType.TEXT,
       val,
     });
@@ -62,7 +62,7 @@ export class DemoComponent implements AfterViewInit {
   noteAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationType.NOTE;
 
-    this.annotationsService.handleControlEvent({
+    this.annotationsService.focusHelper.handleControlEvent({
       type: AnnotationType.NOTE,
       val,
     });

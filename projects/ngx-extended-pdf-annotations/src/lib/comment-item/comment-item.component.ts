@@ -53,7 +53,8 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
   get inputRecord() {
     return (
-      this.annotationService.focusComment === this.comment && this._inputRecord
+      this.annotationService.focusHelper.focusComment === this.comment &&
+      this._inputRecord
     );
   }
 
@@ -67,7 +68,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   }
 
   get hasFocus() {
-    return this.annotationService.focusComment === this.comment;
+    return this.annotationService.focusHelper.focusComment === this.comment;
   }
 
   handleFocusOn() {
@@ -166,13 +167,12 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
         break;
       default:
         this.handleFocusOff();
-      // this.annotationService.handleItemFocusOff(this.comment);
     }
   }
 
   clicked() {
     // this.comment.editing = true;
-    this.annotationService._focusOnComment(this.comment);
+    this.annotationService.focusHelper.focusOnComment(this.comment);
   }
 
   editItem(item: AnnotationRecord) {
@@ -180,7 +180,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this._inputRecord = item;
     this.inputFormControl.setValue(item.bodyValue);
     this.inputFormControl.markAsPristine();
-    this.annotationService.sortComments();
+    this.annotationService.positionHelper.sortComments();
   }
 
   deleteItem(item: AnnotationRecord) {
@@ -202,20 +202,12 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
     if (ii) {
       this.comment.records.splice(ii, 1);
-      this.annotationService.sortComments();
+      this.annotationService.positionHelper.sortComments();
     }
   }
 
   ngOnInit(): void {
-    // console.log(this.comment);
     this.comment.component = this;
-
-    this.inputFormControl.valueChanges.subscribe((val) => {
-      // if (this._inputRecord && this._inputRecord.bodyValue !== val) {
-      //   this._inputRecord.dirty = true;
-      //   this._inputRecord.bodyValue = val;
-      // }
-    });
 
     if (this.comment.records[0].virgin) {
       this.setFocusMode(FocusModeEnum.CREATE);
