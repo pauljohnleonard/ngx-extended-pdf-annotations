@@ -42,15 +42,17 @@
             <mat-icon
               *ngIf="isFirst && item.shared"
               class="myicon"
+              i18n-matTooltip="@@AnnotationToolTipPublicCommentClick"
               matTooltip="Public comment. Click to make private."
-              (click)="toogleVisibility(item)"
+              (click)="toogleVisibility(item, $event)"
               >visibility</mat-icon
             >
             <mat-icon
               *ngIf="!item.shared"
               class="myicon"
+              i18n-matTooltip="@@AnnotationToolTipPrivateCommentClick"
               matTooltip="Comment is private. Click to share."
-              (click)="toogleVisibility(item)"
+              (click)="toogleVisibility(item, $event)"
               >visibility_off</mat-icon
             >
 
@@ -60,6 +62,7 @@
                 [matMenuTriggerFor]="commentMenu"
                 class="menu-button"
                 aria-label="Menu"
+                onclick="event.stopPropagation()"
               >
                 <mat-icon>more_vert</mat-icon>
               </button>
@@ -71,7 +74,11 @@
                   aria-label="Edit Comment"
                 >
                   <mat-icon>edit</mat-icon>
-                  <span i18n="@@annotation_edit_record">Edit</span>
+                  <span
+                    i18n="@@annotation_edit_record"
+                    i18n="@@AnnotationPanelButtonEdit"
+                    >Edit</span
+                  >
                 </button>
 
                 <button
@@ -80,7 +87,11 @@
                   aria-label="Delete comment"
                 >
                   <mat-icon>delete</mat-icon>
-                  <span i18n="@@chat_delete-message">Delete</span>
+                  <span
+                    i18n="@@chat_delete-message"
+                    i18n="@@AnnotationPanelButtonDelete"
+                    >Delete</span
+                  >
                 </button>
               </mat-menu>
             </div>
@@ -122,16 +133,13 @@
             mat-raised-button
             (click)="saveItem(item)"
             [disabled]="!inputFormControl.dirty"
-            [matTooltip]="getSaveToolTip(item)"
+            matTooltip="getSaveToolTip(item)"
             color="primary"
+            i18n="@@AnnotationPanelButtonSave"
           >
             Save
           </button>
         </ng-container>
-
-        <!-- dirty: {{ item.dirty }} published:{{ item.shared }} virgin:{{
-          item.virgin
-        }} -->
 
         <div
           *ngIf="!isLast && hasFocus"
@@ -143,35 +151,6 @@
           "
         ></div>
       </ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="1 || (hasFocus && editing && !inputRecord)">
-      <!-- <mat-form-field class="comment-body-formfield" appearance="outline">
-        <textarea
-          matInput
-          class="comment-window-textarea-message-input"
-          i18n-placeholder="@@YourCommentPlaceHolder"
-          [placeholder]="comment.records.length === 0 ? 'Comment' : 'Reply'"
-          [formControl]="inputFormControl"
-          autocomplete="off"
-          cdkTextareaAutosize
-          cdkAutosizeMinRows="1"
-          cdkAutosizeMaxRows="5"
-          #messageinput
-        >
-        </textarea>
-      </mat-form-field>
-
-      <button
-        style="margin-top: 10px"
-        mat-raised-button
-        (click)="saveNewItem()"
-        [disabled]="!inputFormControl.dirty"
-        matTooltip="Save comment"
-        color="primary"
-      >
-        Save
-      </button> -->
     </ng-container>
 
     <div

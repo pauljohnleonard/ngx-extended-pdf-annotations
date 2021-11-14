@@ -97,12 +97,12 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     if (!lastItem.bodyValue) this.editItem(lastItem);
   }
 
-  toogleVisibility(item: AnnotationRecord) {
+  toogleVisibility(item: AnnotationRecord, evt) {
     item.shared = !item.shared;
     item.dirty = true;
-
-    console.log(' DEPRECATE THIS SAFE');
-    this.annotationService.saveRecord(item);
+    evt.stopPropagation();
+    // console.log(' DEPRECATE THIS SAFE');
+    // this.annotationService.saveRecord(item);
   }
 
   handleFocusOff() {
@@ -150,10 +150,6 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  getSaveToolTip(item: AnnotationRecord): string {
-    return 'save';
-  }
-
   // Set the mode of the item.
   // Do not call directly. Let annotation manager do it.
   setFocusMode(focusMode: FocusModeEnum) {
@@ -172,6 +168,8 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
 
   clicked() {
     // this.comment.editing = true;
+
+    console.log('CLICKED');
     this.annotationService.focusHelper.focusOnComment(this.comment);
   }
 
@@ -181,6 +179,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.inputFormControl.setValue(item.bodyValue);
     this.inputFormControl.markAsPristine();
     this.annotationService.positionHelper.sortComments();
+    this.annotationService.focusHelper.focusOnComment(this.comment);
   }
 
   deleteItem(item: AnnotationRecord) {

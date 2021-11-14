@@ -21,12 +21,13 @@ import { extractEdgesFromRects } from './combineRects';
 import { AUTO_SAVE_INTERVAL } from './constants';
 import { AnnotationPositionHelper } from './annotation.position.helper';
 import { AnnotationFocusHelper } from './annotation.focus.helper';
+import { AnnotationRenderHelper } from './annotation.render.helper';
 @Injectable({
   providedIn: 'root',
 })
 export class AnnotationService {
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  private annotationMap: { [id: string]: AnnotationRecord } = {};
+  annotationMap: { [id: string]: AnnotationRecord } = {};
   _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
 
   // private highlightComment: UIPannelComment = null;
@@ -42,6 +43,7 @@ export class AnnotationService {
   noteImg: HTMLImageElement;
   positionHelper: AnnotationPositionHelper;
   focusHelper: AnnotationFocusHelper;
+  renderHelper: AnnotationRenderHelper;
   // public subject$ = new Subject<AnnotationMessage>();
 
   constructor() {
@@ -51,6 +53,7 @@ export class AnnotationService {
 
     this.positionHelper = new AnnotationPositionHelper(this);
     this.focusHelper = new AnnotationFocusHelper(this);
+    this.renderHelper = new AnnotationRenderHelper(this);
   }
 
   async initialize({
@@ -65,58 +68,63 @@ export class AnnotationService {
     this.storage = storage;
     this._user = user;
     this.documentId = documentId;
-    const records = await this.storage.fetchDocument(
-      documentId,
-      this._user.userId
-    );
+    if (this.storage) {
+      const records = await this.storage.fetchDocument(
+        documentId,
+        this._user.userId
+      );
+      console.log(` Loaded  ${records.length}  records`);
+      const commentRecords: {
+        [id: string]: AnnotationRecord[];
+      } = {};
 
-    console.log(` Loaded  ${records.length}  records`);
-    const commentRecords: {
-      [id: string]: AnnotationRecord[];
-    } = {};
-
-    for (const record of records) {
-      if (record.deleted) {
-        continue;
-      }
-      if (record.type === AnnotationItemType.COMMENT) {
-        commentRecords[record.id] = [record];
-        this.annotationMap[record.id] = record as AnnotationRecord;
-      }
-    }
-
-    for (const record of records) {
-      if (record.deleted) {
-        continue;
-      }
-      if (record.type === AnnotationItemType.REPLY) {
-        if (!commentRecords[(record as AnnotationRecord).parentId]) {
+      for (const record of records) {
+        if (record.deleted) {
           continue;
         }
-        commentRecords[(record as AnnotationRecord).parentId].push(record);
+        if (record.type === AnnotationItemType.COMMENT) {
+          commentRecords[record.id] = [record];
+          this.annotationMap[record.id] = record as AnnotationRecord;
+        }
       }
-    }
 
-    for (const key of Object.keys(commentRecords)) {
-      const records = commentRecords[key];
+      for (const record of records) {
+        if (record.deleted) {
+          continue;
+        }
+        if (record.type === AnnotationItemType.REPLY) {
+          if (!commentRecords[(record as AnnotationRecord).parentId]) {
+            continue;
+          }
+          commentRecords[(record as AnnotationRecord).parentId].push(record);
+        }
+      }
 
-      // const pos = this.getAnnotationPanelPos(records[0] as AnnotationRecord);
+      for (const key of Object.keys(commentRecords)) {
+        const records = commentRecords[key];
 
-      this._comments.push({ records });
+        // const pos = this.getAnnotationPanelPos(records[0] as AnnotationRecord);
+
+        this._comments.push({ records });
+      }
     }
     setTimeout(() => {
       this.zoomChange(null);
-      this._redraw();
-      setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
+      this.renderHelper._redraw();
+      if (this.storage) {
+        setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
+      }
     });
     // console.log('COMMENTS LOADED FROM STORE');
 
     this.initTextHandler();
 
-    this.storage.update$.subscribe((payload) => {
-      console.log(' annotation update ', payload);
-      this.handleRemoteUpdate(payload);
-    });
+    if (this.storage) {
+      this.storage.update$.subscribe((payload) => {
+        console.log(' annotation update ', payload);
+        this.handleRemoteUpdate(payload);
+      });
+    }
   }
 
   handleRemoteUpdate(payload: AnnotationPayload) {
@@ -131,7 +139,7 @@ export class AnnotationService {
       Object.assign(existingRecord, record);
     }
 
-    this.renderer(record);
+    this.renderHelper.renderer(record);
   }
 
   initTextHandler() {
@@ -202,7 +210,7 @@ export class AnnotationService {
 
     this.focusHelper.setMode(AnnotationType.OFF);
     this._addNewRecord(record);
-    this.renderer(record);
+    this.renderHelper.renderer(record);
   }
 
   getMode() {
@@ -225,7 +233,7 @@ export class AnnotationService {
       this.pages[page].updateCanvas(evt.source);
       setTimeout(() => {
         this.zoomChange(null);
-        this._redraw(page);
+        this.renderHelper._redraw(page);
       });
     }
   }
@@ -235,7 +243,7 @@ export class AnnotationService {
     setTimeout(() => {
       this.positionHelper.rebuildCommentPostions();
       this.positionHelper.sortComments();
-      setTimeout(() => this._redraw());
+      setTimeout(() => this.renderHelper._redraw());
     });
   }
 
@@ -277,55 +285,6 @@ export class AnnotationService {
     }
   }
 
-  private renderer(record: AnnotationRecord) {
-    if (!record.mark) return;
-
-    const highlight =
-      this.focusHelper.focusComment &&
-      record.id === this.focusHelper.focusComment.records[0].id;
-
-    let pageHandler: PageHandler;
-    switch (record.mark.type) {
-      case AnnotationType.PEN:
-        pageHandler = this.pages[record.mark.page];
-        if (pageHandler) {
-          pageHandler.drawPenMark(record);
-          if (highlight) {
-            pageHandler.drawHighlightBox(record.mark.boundingBox);
-          }
-        }
-        break;
-
-      case AnnotationType.NOTE:
-        pageHandler = this.pages[record.mark.page];
-        if (pageHandler) {
-          pageHandler.drawNoteMark(record);
-          if (highlight) {
-            pageHandler.drawNoteHighLight(record);
-          }
-        }
-        break;
-
-      case AnnotationType.TEXT:
-        const textMark: AnnotationMark = record.mark;
-
-        for (const pageRect of textMark.pageRects) {
-          const pageHandler = this.pages[pageRect.page];
-          if (pageHandler) {
-            pageHandler.drawTextBox(pageRect);
-          }
-        }
-        if (highlight) {
-          for (const page of textMark.pages) {
-            const pageHandler = this.pages[page];
-            if (pageHandler) {
-              pageHandler.drawTextHighLight(record.mark);
-            }
-          }
-        }
-    }
-  }
-
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
     let record: AnnotationRecord = this.annotationMap[id];
@@ -354,6 +313,7 @@ export class AnnotationService {
             createdAt: new Date().toISOString(),
             userName: this._user.userName,
             userId: this._user.userId,
+            noHighlight: true,
           };
 
           setBoundingBoxOf(record, event);
@@ -390,31 +350,15 @@ export class AnnotationService {
       }
     } else {
       record.dirty = true;
+      if (event.event === 'MOUSE_UP') {
+        record.noHighlight = false;
+        this.focusHelper.setMode(AnnotationType.OFF);
+      }
       setBoundingBoxOf(record, event);
       this.focusHelper._handleHighlightRecord(record);
     }
 
-    this.renderer(record);
-  }
-
-  // if no page then redraw all
-  _redraw(page?: number) {
-    console.log(' REDRAW ', page);
-    if (page !== undefined) {
-      const pageHandler = this.pages[page];
-      pageHandler.clear();
-    } else {
-      for (const key of Object.keys(this.pages)) {
-        this.pages[key].clear();
-      }
-    }
-
-    for (const id of Object.keys(this.annotationMap)) {
-      const record = this.annotationMap[id];
-      if (page === undefined || (record.mark && record.mark.page === page)) {
-        this.renderer(record);
-      }
-    }
+    this.renderHelper.renderer(record);
   }
 
   _addNewRecord(record: AnnotationRecord): boolean {
@@ -446,7 +390,7 @@ export class AnnotationService {
     const id = comment.records[0].id;
     delete this.annotationMap[id];
     const page = comment.pos.page;
-    this._redraw(page);
+    this.renderHelper._redraw(page);
   }
 
   _destroy() {

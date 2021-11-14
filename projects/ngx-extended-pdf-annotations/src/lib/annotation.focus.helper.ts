@@ -47,12 +47,12 @@ export class AnnotationFocusHelper {
 
     setTimeout(() => {
       if (oldHighlight) {
-        this.annotationService._redraw(oldHighlight.pos.page);
+        this.annotationService.renderHelper._redraw(oldHighlight.pos.page);
         if (newFocus && newFocus.pos.page !== oldHighlight.pos.page) {
-          this.annotationService._redraw(newFocus.pos.page);
+          this.annotationService.renderHelper._redraw(newFocus.pos.page);
         }
       } else if (newFocus && newFocus.pos.page) {
-        this.annotationService._redraw(newFocus.pos.page);
+        this.annotationService.renderHelper._redraw(newFocus.pos.page);
       }
     });
   }
@@ -71,31 +71,6 @@ export class AnnotationFocusHelper {
     this.focusOnComment(this.focusComment);
     this.modeSubject$.next(mode);
   }
-
-  // Not for external use  ----------------------------------------------------------------------------------------------------------
-
-  // This is when a user selects an comment
-  // focusOnComment(comment: UIPannelComment) {
-  //   if (this.focusComment === comment) {
-  //     this.modeSubject$.next(AnnotationType.OFF);
-  //     this.handleHighlightChange(comment);
-  //     return;
-  //   }
-
-  //   this.setMode(AnnotationType.OFF);
-
-  //   if (this.focusComment) {
-  //     this.focusComment.component.setFocusMode(FocusModeEnum.CLOSED);
-  //   }
-
-  //   this._focusComment = comment;
-
-  //   if (this.focusComment) {
-  //     this.focusComment.component.setFocusMode(FocusModeEnum.FOCUS);
-  //   }
-
-  //   this.handleHighlightChange(comment);
-  // }
 
   handleControlEvent(evt: AnnotationControlEvent) {
     this.focusOnComment(null);

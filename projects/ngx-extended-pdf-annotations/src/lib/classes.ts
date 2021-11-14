@@ -43,9 +43,16 @@ export type AnnotationEdge = {
 };
 export type AnnotationTextSelection = AnnotationPageRect[];
 
+export type AnnotationPageEventType =
+  | 'MOUSE_UP'
+  | 'MOUSE_MOVE'
+  | 'MOUSE_DOWN'
+  | 'DESTROY'
+  | 'OFF';
 export type PageEvent = {
   id: string;
   type: PageEventType;
+  event: AnnotationPageEventType;
   mode?: AnnotationType;
   page?: number;
   path?: AnnotationPath;
@@ -98,6 +105,7 @@ export interface AnnotationRecord extends AnnotationUser {
   deleted?: boolean;
   mark?: AnnotationMark;
   parentId?: string;
+  noHighlight?: boolean;
 }
 
 export type AnnotationMarkRender = (record: AnnotationRecord) => void;

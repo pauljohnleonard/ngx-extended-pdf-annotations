@@ -10,6 +10,7 @@ import {
   AnnotationMark,
   BoundingBox,
   AnnotationEdge,
+  AnnotationPageEventType,
 } from './classes';
 import { AnnotationService } from './annotation.service';
 import {
@@ -52,7 +53,7 @@ export class PageHandler {
             break;
 
           case AnnotationType.OFF:
-            this.endAnnotation();
+            this.endAnnotation('OFF');
             break;
 
           case AnnotationType.HIDE:
@@ -219,6 +220,7 @@ export class PageHandler {
             mode: AnnotationType.PEN,
             path: this.path,
             page: this.page,
+            event: 'MOUSE_DOWN',
           });
           this.isDrawing = true;
           break;
@@ -230,6 +232,7 @@ export class PageHandler {
             pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
             mode: AnnotationType.NOTE,
             page: this.page,
+            event: 'MOUSE_DOWN',
           });
           this.isDrawing = false;
           break;
@@ -248,7 +251,9 @@ export class PageHandler {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
+        event: 'MOUSE_MOVE',
       });
+
       // this.draw();
     }
   }
@@ -263,6 +268,7 @@ export class PageHandler {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
+        event: 'MOUSE_UP',
       });
       // this.draw();
     }
@@ -434,27 +440,6 @@ export class PageHandler {
     ctx.stroke();
   }
 
-  // drawBoundingPoly(boundingPoly: AnnotationPoint[]) {
-  //   const ctx = this.annotationCanvas.getContext('2d');
-  //   ctx.beginPath();
-  //   let first = true;
-  //   for (const pt of boundingPoly) {
-  //     const pt1 = this.realToCanvas(pt);
-  //     if (first) {
-  //       ctx.moveTo(pt1.x, pt1.y);
-  //       first = false;
-  //     } else {
-  //       ctx.moveTo(pt1.x, pt1.y);
-  //     }
-
-  //     ctx.lineWidth = 6;
-  //     ctx.strokeStyle = '#0097a7';
-  //     ctx.stroke();
-  //   }
-
-  //   ctx.stroke();
-  // }
-
   clear() {
     const context = this.annotationCanvas.getContext('2d');
     context.clearRect(
@@ -488,13 +473,14 @@ export class PageHandler {
     }
   }
 
-  endAnnotation() {
+  endAnnotation(event: AnnotationPageEventType) {
     this.detachPen();
 
     if (!!this.currentAnnotationId) {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.PEN_UP,
+        event,
       });
     }
 
@@ -504,7 +490,7 @@ export class PageHandler {
   }
 
   destroy() {
-    this.endAnnotation();
+    this.endAnnotation('DESTROY');
     if (this.penSub) {
       this.penSub.unsubscribe();
       delete this.penSub;

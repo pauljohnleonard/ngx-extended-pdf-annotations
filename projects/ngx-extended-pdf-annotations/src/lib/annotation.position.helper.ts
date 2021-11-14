@@ -40,6 +40,10 @@ export class AnnotationPositionHelper {
     setTimeout(() => {
       let yPlot = -1;
       this.annotationService._comments.sort((a, b) => {
+        if (!a.pos && !b.pos) return 0;
+        if (!a.pos && b.pos) return -1;
+        if (a.pos && !b.pos) return 0;
+
         if (a.pos.page > b.pos.page) return 1;
         if (a.pos.page < b.pos.page) return -1;
 
