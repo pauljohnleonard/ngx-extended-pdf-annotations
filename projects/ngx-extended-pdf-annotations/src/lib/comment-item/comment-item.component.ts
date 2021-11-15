@@ -72,7 +72,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   }
 
   handleFocusOn() {
-    const lastItem = this.comment.records[this.comment.records.length - 1];
+    let lastItem = this.comment.records[this.comment.records.length - 1];
 
     if (lastItem.userId === this.annotationService.getUser().userId) {
       this._inputRecord = lastItem;
@@ -92,6 +92,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       };
       this.comment.records.push(record);
       this._inputRecord = record;
+      lastItem = record;
     }
     this.initInput();
     if (!lastItem.bodyValue) this.editItem(lastItem);
