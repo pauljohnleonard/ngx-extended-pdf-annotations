@@ -7,21 +7,9 @@ import {
   AnnotationPageRect,
   PageEventType,
   AnnotationRecord,
-  AnnotationMark,
-  BoundingBox,
-  AnnotationEdge,
   AnnotationPageEventType,
 } from './classes';
 import { AnnotationService } from './annotation.service';
-import {
-  HIGHLIGHT_BORDER,
-  HIGHLIGHT_COLOUR as BORDER_HIGHLIGHT_COLOUR,
-  HIGHLIGHT_LINE_WIDTH as BORDER_HIGHLIGHT_LINE_WIDTH,
-  NOTE_ICON_HEIGHT,
-  NOTE_ICON_WIDTH,
-  TEXT_RECT_ALPHA,
-  TEXT_RECT_COLOUR,
-} from './constants';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -43,41 +31,37 @@ export class PageHandler {
   ) {
     this.updateCanvas(pageViewer);
 
-    this.penSub = this.annotationService.focusHelper.modeSubject$.subscribe(
-      (mode) => {
-        switch (mode) {
-          case AnnotationType.PEN:
-          case AnnotationType.NOTE:
-          case AnnotationType.TEXT:
-            this.startAnnotation();
-            break;
+    this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
+      switch (mode) {
+        case AnnotationType.PEN:
+        case AnnotationType.NOTE:
+        case AnnotationType.TEXT:
+          this.startAnnotation();
+          break;
 
-          case AnnotationType.OFF:
-            this.endAnnotation('OFF');
-            break;
+        case AnnotationType.OFF:
+          this.endAnnotation();
+          break;
 
-          case AnnotationType.HIDE:
-            this.visible(false);
-            break;
+        case AnnotationType.HIDE:
+          this.visible(false);
+          break;
 
-          case AnnotationType.SHOW:
-            this.visible(true);
-            break;
-        }
-
-        this.enableTextLayer(
-          mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
-        );
+        case AnnotationType.SHOW:
+          this.visible(true);
+          break;
       }
-    );
+
+      this.enableTextLayer(
+        mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
+      );
+    });
 
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
+    window.addEventListener('touchend', this.mouseUpHandler.bind(this));
   }
 
   mapToPageRect(rect: DOMRect): AnnotationPageRect {
-    if (!this.pageViewer.textLayer) {
-      return null;
-    }
     const pageRect =
       this.pageViewer.textLayer.textLayerDiv.getBoundingClientRect();
 
@@ -116,11 +100,7 @@ export class PageHandler {
   }
 
   enableTextLayer(yes) {
-    if (!this.pageViewer.textLayer) {
-      return;
-    }
-    this.pageViewer.textLayer.textLayerDiv;
-
+    console.log(' Enable text ', yes);
     this.pageViewer.textLayer.textLayerDiv.style['pointer-events'] = yes
       ? 'auto'
       : 'none';
@@ -188,17 +168,19 @@ export class PageHandler {
     this.currentAnnotationId = null;
     this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
     this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
+    this.annotationCanvas.ontouchstart = this.mouseDownHandler.bind(this);
+    this.annotationCanvas.ontouchmove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
 
     switch (this.annotationService.getMode()) {
       case AnnotationType.PEN:
         this.annotationCanvas.style.cursor =
-          "url('/assets/ngx-extended-pdf-annotations/pencil.png')  0 32 ,auto";
+          "url('/assets/pencil.png')  0 32 ,auto";
         break;
 
       case AnnotationType.NOTE:
         this.annotationCanvas.style.cursor =
-          "url('/assets/ngx-extended-pdf-annotations/note.png')  0 0 ,auto";
+          "url('/assets/note.png')  0 32 ,auto";
         break;
     }
     // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
@@ -220,7 +202,6 @@ export class PageHandler {
             mode: AnnotationType.PEN,
             path: this.path,
             page: this.page,
-            event: 'MOUSE_DOWN',
           });
           this.isDrawing = true;
           break;
@@ -229,15 +210,11 @@ export class PageHandler {
           this.annotationService._handlePageEvent({
             id: this.currentAnnotationId,
             type: PageEventType.START,
-            pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
+            pos: this.pos,
             mode: AnnotationType.NOTE,
             page: this.page,
-            event: 'MOUSE_DOWN',
           });
-          this.isDrawing = false;
           break;
-        default:
-          this.isDrawing = false;
       }
     }
   }
@@ -251,9 +228,7 @@ export class PageHandler {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
-        event: 'MOUSE_MOVE',
       });
-
       // this.draw();
     }
   }
@@ -268,7 +243,6 @@ export class PageHandler {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
-        event: 'MOUSE_UP',
       });
       // this.draw();
     }
@@ -297,15 +271,12 @@ export class PageHandler {
     this.annotationCanvas.style.height = this.pdfCanvas.style.height;
 
     this.pdfCanvas.style.position = 'absolute';
-
     this.annotationCanvas.style.position = 'absolute';
     this.annotationCanvas.id = 'mycanvas';
     // this.canvas.style['z-index'] = '30';
     // this.pdfCanvas.style['z-index'] = '20';
 
     this.pdfCanvas.parentElement.appendChild(this.annotationCanvas);
-
-    // Copy source contents to annotation canvas.
 
     // console.log(this.canvas);
 
@@ -325,58 +296,25 @@ export class PageHandler {
 
     let height = Math.abs(pos2.y - pos1.y);
     let y = Math.min(pos1.y, pos2.y);
-    ctx.fillStyle = TEXT_RECT_COLOUR;
-    ctx.globalAlpha = TEXT_RECT_ALPHA;
-    ctx.globalCompositeOperation = 'darken';
+    ctx.fillStyle = '#0000FF';
+    ctx.globalAlpha = 0.1;
     ctx.fillRect(x, y, width, height);
     ctx.globalAlpha = 1.0;
-    ctx.globalCompositeOperation = 'source-over';
   }
 
-  drawTextHighLight(mark: AnnotationMark) {
-    const edges = mark.edges;
-
-    const ctx = this.annotationCanvas.getContext('2d');
-    ctx.beginPath();
-    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
-    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
-    for (const edge of edges) {
-      const pos1 = this.realToCanvas(edge.pos1);
-      ctx.moveTo(pos1.x, pos1.y);
-      const pos2 = this.realToCanvas(edge.pos2);
-      ctx.lineTo(pos2.x, pos2.y);
-    }
-    ctx.stroke();
-  }
-
-  drawNoteMark(record: AnnotationRecord) {
+  drawNoteMark(record: AnnotationRecord, highlight: boolean) {
     const ctx = this.annotationCanvas.getContext('2d');
     const pos = this.realToCanvas(record.mark.pos);
     ctx.drawImage(
       this.annotationService.noteImg,
-      pos.x,
-      pos.y,
-      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
-      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
+      pos.x - 100,
+      pos.y - 100,
+      100,
+      100
     );
   }
 
-  drawNoteHighLight(record: AnnotationRecord) {
-    const ctx = this.annotationCanvas.getContext('2d');
-    const pos = this.realToCanvas(record.mark.pos);
-    ctx.beginPath();
-    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
-    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
-    ctx.rect(
-      pos.x,
-      pos.y,
-      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
-      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
-    );
-    ctx.stroke();
-  }
-
-  drawPenMark(record: AnnotationRecord) {
+  drawPenMark(record: AnnotationRecord, highlight) {
     const mark = record.mark;
 
     const path = mark.path;
@@ -407,37 +345,35 @@ export class PageHandler {
     ctx.strokeStyle = 'rgba(255,0,0,0.7)';
 
     ctx.stroke();
-  }
 
-  drawHighlightBox(boundingBox: BoundingBox) {
-    const ctx = this.annotationCanvas.getContext('2d');
+    if (highlight) {
+      const x1 = mark.boundingBox.x1;
+      const y1 = mark.boundingBox.y1;
 
-    const x1 = boundingBox.x1;
-    const y1 = boundingBox.y1;
+      const c1 = this.realToCanvas({ x: x1, y: y1 });
 
-    const c1 = this.realToCanvas({ x: x1, y: y1 });
+      const x2 = mark.boundingBox.x2;
+      const y2 = mark.boundingBox.y2;
 
-    const x2 = boundingBox.x2;
-    const y2 = boundingBox.y2;
+      const c2 = this.realToCanvas({ x: x2, y: y2 });
+      const w = Math.abs(c2.x - c1.x);
+      const h = Math.abs(c2.y - c1.y);
 
-    const c2 = this.realToCanvas({ x: x2, y: y2 });
-    const w = Math.abs(c2.x - c1.x);
-    const h = Math.abs(c2.y - c1.y);
+      const x = Math.min(c2.x, c1.x);
+      const y = Math.min(c2.y, c1.y);
 
-    const x = Math.min(c2.x, c1.x);
-    const y = Math.min(c2.y, c1.y);
-
-    ctx.beginPath();
-
-    ctx.rect(
-      x - HIGHLIGHT_BORDER,
-      y - HIGHLIGHT_BORDER,
-      w + HIGHLIGHT_BORDER * 2,
-      h + HIGHLIGHT_BORDER * 2
-    );
-    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
-    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
-    ctx.stroke();
+      ctx.beginPath();
+      const HIGHLIGHT_BORDER = 12;
+      ctx.rect(
+        x - HIGHLIGHT_BORDER,
+        y - HIGHLIGHT_BORDER,
+        w + HIGHLIGHT_BORDER * 2,
+        h + HIGHLIGHT_BORDER * 2
+      );
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#0097a7';
+      ctx.stroke();
+    }
   }
 
   clear() {
@@ -448,10 +384,6 @@ export class PageHandler {
       this.annotationCanvas.width,
       this.annotationCanvas.height
     );
-
-    const ctx = this.annotationCanvas.getContext('2d');
-
-    ctx.drawImage(this.pdfCanvas, 0, 0);
   }
 
   visible(yes) {
@@ -473,14 +405,14 @@ export class PageHandler {
     }
   }
 
-  endAnnotation(event: AnnotationPageEventType) {
+  endAnnotation() {
     this.detachPen();
 
     if (!!this.currentAnnotationId) {
       this.annotationService._handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.PEN_UP,
-        event,
+        event:AnnotationPageEventType.
       });
     }
 
@@ -490,7 +422,7 @@ export class PageHandler {
   }
 
   destroy() {
-    this.endAnnotation('DESTROY');
+    this.endAnnotation();
     if (this.penSub) {
       this.penSub.unsubscribe();
       delete this.penSub;
