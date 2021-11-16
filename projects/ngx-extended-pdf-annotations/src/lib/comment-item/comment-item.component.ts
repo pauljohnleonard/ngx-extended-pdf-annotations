@@ -51,6 +51,16 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     public annotationService: AnnotationService
   ) {}
 
+  updateExternalReply(record: AnnotationRecord) {
+    const existing = this.comment.records.find((item) => item.id == record.id);
+    if (existing) {
+      Object.assign(existing, record);
+    } else {
+      this.comment.records.push(record);
+      this.annotationService.rebuildComments(null);
+    }
+  }
+
   get inputRecord() {
     return (
       this.annotationService.focusHelper.focusComment === this.comment &&

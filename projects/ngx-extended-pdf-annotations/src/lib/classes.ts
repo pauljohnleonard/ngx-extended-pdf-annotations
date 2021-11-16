@@ -125,6 +125,7 @@ export enum FocusModeEnum {
   HIGHLIGHT_ON = 'HIGHLIGHT_ON',
 }
 export interface UIPanelItemIterface {
+  updateExternalReply(record: AnnotationRecord);
   getHeight: () => number;
   setFocusMode(focusMode: FocusModeEnum);
 }

@@ -22,12 +22,15 @@ import { AUTO_SAVE_INTERVAL } from './constants';
 import { AnnotationPositionHelper } from './annotation.position.helper';
 import { AnnotationFocusHelper } from './annotation.focus.helper';
 import { AnnotationRenderHelper } from './annotation.render.helper';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AnnotationService {
   pages: { [page: number]: PageHandler } = {}; // PDFPageVIew
-  annotationMap: { [id: string]: AnnotationRecord } = {};
+
+  // This holds comments
+  commentRecordMap: { [id: string]: AnnotationRecord } = {};
   _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
 
   // private highlightComment: UIPannelComment = null;
@@ -84,7 +87,7 @@ export class AnnotationService {
         }
         if (record.type === AnnotationItemType.COMMENT) {
           commentRecords[record.id] = [record];
-          this.annotationMap[record.id] = record as AnnotationRecord;
+          this.commentRecordMap[record.id] = record as AnnotationRecord;
         }
       }
 
@@ -132,11 +135,22 @@ export class AnnotationService {
     let record = payload.record;
     // stop any silly saving of this new record.
     record.dirty = false;
-    let existingRecord: AnnotationRecord = this.annotationMap[id];
-    if (!existingRecord) {
-      this._addNewRecord(record);
+    if (record.type === AnnotationItemType.COMMENT) {
+      let existingRecord: AnnotationRecord = this.commentRecordMap[id];
+
+      if (!existingRecord) {
+        this._addNewRecord(record, true);
+        this.rebuildComments(null);
+      } else {
+        Object.assign(existingRecord, record);
+      }
     } else {
-      Object.assign(existingRecord, record);
+      const parentId = record.parentId;
+      // const commentRecord=this.commentRecordMap[parentId];
+      const comment = this._comments.find(
+        (item) => item.records[0].id === parentId
+      );
+      comment.component.updateExternalReply(record);
     }
 
     this.renderHelper.renderer(record);
@@ -209,8 +223,9 @@ export class AnnotationService {
     };
 
     this.focusHelper.setMode(AnnotationType.OFF);
-    this._addNewRecord(record);
+    this._addNewRecord(record, false);
     this.renderHelper.renderer(record);
+    this.rebuildComments(null);
   }
 
   getMode() {
@@ -228,23 +243,24 @@ export class AnnotationService {
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
       this.pages[page] = pageHandler;
-      this.zoomChange(null);
+      this.rebuildComments(null);
     } else {
       this.pages[page].updateCanvas(evt.source);
-      setTimeout(() => {
-        this.zoomChange(null);
-        this.renderHelper._redraw(page);
-      });
+      this.rebuildComments(page);
     }
+  }
+
+  rebuildComments(page) {
+    setTimeout(() => {
+      this.positionHelper.rebuildCommentPositions();
+      this.positionHelper.sortComments();
+      setTimeout(() => this.renderHelper._redraw(page));
+    });
   }
 
   zoomChange(evt) {
     console.log(' ZOOM CHANGE ');
-    setTimeout(() => {
-      this.positionHelper.rebuildCommentPostions();
-      this.positionHelper.sortComments();
-      setTimeout(() => this.renderHelper._redraw());
-    });
+    this.rebuildComments(null);
   }
 
   // Public interface -----------------------------------------------------------------------------------------
@@ -281,13 +297,13 @@ export class AnnotationService {
       await this.storage.updateAnnotation(record);
     }
     if (record.type === AnnotationItemType.COMMENT && record.deleted) {
-      delete this.annotationMap[record.id];
+      delete this.commentRecordMap[record.id];
     }
   }
 
   _handlePageEvent(event: PageEvent) {
     const id = event.id;
-    let record: AnnotationRecord = this.annotationMap[id];
+    let record: AnnotationRecord = this.commentRecordMap[id];
     if (!record) {
       let type: AnnotationType;
       let mark: AnnotationMark;
@@ -317,7 +333,7 @@ export class AnnotationService {
           };
 
           setBoundingBoxOf(record, event);
-          this._addNewRecord(record);
+          this._addNewRecord(record, false);
           break;
 
         case AnnotationType.NOTE:
@@ -344,7 +360,7 @@ export class AnnotationService {
           };
 
           setBoundingBoxOf(record, event);
-          this._addNewRecord(record);
+          this._addNewRecord(record, false);
           setTimeout(() => this.focusHelper.setMode(AnnotationType.OFF));
           break;
       }
@@ -361,18 +377,19 @@ export class AnnotationService {
     this.renderHelper.renderer(record);
   }
 
-  _addNewRecord(record: AnnotationRecord): boolean {
-    if (this.annotationMap[record.id]) return false;
-    this.annotationMap[record.id] = record;
+  _addNewRecord(record: AnnotationRecord, external: boolean): boolean {
+    if (this.commentRecordMap[record.id]) return false;
+    this.commentRecordMap[record.id] = record;
 
-    const pos = this.positionHelper.getAnnotationPanelPos(record);
-    const comment: UIPannelComment = {
-      pos,
-      records: [record],
-    };
-    this._comments.push(comment);
-    this.focusHelper.setFocus(comment);
-
+    if (record.type === AnnotationItemType.COMMENT) {
+      const pos = this.positionHelper.getAnnotationPanelPos(record);
+      const comment: UIPannelComment = {
+        pos,
+        records: [record],
+      };
+      this._comments.push(comment);
+      if (!external) this.focusHelper.setFocus(comment);
+    }
     return true;
   }
 
@@ -388,7 +405,7 @@ export class AnnotationService {
     this._comments.splice(ii, 1);
     this.positionHelper.sortComments();
     const id = comment.records[0].id;
-    delete this.annotationMap[id];
+    delete this.commentRecordMap[id];
     const page = comment.pos.page;
     this.renderHelper._redraw(page);
   }

@@ -16,8 +16,8 @@ export class AnnotationRenderHelper {
       }
     }
 
-    for (const id of Object.keys(this.annotationService.annotationMap)) {
-      const record = this.annotationService.annotationMap[id];
+    for (const id of Object.keys(this.annotationService.commentRecordMap)) {
+      const record = this.annotationService.commentRecordMap[id];
       if (page === undefined || (record.mark && record.mark.page === page)) {
         this.renderer(record);
       }

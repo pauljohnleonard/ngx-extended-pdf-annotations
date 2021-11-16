@@ -3,13 +3,26 @@ import { AnnotationPageRect, AnnotationRecord, PanelPosition } from './classes';
 import { PageHandler } from './page-handler';
 
 export class AnnotationPositionHelper {
-  constructor(public annotationService: AnnotationService) {}
+  // needsRebuild: boolean;
+
+  constructor(public annotationService: AnnotationService) {
+    // setInterval(() => {
+    //   if (this.needsRebuild) {
+    //     this._rebuildCommentPostions();
+    //     this.needsRebuild = false;
+    //   }
+    // }, 100);
+  }
+
+  // rebuildCommentPositions() {
+  //   this.needsRebuild = true;
+  // }
 
   // rebuild comment positions
   // We do this if the zoome changes
-  rebuildCommentPostions() {
+  rebuildCommentPositions() {
     for (const c of this.annotationService._comments) {
-      c.pos = this.getAnnotationPanelPos(c.records[0] as AnnotationRecord);
+      c.pos = this.getAnnotationPanelPos(c.records[0]);
     }
   }
 
