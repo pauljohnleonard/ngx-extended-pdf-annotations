@@ -15,7 +15,7 @@ export class AnnotationImageService {
 
     return new Promise((resolve) => {
       const noteImg = new Image();
-      noteImg.src = '/assets/ngx-extended-pdf-annotations/comment_yellow.svg';
+      noteImg.src = '/assets/ngx-extended-pdf-annotations/note-image.svg';
       noteImg.onload = () => {
         this.noteImg = noteImg;
         resolve(noteImg);
@@ -25,10 +25,10 @@ export class AnnotationImageService {
 
   // Custom cursors
   getPenCursorUrl() {
-    return "url('/assets/ngx-extended-pdf-annotations/pencil.png')  0 32 ,auto";
+    return "url('/assets/ngx-extended-pdf-annotations/pencil-cursor.png')  0 32 ,auto";
   }
 
   getNoteCursorUrl() {
-    return "url('/assets/ngx-extended-pdf-annotations/note.png')  0 0 ,auto";
+    return "url('/assets/ngx-extended-pdf-annotations/note-cursor.png')  0 0 ,auto";
   }
 }

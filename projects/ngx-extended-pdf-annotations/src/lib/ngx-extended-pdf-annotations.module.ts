@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
+import { AnnotationIconRegisterService } from './annotation-icon-register.service';
 @NgModule({
   declarations: [CommentComponent, CommentItemComponent],
   imports: [
@@ -29,5 +30,7 @@ import { MatInputModule } from '@angular/material/input';
   ],
   exports: [CommentComponent, CommentItemComponent],
 })
-export class NgxExtendPdfAnnotationsModule {}
+export class NgxExtendPdfAnnotationsModule {
+  constructor(public x: AnnotationIconRegisterService) {}
+}
 export { CommentItemComponent } from './comment-item/comment-item.component';

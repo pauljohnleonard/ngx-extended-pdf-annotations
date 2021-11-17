@@ -1,0 +1,13 @@
+<svg id="text-highligt" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="transparent_firkant" data-name="transparent firkant">
+    <path id="Path_6995" data-name="Path 6995" d="M0,0H24V24H0Z" fill="none" />
+  </g>
+  <g id="Layer_1" data-name="Layer 1">
+    <rect id="Rectangle_3774" data-name="Rectangle 3774" width="2" height="18" transform="translate(19 3)" />
+    <g id="Group_3256" data-name="Group 3256">
+      <path id="Path_6996" data-name="Path 6996"
+        d="M15.63,15.08h-5l-.9,2.2H7.63l4.75-11h1.5l2.62,6.07V6.5h0v-2h-9a2,2,0,0,0-2,2h0v11h0a2,2,0,0,0,2,2h9v-2h0v-.29Z" />
+      <path id="Path_6997" data-name="Path 6997" d="M11.26,13.28H15L13.13,8.26Z" />
+    </g>
+  </g>
+</svg>

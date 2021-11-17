@@ -1,4 +1,4 @@
-@import "../../../assets/ngx-extended-pdf-annotations/colors";
+@import "../../../assets/ngx-extended-pdf-annotations/constants";
 
 .comment-top-meta-info {
   display: flex;
@@ -16,6 +16,7 @@
 .comment-name-and-date {
   display: flex;
   flex-direction: column;
+  margin: 0 0 0 4px;
 }
 
 .comment-body-container {
@@ -26,7 +27,7 @@
   background-color: $commentBackground;
   width: 400px;
   border: 1px solid $borderLightGrey;
-  border-radius: 10px;
+  border-radius: $borderRadius;
   cursor: pointer;
 }
 
@@ -66,6 +67,15 @@
 .myicon {
   margin-right: 5px;
   color: $primaryColor;
+}
+
+.mygreyicon {
+  margin-right: 5px;
+  color: $iconLightGrey;
+  width: 18px;
+  height: 18px;
+  position: relative;
+  top: -8px;
 }
 
 .menu-button {

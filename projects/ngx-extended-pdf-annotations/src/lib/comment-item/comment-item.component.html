@@ -15,19 +15,19 @@
           <ng-container *ngIf="item.type === AnnotationItemType.COMMENT">
             <mat-icon
               *ngIf="item.mark.type === AnnotationType.PEN"
-              class="myicon"
-              >gesture</mat-icon
-            >
+              class="mygreyicon"
+              svgIcon="pen-icon"
+            ></mat-icon>
             <mat-icon
               *ngIf="item.mark.type === AnnotationType.TEXT"
-              class="myicon"
-              >title</mat-icon
-            >
+              class="mygreyicon"
+              svgIcon="text-icon"
+            ></mat-icon>
             <mat-icon
               *ngIf="item.mark.type === AnnotationType.NOTE"
-              class="myicon"
-              >chat_bubble_outline</mat-icon
-            >
+              class="mygreyicon"
+              svgIcon="note-icon"
+            ></mat-icon>
           </ng-container>
           <div class="comment-name-and-date">
             <div class="name">{{ item.userName }}</div>
@@ -128,17 +128,19 @@
             </textarea>
           </mat-form-field>
 
-          <button
-            style="margin-top: 10px"
-            mat-raised-button
-            (click)="saveItem(item)"
-            [disabled]="!inputFormControl.dirty"
-            matTooltip="getSaveToolTip(item)"
-            color="primary"
-            i18n="@@AnnotationPanelButtonSave"
-          >
-            Save
-          </button>
+          <div style="display: flex; justify-content: flex-end; width: 100%">
+            <button
+              style="margin-top: 10px; position: relative; right: 0px"
+              mat-raised-button
+              (click)="saveItem(item)"
+              [disabled]="!inputFormControl.dirty"
+              matTooltip="getSaveToolTip(item)"
+              color="primary"
+              i18n="@@AnnotationPanelButtonSave"
+            >
+              Save
+            </button>
+          </div>
         </ng-container>
 
         <div
