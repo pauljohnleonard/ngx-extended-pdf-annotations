@@ -9,7 +9,9 @@ export class AnnotationRenderHelper {
     console.log(' REDRAW ', page);
     if (page !== undefined) {
       const pageHandler = this.annotationService.pages[page];
-      pageHandler.clear();
+      if (pageHandler) {
+        pageHandler.clear();
+      }
     } else {
       for (const key of Object.keys(this.annotationService.pages)) {
         this.annotationService.pages[key].clear();

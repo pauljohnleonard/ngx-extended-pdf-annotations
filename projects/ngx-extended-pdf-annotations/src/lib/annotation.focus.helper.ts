@@ -23,20 +23,20 @@ export class AnnotationFocusHelper {
 
   focusOnComment(newFocus: UIPannelComment) {
     const oldHighlight: UIPannelComment = this._focusComment;
-    console.log(
-      `Hightlight change   ${
-        oldHighlight ? oldHighlight.records[0].id : 'NONE'
-      }   ${newFocus ? newFocus.records[0].id : 'NONE'}`
-    );
+    // console.log(
+    //   `Hightlight change   ${
+    //     oldHighlight ? oldHighlight.records[0].id : 'NONE'
+    //   }   ${newFocus ? newFocus.records[0].id : 'NONE'}`
+    // );
 
     if (!newFocus || newFocus !== this._focusComment) {
       if (this._focusComment) {
         this._focusComment.component.setFocusMode(FocusModeEnum.HIGHLIGHT_OFF);
       }
-      console.log(
-        ' Set highlight ',
-        newFocus ? newFocus.records[0].id : ' NONE'
-      );
+      // console.log(
+      //   ' Set highlight ',
+      //   newFocus ? newFocus.records[0].id : ' NONE'
+      // );
 
       this._focusComment = newFocus;
       if (newFocus) {

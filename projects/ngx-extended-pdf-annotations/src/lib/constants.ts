@@ -10,3 +10,5 @@ export const TEXT_RECT_ALPHA = 0.3;
 
 // Save changes periodically with this interval.
 export const AUTO_SAVE_INTERVAL = 500;
+
+export const SELECTION_ACTIVATE_TIME = 1000;

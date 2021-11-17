@@ -29,9 +29,8 @@ export class CommentComponent implements OnInit, OnDestroy {
     public elRef: ElementRef,
     public annotationService: AnnotationService
   ) {}
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
-  }
+
+  ngOnDestroy(): void {}
 
   async ngOnInit() {
     this.viewContainer = document.getElementById('viewerContainer');

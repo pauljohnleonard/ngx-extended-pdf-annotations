@@ -7,9 +7,23 @@ import {
   AnnotationPageRect,
   PageEventType,
   AnnotationRecord,
+  AnnotationMark,
+  BoundingBox,
+  AnnotationEdge,
   AnnotationPageEventType,
 } from './classes';
 import { AnnotationService } from './annotation.service';
+import {
+  HIGHLIGHT_BORDER,
+  HIGHLIGHT_COLOUR as BORDER_HIGHLIGHT_COLOUR,
+  HIGHLIGHT_LINE_WIDTH as BORDER_HIGHLIGHT_LINE_WIDTH,
+  NOTE_ICON_HEIGHT,
+  NOTE_ICON_WIDTH,
+  TEXT_RECT_ALPHA,
+  TEXT_RECT_COLOUR,
+} from './constants';
+import { posOfEvent } from './util';
+import { AnnotationImageService } from './image.service';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -31,37 +45,42 @@ export class PageHandler {
   ) {
     this.updateCanvas(pageViewer);
 
-    this.penSub = this.annotationService.modeSubject$.subscribe((mode) => {
-      switch (mode) {
-        case AnnotationType.PEN:
-        case AnnotationType.NOTE:
-        case AnnotationType.TEXT:
-          this.startAnnotation();
-          break;
+    this.penSub = this.annotationService.focusHelper.modeSubject$.subscribe(
+      (mode) => {
+        switch (mode) {
+          case AnnotationType.PEN:
+          case AnnotationType.NOTE:
+          case AnnotationType.TEXT:
+            this.startAnnotation();
+            break;
 
-        case AnnotationType.OFF:
-          this.endAnnotation();
-          break;
+          case AnnotationType.OFF:
+            this.endAnnotation('OFF');
+            break;
 
-        case AnnotationType.HIDE:
-          this.visible(false);
-          break;
+          case AnnotationType.HIDE:
+            this.visible(false);
+            break;
 
-        case AnnotationType.SHOW:
-          this.visible(true);
-          break;
+          case AnnotationType.SHOW:
+            this.visible(true);
+            break;
+        }
+
+        this.enableTextLayer(
+          mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
+        );
       }
-
-      this.enableTextLayer(
-        mode !== AnnotationType.PEN && mode !== AnnotationType.NOTE
-      );
-    });
+    );
 
     window.addEventListener('mouseup', this.mouseUpHandler.bind(this));
     window.addEventListener('touchend', this.mouseUpHandler.bind(this));
   }
 
   mapToPageRect(rect: DOMRect): AnnotationPageRect {
+    if (!this.pageViewer.textLayer) {
+      return null;
+    }
     const pageRect =
       this.pageViewer.textLayer.textLayerDiv.getBoundingClientRect();
 
@@ -87,20 +106,24 @@ export class PageHandler {
 
     // const n = 2;
     const pos1 = this.cursorToReal({
-      offsetX: rect.x - xOffset,
-      offsetY: rect.y - yOffset,
+      x: rect.x - xOffset,
+      y: rect.y - yOffset,
     });
 
     const pos2 = this.cursorToReal({
-      offsetX: rect.x + rect.width - xOffset,
-      offsetY: rect.y + rect.height - yOffset,
+      x: rect.x + rect.width - xOffset,
+      y: rect.y + rect.height - yOffset,
     });
 
     return { page: this.page, pos1, pos2 };
   }
 
   enableTextLayer(yes) {
-    console.log(' Enable text ', yes);
+    if (!this.pageViewer.textLayer) {
+      return;
+    }
+    this.pageViewer.textLayer.textLayerDiv;
+
     this.pageViewer.textLayer.textLayerDiv.style['pointer-events'] = yes
       ? 'auto'
       : 'none';
@@ -149,8 +172,8 @@ export class PageHandler {
     return retY;
   }
 
-  cursorToReal(e: { offsetX; offsetY }) {
-    let z = this.pageViewer.viewport.convertToPdfPoint(e.offsetX, e.offsetY);
+  cursorToReal(e: { x; y }) {
+    let z = this.pageViewer.viewport.convertToPdfPoint(e.x, e.y);
 
     return { x: z[0], y: z[1] };
   }
@@ -166,69 +189,84 @@ export class PageHandler {
   startAnnotation() {
     this.path = [];
     this.currentAnnotationId = null;
-    this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
-    this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
-    this.annotationCanvas.ontouchstart = this.mouseDownHandler.bind(this);
-    this.annotationCanvas.ontouchmove = this.mouseMoveHandler.bind(this);
+    // this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
+    // this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
+    this.annotationCanvas.onpointerdown = this.mouseDownHandler.bind(this);
+    this.annotationCanvas.onpointermove = this.mouseMoveHandler.bind(this);
     this.isActive = true;
 
     switch (this.annotationService.getMode()) {
       case AnnotationType.PEN:
         this.annotationCanvas.style.cursor =
-          "url('/assets/pencil.png')  0 32 ,auto";
+          this.annotationService.imageService.getPenCursorUrl();
+
+        "url('/assets/ngx-extended-pdf-annotations/pencil.png')  0 32 ,auto";
         break;
 
       case AnnotationType.NOTE:
         this.annotationCanvas.style.cursor =
-          "url('/assets/note.png')  0 32 ,auto";
+          this.annotationService.imageService.getNoteCursorUrl();
+        "url('/assets/ngx-extended-pdf-annotations/note.png')  0 0 ,auto";
         break;
     }
-    // ("url('http://wiki-devel.sugarlabs.org/images/e/e2/Arrow.cur'), auto");
-    //("url('/assets/pencil.png'),pointer"); // " //'crosshair';
   }
 
   mouseDownHandler(e) {
-    console.log('down ', { page: this.page, x: e.offsetX, y: e.offsetY });
-    this.pos = this.cursorToReal(e);
+    console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
+
+    console.log(e);
+
+    const pos = posOfEvent(e);
+
+    this.pos = this.cursorToReal(pos);
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
       switch (this.annotationService.getMode()) {
         case AnnotationType.PEN:
           this.path = [];
-          this.annotationService._handlePageEvent({
+          this.annotationService.factory.handlePageEvent({
             id: this.currentAnnotationId,
             type: PageEventType.START,
             pos: this.pos,
             mode: AnnotationType.PEN,
             path: this.path,
             page: this.page,
+            event: 'MOUSE_DOWN',
           });
           this.isDrawing = true;
           break;
 
         case AnnotationType.NOTE:
-          this.annotationService._handlePageEvent({
+          this.annotationService.factory.handlePageEvent({
             id: this.currentAnnotationId,
             type: PageEventType.START,
-            pos: this.pos,
+            pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
             mode: AnnotationType.NOTE,
             page: this.page,
+            event: 'MOUSE_DOWN',
           });
+          this.isDrawing = false;
           break;
+        default:
+          this.isDrawing = false;
       }
     }
   }
 
   mouseMoveHandler(e) {
-    // console.log('move', { page: this.page, x: e.offsetX, y: e.offsetY });
+    console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
+
     if (this.isDrawing === true) {
-      const pos2 = this.cursorToReal(e);
+      const pos = posOfEvent(e);
+      const pos2 = this.cursorToReal(pos);
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
-      this.annotationService._handlePageEvent({
+      this.annotationService.factory.handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
+        event: 'MOUSE_MOVE',
       });
+
       // this.draw();
     }
   }
@@ -236,13 +274,15 @@ export class PageHandler {
   mouseUpHandler(e) {
     // console.log('up', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
-      const pos2 = this.cursorToReal(e);
+      const pos = posOfEvent(e);
+      const pos2 = this.cursorToReal(pos);
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
       this.isDrawing = false;
-      this.annotationService._handlePageEvent({
+      this.annotationService.factory.handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
+        event: 'MOUSE_UP',
       });
       // this.draw();
     }
@@ -271,12 +311,16 @@ export class PageHandler {
     this.annotationCanvas.style.height = this.pdfCanvas.style.height;
 
     this.pdfCanvas.style.position = 'absolute';
+    this.pdfCanvas.style['touch-action'] = 'none';
     this.annotationCanvas.style.position = 'absolute';
+    this.annotationCanvas.style['touch-action'] = 'none';
     this.annotationCanvas.id = 'mycanvas';
     // this.canvas.style['z-index'] = '30';
     // this.pdfCanvas.style['z-index'] = '20';
 
     this.pdfCanvas.parentElement.appendChild(this.annotationCanvas);
+
+    // Copy source contents to annotation canvas.
 
     // console.log(this.canvas);
 
@@ -296,25 +340,58 @@ export class PageHandler {
 
     let height = Math.abs(pos2.y - pos1.y);
     let y = Math.min(pos1.y, pos2.y);
-    ctx.fillStyle = '#0000FF';
-    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = TEXT_RECT_COLOUR;
+    ctx.globalAlpha = TEXT_RECT_ALPHA;
+    ctx.globalCompositeOperation = 'darken';
     ctx.fillRect(x, y, width, height);
     ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
   }
 
-  drawNoteMark(record: AnnotationRecord, highlight: boolean) {
+  drawTextHighLight(mark: AnnotationMark) {
+    const edges = mark.edges;
+
+    const ctx = this.annotationCanvas.getContext('2d');
+    ctx.beginPath();
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    for (const edge of edges) {
+      const pos1 = this.realToCanvas(edge.pos1);
+      ctx.moveTo(pos1.x, pos1.y);
+      const pos2 = this.realToCanvas(edge.pos2);
+      ctx.lineTo(pos2.x, pos2.y);
+    }
+    ctx.stroke();
+  }
+
+  async drawNoteMark(record: AnnotationRecord) {
     const ctx = this.annotationCanvas.getContext('2d');
     const pos = this.realToCanvas(record.mark.pos);
     ctx.drawImage(
-      this.annotationService.noteImg,
-      pos.x - 100,
-      pos.y - 100,
-      100,
-      100
+      await this.annotationService.imageService.getNoteImage(),
+      pos.x,
+      pos.y,
+      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
+      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
     );
   }
 
-  drawPenMark(record: AnnotationRecord, highlight) {
+  drawNoteHighLight(record: AnnotationRecord) {
+    const ctx = this.annotationCanvas.getContext('2d');
+    const pos = this.realToCanvas(record.mark.pos);
+    ctx.beginPath();
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    ctx.rect(
+      pos.x,
+      pos.y,
+      NOTE_ICON_WIDTH * this.pageViewer.outputScale.sx,
+      NOTE_ICON_HEIGHT * this.pageViewer.outputScale.sy
+    );
+    ctx.stroke();
+  }
+
+  drawPenMark(record: AnnotationRecord) {
     const mark = record.mark;
 
     const path = mark.path;
@@ -345,35 +422,37 @@ export class PageHandler {
     ctx.strokeStyle = 'rgba(255,0,0,0.7)';
 
     ctx.stroke();
+  }
 
-    if (highlight) {
-      const x1 = mark.boundingBox.x1;
-      const y1 = mark.boundingBox.y1;
+  drawHighlightBox(boundingBox: BoundingBox) {
+    const ctx = this.annotationCanvas.getContext('2d');
 
-      const c1 = this.realToCanvas({ x: x1, y: y1 });
+    const x1 = boundingBox.x1;
+    const y1 = boundingBox.y1;
 
-      const x2 = mark.boundingBox.x2;
-      const y2 = mark.boundingBox.y2;
+    const c1 = this.realToCanvas({ x: x1, y: y1 });
 
-      const c2 = this.realToCanvas({ x: x2, y: y2 });
-      const w = Math.abs(c2.x - c1.x);
-      const h = Math.abs(c2.y - c1.y);
+    const x2 = boundingBox.x2;
+    const y2 = boundingBox.y2;
 
-      const x = Math.min(c2.x, c1.x);
-      const y = Math.min(c2.y, c1.y);
+    const c2 = this.realToCanvas({ x: x2, y: y2 });
+    const w = Math.abs(c2.x - c1.x);
+    const h = Math.abs(c2.y - c1.y);
 
-      ctx.beginPath();
-      const HIGHLIGHT_BORDER = 12;
-      ctx.rect(
-        x - HIGHLIGHT_BORDER,
-        y - HIGHLIGHT_BORDER,
-        w + HIGHLIGHT_BORDER * 2,
-        h + HIGHLIGHT_BORDER * 2
-      );
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#0097a7';
-      ctx.stroke();
-    }
+    const x = Math.min(c2.x, c1.x);
+    const y = Math.min(c2.y, c1.y);
+
+    ctx.beginPath();
+
+    ctx.rect(
+      x - HIGHLIGHT_BORDER,
+      y - HIGHLIGHT_BORDER,
+      w + HIGHLIGHT_BORDER * 2,
+      h + HIGHLIGHT_BORDER * 2
+    );
+    ctx.lineWidth = BORDER_HIGHLIGHT_LINE_WIDTH;
+    ctx.strokeStyle = BORDER_HIGHLIGHT_COLOUR;
+    ctx.stroke();
   }
 
   clear() {
@@ -384,6 +463,10 @@ export class PageHandler {
       this.annotationCanvas.width,
       this.annotationCanvas.height
     );
+
+    const ctx = this.annotationCanvas.getContext('2d');
+
+    ctx.drawImage(this.pdfCanvas, 0, 0);
   }
 
   visible(yes) {
@@ -401,18 +484,18 @@ export class PageHandler {
     if (this.annotationCanvas) {
       this.annotationCanvas.style.cursor = 'default';
       this.annotationCanvas.onmousedown = null;
-      this.annotationCanvas.onmouseup = null;
+      this.annotationCanvas.onpointerup = null;
     }
   }
 
-  endAnnotation() {
+  endAnnotation(event: AnnotationPageEventType) {
     this.detachPen();
 
     if (!!this.currentAnnotationId) {
-      this.annotationService._handlePageEvent({
+      this.annotationService.factory.handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.PEN_UP,
-        event:AnnotationPageEventType.
+        event,
       });
     }
 
@@ -422,7 +505,7 @@ export class PageHandler {
   }
 
   destroy() {
-    this.endAnnotation();
+    this.endAnnotation('DESTROY');
     if (this.penSub) {
       this.penSub.unsubscribe();
       delete this.penSub;

@@ -203,7 +203,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this.annotationService.saveRecord(item);
 
     if (item.type === AnnotationItemType.COMMENT) {
-      this.annotationService._deleteComment(this.comment);
+      this.annotationService.factory.deleteComment(this.comment);
     }
   }
 

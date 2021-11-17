@@ -5,22 +5,10 @@ import { PageHandler } from './page-handler';
 export class AnnotationPositionHelper {
   // needsRebuild: boolean;
 
-  constructor(public annotationService: AnnotationService) {
-    // setInterval(() => {
-    //   if (this.needsRebuild) {
-    //     this._rebuildCommentPostions();
-    //     this.needsRebuild = false;
-    //   }
-    // }, 100);
-  }
+  constructor(public annotationService: AnnotationService) {}
 
-  // rebuildCommentPositions() {
-  //   this.needsRebuild = true;
-  // }
-
-  // rebuild comment positions
-  // We do this if the zoome changes
   rebuildCommentPositions() {
+    console.log(' Rebuild postitions');
     for (const c of this.annotationService._comments) {
       c.pos = this.getAnnotationPanelPos(c.records[0]);
     }

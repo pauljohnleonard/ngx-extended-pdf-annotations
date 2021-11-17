@@ -1,5 +1,4 @@
 import {
-  AnnotationPageRect,
   AnnotationRecord,
   AnnotationType,
   PageEvent,
@@ -70,4 +69,9 @@ export function getPosOfElement(elm: HTMLElement): {
     elm = elm.offsetParent as HTMLElement;
   }
   return { xOffset, yOffset };
+}
+
+export function posOfEvent(evt): { x: number; y: number } {
+  console.log(evt);
+  return { x: evt.offsetX, y: evt.offsetY };
 }
