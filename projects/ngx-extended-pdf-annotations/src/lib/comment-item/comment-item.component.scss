@@ -24,6 +24,7 @@
   margin: 4px 0 12px;
 }
 .comment-outer-container {
+  position: relative;
   background-color: $commentBackground;
   width: 400px;
   border: 1px solid $borderLightGrey;
@@ -31,7 +32,7 @@
   cursor: pointer;
 }
 
-.blue-border {
+.hasFocus {
   border: 2px solid $primaryColor;
 }
 

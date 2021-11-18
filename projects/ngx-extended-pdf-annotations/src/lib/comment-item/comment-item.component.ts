@@ -53,7 +53,7 @@ export class CommentItemComponent
   AnnotationType = AnnotationType;
   cnt = 0;
   editing = false;
-  hasFocus = false;
+  hasFocus: boolean;
 
   constructor(
     public date: DateUtilService,
@@ -88,10 +88,8 @@ export class CommentItemComponent
   }
 
   ngDoCheck() {
-    setTimeout(() => {
-      this.hasFocus =
-        this.annotationService.focusHelper.focusComment === this.comment;
-    });
+    this.hasFocus =
+      this.annotationService.focusHelper.focusComment === this.comment;
   }
 
   // get hasFocus() {
