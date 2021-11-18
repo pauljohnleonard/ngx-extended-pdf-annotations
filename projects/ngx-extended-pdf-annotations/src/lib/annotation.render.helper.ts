@@ -19,11 +19,13 @@ export class AnnotationRenderHelper {
     });
   }
 
-  rebuildComments(page?: number) {
+  rebuildComments({ page, sort }: { page?: number; sort: boolean }) {
     console.log('Rebuild comments');
     setTimeout(() => {
-      this.annotationService.positionHelper.rebuildCommentPositions();
-      this.annotationService.positionHelper.sortComments();
+      if (sort) {
+        this.annotationService.positionHelper.rebuildCommentPositions();
+        this.annotationService.positionHelper.sortComments();
+      }
       setTimeout(() => this.redraw(page), 1);
     }, 1);
   }
@@ -86,7 +88,7 @@ export class AnnotationRenderHelper {
     console.log('  ---->   RENDER ', record.id);
   }
 
-  redraw(page?: number) {
+  private redraw(page?: number) {
     console.log(' REDRAW ', page);
     if (page !== undefined) {
       const pageHandler = this.annotationService.pages[page];

@@ -58,7 +58,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
       Object.assign(existing, record);
     } else {
       this.comment.records.push(record);
-      this.annotationService.renderHelper.rebuildComments();
+      this.annotationService.renderHelper.rebuildComments({ sort: true });
     }
   }
 

@@ -108,8 +108,7 @@ export class AnnotationService {
       }
     }
     setTimeout(() => {
-      this.zoomChange(null);
-      this.renderHelper.redraw();
+      this.renderHelper.rebuildComments({ sort: true });
       if (this.storage) {
         setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
       }
@@ -136,7 +135,7 @@ export class AnnotationService {
 
       if (!existingRecord) {
         this.factory.addNewRecord(record, true);
-        this.renderHelper.rebuildComments();
+        // this.renderHelper.rebuildComments({ sort: true });
       } else {
         Object.assign(existingRecord, record);
       }
@@ -150,7 +149,7 @@ export class AnnotationService {
     }
 
     // this.renderHelper.renderer(record);
-    this.renderHelper.rebuildComments();
+    this.renderHelper.rebuildComments({ sort: true });
   }
 
   getMode() {
@@ -176,7 +175,7 @@ export class AnnotationService {
 
   zoomChange(evt) {
     console.log(' ZOOM CHANGE ');
-    this.renderHelper.rebuildComments();
+    this.renderHelper.rebuildComments({ sort: true });
   }
 
   isActive(): boolean {

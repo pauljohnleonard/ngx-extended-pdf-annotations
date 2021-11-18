@@ -84,7 +84,7 @@ export class AnnotationFactory {
     this.annotationService.focusHelper.setMode(AnnotationType.OFF);
     this.annotationService.factory.addNewRecord(record, false);
     // this.annotationService.renderHelper.renderer(record);
-    this.annotationService.renderHelper.rebuildComments();
+    this.annotationService.renderHelper.rebuildComments({ sort: true });
   }
 
   handlePageEvent(event: PageEvent) {
@@ -162,7 +162,10 @@ export class AnnotationFactory {
       this.annotationService.focusHelper._handleHighlightRecord(record);
     }
 
-    this.annotationService.renderHelper.redraw(event.page);
+    this.annotationService.renderHelper.rebuildComments({
+      page: event.page,
+      sort: false,
+    });
     // this.annotationService.renderHelper.renderer(record);
   }
 
@@ -197,6 +200,6 @@ export class AnnotationFactory {
     const id = comment.records[0].id;
     delete this.annotationService.commentRecordMap[id];
     const page = comment.pos.page;
-    this.annotationService.renderHelper.redraw(page);
+    this.annotationService.renderHelper.rebuildComments({ page, sort: true });
   }
 }

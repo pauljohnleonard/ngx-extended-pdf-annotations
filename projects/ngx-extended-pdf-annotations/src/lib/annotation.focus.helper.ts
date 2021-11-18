@@ -83,7 +83,9 @@ export class AnnotationFocusHelper {
     this.modeSubject$.next(mode);
 
     if (this.lastMode === AnnotationType.HIDE) {
-      setTimeout(() => this.annotationService.renderHelper.rebuildComments());
+      setTimeout(() =>
+        this.annotationService.renderHelper.rebuildComments({ sort: true })
+      );
     }
 
     this.lastMode = mode;
