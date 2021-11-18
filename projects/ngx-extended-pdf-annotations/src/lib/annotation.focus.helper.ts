@@ -12,6 +12,7 @@ export class AnnotationFocusHelper {
   private _focusComment: UIPannelComment = null;
   private _mode = AnnotationType.OFF;
   public modeSubject$ = new Subject<AnnotationType>();
+  lastMode: AnnotationType;
 
   get mode() {
     return this._mode;
@@ -45,19 +46,20 @@ export class AnnotationFocusHelper {
       this.annotationService.positionHelper.sortComments();
     }
 
-    setTimeout(() => {
-      if (oldHighlight) {
-        this.annotationService.renderHelper.redraw(oldHighlight.pos.page);
-        if (newFocus && newFocus.pos.page !== oldHighlight.pos.page) {
-          this.annotationService.renderHelper.redraw(newFocus.pos.page);
-        }
-      } else if (newFocus && newFocus.pos.page) {
-        this.annotationService.renderHelper.redraw(newFocus.pos.page);
-      }
-    });
+    this.annotationService.renderHelper.switchHighlight(oldHighlight, newFocus);
   }
 
   setMode(mode: AnnotationType) {
+    setTimeout(() => {
+      this._setMode(mode);
+    });
+  }
+
+  _setMode(mode: AnnotationType) {
+    if (mode === this.lastMode) {
+      return;
+    }
+
     this._mode = mode;
     if (
       this._mode === AnnotationType.OFF ||
@@ -70,6 +72,12 @@ export class AnnotationFocusHelper {
     }
     this.focusOnComment(this.focusComment);
     this.modeSubject$.next(mode);
+
+    if (this.lastMode === AnnotationType.HIDE) {
+      setTimeout(() => this.annotationService.renderHelper.rebuildComments());
+    }
+
+    this.lastMode = mode;
   }
 
   handleControlEvent(evt: AnnotationControlEvent) {

@@ -84,7 +84,7 @@ export class AnnotationFactory {
     this.annotationService.focusHelper.setMode(AnnotationType.OFF);
     this.annotationService.factory.addNewRecord(record, false);
     // this.annotationService.renderHelper.renderer(record);
-    this.annotationService.renderHelper.rebuildComments(null);
+    this.annotationService.renderHelper.rebuildComments();
   }
 
   handlePageEvent(event: PageEvent) {
