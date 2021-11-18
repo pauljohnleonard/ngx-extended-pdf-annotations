@@ -1,5 +1,12 @@
 import { TOUCH_BUFFER_MS } from '@angular/cdk/a11y/input-modality/input-modality-detector';
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  DoCheck,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatInput } from '@angular/material/input';
 import { AnnotationService } from '../annotation.service';
@@ -30,7 +37,9 @@ class TextItem {
   styleUrls: ['./comment-item.component.scss'],
   // encapsulation: ViewEncapsulation.ShadowDom,
 })
-export class CommentItemComponent implements OnInit, UIPanelItemIterface {
+export class CommentItemComponent
+  implements OnInit, DoCheck, UIPanelItemIterface
+{
   @ViewChild(MatInput) messageInput: MatInput;
   @Input() comment: UIPannelComment;
 
@@ -44,6 +53,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   AnnotationType = AnnotationType;
   cnt = 0;
   editing = false;
+  hasFocus = false;
 
   constructor(
     public date: DateUtilService,
@@ -77,9 +87,16 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  get hasFocus() {
-    return this.annotationService.focusHelper.focusComment === this.comment;
+  ngDoCheck() {
+    setTimeout(() => {
+      this.hasFocus =
+        this.annotationService.focusHelper.focusComment === this.comment;
+    });
   }
+
+  // get hasFocus() {
+  //   return;
+  // }
 
   handleFocusOn() {
     let lastItem = this.comment.records[this.comment.records.length - 1];
@@ -106,6 +123,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
     this.initInput();
     if (!lastItem.bodyValue) this.editItem(lastItem);
+    this.comment.hasFocus = true;
   }
 
   toogleVisibility(item: AnnotationRecord, evt) {
@@ -127,6 +145,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this._inputRecord = null;
     this.editing = false;
     this.initInput();
+    this.comment.hasFocus = false;
   }
 
   // This is responisble for setting the state of annotation when we gain focus

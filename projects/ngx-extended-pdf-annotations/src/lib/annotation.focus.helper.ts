@@ -1,3 +1,4 @@
+import { ThrowStmt } from '@angular/compiler';
 import { Subject } from 'rxjs';
 import { AnnotationService } from './annotation.service';
 import {
@@ -23,20 +24,11 @@ export class AnnotationFocusHelper {
 
   focusOnComment(newFocus: UIPannelComment) {
     const oldHighlight: UIPannelComment = this._focusComment;
-    // console.log(
-    //   `Hightlight change   ${
-    //     oldHighlight ? oldHighlight.records[0].id : 'NONE'
-    //   }   ${newFocus ? newFocus.records[0].id : 'NONE'}`
-    // );
 
     if (!newFocus || newFocus !== this._focusComment) {
       if (this._focusComment) {
         this._focusComment.component.setFocusMode(FocusModeEnum.HIGHLIGHT_OFF);
       }
-      // console.log(
-      //   ' Set highlight ',
-      //   newFocus ? newFocus.records[0].id : ' NONE'
-      // );
 
       this._focusComment = newFocus;
       if (newFocus) {
@@ -45,16 +37,7 @@ export class AnnotationFocusHelper {
       this.annotationService.positionHelper.sortComments();
     }
 
-    setTimeout(() => {
-      if (oldHighlight) {
-        this.annotationService.renderHelper._redraw(oldHighlight.pos.page);
-        if (newFocus && newFocus.pos.page !== oldHighlight.pos.page) {
-          this.annotationService.renderHelper._redraw(newFocus.pos.page);
-        }
-      } else if (newFocus && newFocus.pos.page) {
-        this.annotationService.renderHelper._redraw(newFocus.pos.page);
-      }
-    });
+    this.annotationService.renderHelper.switchHighlight(oldHighlight, newFocus);
   }
 
   setMode(mode: AnnotationType) {

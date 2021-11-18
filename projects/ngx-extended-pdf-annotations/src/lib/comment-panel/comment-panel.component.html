@@ -2,8 +2,7 @@
   <div *ngFor="let comment of annotationService._comments">
     <div
       [ngClass]="{
-        comment: true,
-        focuscomment: comment.component ? comment.component.hasFocus : 'false'
+        comment: true
       }"
       [style.top]="comment.pos?.yPlot + 'px'"
     >

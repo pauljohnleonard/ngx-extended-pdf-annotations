@@ -162,7 +162,7 @@ export class AnnotationFactory {
       this.annotationService.focusHelper._handleHighlightRecord(record);
     }
 
-    this.annotationService.renderHelper.renderer(record);
+    this.annotationService.renderHelper.rebuildComments(event.page);
   }
 
   addNewRecord(record: AnnotationRecord, external: boolean): boolean {
@@ -175,6 +175,7 @@ export class AnnotationFactory {
       const comment: UIPannelComment = {
         pos,
         records: [record],
+        hasFocus: false,
       };
       this.annotationService._comments.push(comment);
       if (!external) this.annotationService.focusHelper.setFocus(comment);
@@ -196,6 +197,6 @@ export class AnnotationFactory {
     const id = comment.records[0].id;
     delete this.annotationService.commentRecordMap[id];
     const page = comment.pos.page;
-    this.annotationService.renderHelper._redraw(page);
+    this.annotationService.renderHelper.rebuildComments(null);
   }
 }

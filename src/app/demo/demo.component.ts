@@ -26,6 +26,8 @@ export class DemoComponent implements AfterViewInit {
   async ngAfterViewInit() {
     const documentId = '1234';
 
+    // this.annotationsService.setMode(AnnotationType.HIDE);
+
     await this.storage.initialize();
 
     await this.annotationsService.initialize({
@@ -36,14 +38,14 @@ export class DemoComponent implements AfterViewInit {
   }
 
   toogleAnnotations() {
-    this.annotationsService.focusHelper.handleControlEvent({
+    this.annotationsService.handleControlEvent({
       type: AnnotationType.TOGGLE,
     });
   }
 
   penAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationType.PEN;
-    this.annotationsService.focusHelper.handleControlEvent({
+    this.annotationsService.handleControlEvent({
       type: AnnotationType.PEN,
       val,
     });
@@ -53,7 +55,7 @@ export class DemoComponent implements AfterViewInit {
     const val = this.annotationsService.getMode() !== AnnotationType.TEXT;
     this.textLayer = val;
     console.log('TEXT LAYER ', this.textLayer);
-    this.annotationsService.focusHelper.handleControlEvent({
+    this.annotationsService.handleControlEvent({
       type: AnnotationType.TEXT,
       val,
     });
@@ -62,7 +64,7 @@ export class DemoComponent implements AfterViewInit {
   noteAnnotate() {
     const val = this.annotationsService.getMode() !== AnnotationType.NOTE;
 
-    this.annotationsService.focusHelper.handleControlEvent({
+    this.annotationsService.handleControlEvent({
       type: AnnotationType.NOTE,
       val,
     });

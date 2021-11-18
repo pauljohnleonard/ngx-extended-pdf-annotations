@@ -37,6 +37,7 @@ export class PageHandler {
   private annotationCanvas: HTMLCanvasElement;
   private pdfCanvas: HTMLCanvasElement;
   noteImg: HTMLImageElement;
+  isVisible: any;
 
   constructor(
     public pageViewer,
@@ -99,12 +100,9 @@ export class PageHandler {
       return null;
     }
 
-    // console.log({ pageRect, rect });
-    // const { xOffset, yOffset } = getPosOfElement(this.pageViewer.canvas);
     const xOffset = pageRect.x;
     const yOffset = pageRect.y;
 
-    // const n = 2;
     const pos1 = this.cursorToReal({
       x: rect.x - xOffset,
       y: rect.y - yOffset,
@@ -128,15 +126,6 @@ export class PageHandler {
       ? 'auto'
       : 'none';
   }
-
-  // showTops() {
-  //   let el: HTMLElement = this.annotationCanvas;
-  //   while (el) {
-  //     const str = `${el.localName}:${el.className} ${el.offsetTop}`;
-  //     console.log(str);
-  //     el = el.parentElement;
-  //   }
-  // }
 
   // Y center of annotation bounding box in terms of full viewport.
   getAnnotationPanelPos(anno: AnnotationRecord): number {
@@ -212,9 +201,9 @@ export class PageHandler {
   }
 
   mouseDownHandler(e) {
-    console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
 
-    console.log(e);
+    // console.log(e);
 
     const pos = posOfEvent(e);
 
@@ -254,7 +243,7 @@ export class PageHandler {
   }
 
   mouseMoveHandler(e) {
-    console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
 
     if (this.isDrawing === true) {
       const pos = posOfEvent(e);
@@ -315,18 +304,13 @@ export class PageHandler {
     this.annotationCanvas.style.position = 'absolute';
     this.annotationCanvas.style['touch-action'] = 'none';
     this.annotationCanvas.id = 'mycanvas';
-    // this.canvas.style['z-index'] = '30';
-    // this.pdfCanvas.style['z-index'] = '20';
 
     this.pdfCanvas.parentElement.appendChild(this.annotationCanvas);
-
-    // Copy source contents to annotation canvas.
-
-    // console.log(this.canvas);
 
     if (this.isDrawing) {
       this.startAnnotation();
     }
+    this.visible(this.isVisible);
   }
 
   drawTextBox(pageRect: AnnotationPageRect) {
@@ -470,6 +454,7 @@ export class PageHandler {
   }
 
   visible(yes) {
+    this.isVisible = yes;
     if (!this.annotationCanvas) {
       return;
     }

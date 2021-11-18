@@ -57,6 +57,33 @@ export function setBoundingBoxOf(
   }
 }
 
+// export function setPostionOf(record: AnnotationRecord, event: PageEvent): void {
+//   const mark = record.mark;
+//   let x1 = Number.MAX_SAFE_INTEGER,
+//     y1 = Number.MAX_SAFE_INTEGER,
+//     x2 = Number.MIN_SAFE_INTEGER,
+//     y2 = Number.MIN_SAFE_INTEGER;
+
+//   switch (mark.type) {
+//     case AnnotationType.NOTE:
+//       return;
+
+//     case AnnotationType.PEN:
+//       if (mark && mark.path) {
+//         for (const l of mark.path) {
+//           x1 = Math.min(l.pos1.x, x1);
+//           x2 = Math.max(l.pos2.x, x2);
+//           y1 = Math.min(l.pos1.y, y1);
+//           y2 = Math.max(l.pos2.y, y2);
+//         }
+//       }
+//       mark.boundingBox = { x1, x2, y1, y2 };
+
+//     case
+
+//   }
+// }
+
 export function getPosOfElement(elm: HTMLElement): {
   xOffset: number;
   yOffset: number;

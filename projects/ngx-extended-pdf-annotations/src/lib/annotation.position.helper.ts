@@ -1,6 +1,7 @@
 import { AnnotationService } from './annotation.service';
 import { AnnotationPageRect, AnnotationRecord, PanelPosition } from './classes';
 import { PageHandler } from './page-handler';
+import { setBoundingBoxOf } from './util';
 
 export class AnnotationPositionHelper {
   // needsRebuild: boolean;
@@ -36,6 +37,13 @@ export class AnnotationPositionHelper {
     }
     return null;
   }
+
+  // rebuildCommentPos() {
+  //   for (const comment of this.annotationService._comments) {
+  //     const record = comment.records[0];
+  //     setPostionOf(record);
+  //   }
+  // }
 
   sortComments() {
     setTimeout(() => {

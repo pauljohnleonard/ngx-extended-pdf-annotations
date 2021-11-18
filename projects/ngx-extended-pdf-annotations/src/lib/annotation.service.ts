@@ -8,6 +8,7 @@ import {
   AnnotationUser,
   UIPannelComment,
   AnnotationPayload,
+  AnnotationControlEvent,
 } from './classes';
 
 import { PageHandler } from './page-handler';
@@ -99,12 +100,12 @@ export class AnnotationService {
 
         // const pos = this.getAnnotationPanelPos(records[0] as AnnotationRecord);
 
-        this._comments.push({ records });
+        this._comments.push({ records, hasFocus: false });
       }
     }
+
     setTimeout(() => {
-      this.zoomChange(null);
-      this.renderHelper._redraw();
+      this.renderHelper.rebuildComments(null);
       if (this.storage) {
         setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
       }
@@ -119,6 +120,14 @@ export class AnnotationService {
         this.handleRemoteUpdate(payload);
       });
     }
+  }
+
+  setMode(mode: AnnotationType) {
+    this.focusHelper.setMode(mode);
+  }
+
+  handleControlEvent(evt: AnnotationControlEvent) {
+    this.focusHelper.handleControlEvent(evt);
   }
 
   handleRemoteUpdate(payload: AnnotationPayload) {
@@ -144,7 +153,7 @@ export class AnnotationService {
       comment.component.updateExternalReply(record);
     }
 
-    this.renderHelper.renderer(record);
+    this.renderHelper.rebuildComments(null);
   }
 
   getMode() {
@@ -172,12 +181,10 @@ export class AnnotationService {
     console.log(' ZOOM CHANGE ');
     this.renderHelper.rebuildComments(null);
   }
-
   isActive(): boolean {
     return this.focusHelper.mode !== AnnotationType.HIDE;
-  }
+  } // Auto loop saves (publish button handled else where)
 
-  // Auto loop saves (publish button handled else where)
   async autoSaveAnnotations() {
     let savedCnt = 0;
     for (const comment of this._comments) {
