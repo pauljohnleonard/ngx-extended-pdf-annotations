@@ -6,7 +6,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   providedIn: 'root',
 })
 export class AnnotationIconRegisterService {
-  names = ['note-icon', 'pen-icon', 'text-icon'];
+  names = ['note-icon', 'pen-icon', 'text-icon', 'annotations-icon'];
   constructor(
     public iconRegistry: MatIconRegistry,
     public sanitizer: DomSanitizer

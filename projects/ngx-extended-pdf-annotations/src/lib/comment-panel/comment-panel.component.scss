@@ -1,5 +1,6 @@
 .comment {
   position: absolute;
+  z-index: 0;
 }
 
 .commentPanelOuterContainer {
@@ -7,4 +8,8 @@
   position: relative;
   right: 10px;
   display: none;
+}
+
+.focuscomment {
+  z-index: 1;
 }

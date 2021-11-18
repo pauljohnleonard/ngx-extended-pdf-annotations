@@ -131,7 +131,7 @@ export class AnnotationService {
 
       if (!existingRecord) {
         this.factory.addNewRecord(record, true);
-        this.rebuildComments(null);
+        this.renderHelper.rebuildComments(null);
       } else {
         Object.assign(existingRecord, record);
       }
@@ -162,24 +162,15 @@ export class AnnotationService {
     if (!this.pages[page]) {
       const pageHandler = new PageHandler(evt.source, page, this);
       this.pages[page] = pageHandler;
-      this.rebuildComments(null);
-    } else {
-      this.pages[page].updateCanvas(evt.source);
-      this.rebuildComments(page);
     }
-  }
 
-  rebuildComments(page) {
-    setTimeout(() => {
-      this.positionHelper.rebuildCommentPositions();
-      this.positionHelper.sortComments();
-      setTimeout(() => this.renderHelper._redraw(page));
-    });
+    this.pages[page].updateCanvas(evt.source);
+    this.renderHelper.rebuildComments(page);
   }
 
   zoomChange(evt) {
     console.log(' ZOOM CHANGE ');
-    this.rebuildComments(null);
+    this.renderHelper.rebuildComments(null);
   }
 
   isActive(): boolean {

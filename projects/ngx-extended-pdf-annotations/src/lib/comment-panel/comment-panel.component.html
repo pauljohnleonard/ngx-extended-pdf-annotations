@@ -1,6 +1,12 @@
 <div class="commentPannelOuterContainer">
-  <div *ngFor="let comment of annotationService._comments.reverse()">
-    <div class="comment" [style.top]="comment.pos?.yPlot + 'px'">
+  <div *ngFor="let comment of annotationService._comments">
+    <div
+      [ngClass]="{
+        comment: true,
+        focuscomment: comment.component ? comment.component.hasFocus : 'false'
+      }"
+      [style.top]="comment.pos?.yPlot + 'px'"
+    >
       <ng-container
         *ngTemplateOutlet="
           commentItemComponent;

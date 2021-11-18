@@ -26,6 +26,14 @@ export class AnnotationRenderHelper {
     }
   }
 
+  rebuildComments(page) {
+    setTimeout(() => {
+      this.annotationService.positionHelper.rebuildCommentPositions();
+      this.annotationService.positionHelper.sortComments();
+      setTimeout(() => this._redraw(page), 1);
+    }, 1);
+  }
+
   renderer(record: AnnotationRecord) {
     if (!record.mark) return;
 

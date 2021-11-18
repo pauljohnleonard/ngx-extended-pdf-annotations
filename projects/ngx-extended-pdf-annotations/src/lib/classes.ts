@@ -128,6 +128,7 @@ export interface UIPanelItemIterface {
   updateExternalReply(record: AnnotationRecord);
   getHeight: () => number;
   setFocusMode(focusMode: FocusModeEnum);
+  hasFocus: boolean;
 }
 
 export class UIPannelComment {
