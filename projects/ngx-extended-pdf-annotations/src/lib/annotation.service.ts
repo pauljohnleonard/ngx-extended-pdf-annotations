@@ -104,7 +104,7 @@ export class AnnotationService {
     }
     setTimeout(() => {
       this.zoomChange(null);
-      this.renderHelper._redraw();
+      this.renderHelper.redraw(null);
       if (this.storage) {
         setInterval(() => this.autoSaveAnnotations(), AUTO_SAVE_INTERVAL);
       }

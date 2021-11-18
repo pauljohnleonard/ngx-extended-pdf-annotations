@@ -5,32 +5,25 @@ import { PageHandler } from './page-handler';
 export class AnnotationRenderHelper {
   constructor(public annotationService: AnnotationService) {}
   // if no page then redraw all
-  _redraw(page?: number) {
-    console.log(' REDRAW ', page);
-    if (page !== undefined) {
-      const pageHandler = this.annotationService.pages[page];
-      if (pageHandler) {
-        pageHandler.clear();
-      }
-    } else {
-      for (const key of Object.keys(this.annotationService.pages)) {
-        this.annotationService.pages[key].clear();
-      }
-    }
 
-    for (const id of Object.keys(this.annotationService.commentRecordMap)) {
-      const record = this.annotationService.commentRecordMap[id];
-      if (page === undefined || (record.mark && record.mark.page === page)) {
-        this.renderer(record);
+  switchHighlight(oldHighlight, newFocus) {
+    setTimeout(() => {
+      if (oldHighlight) {
+        this.annotationService.renderHelper.redraw(oldHighlight.pos.page);
+        if (newFocus && newFocus.pos.page !== oldHighlight.pos.page) {
+          this.annotationService.renderHelper.redraw(newFocus.pos.page);
+        }
+      } else if (newFocus && newFocus.pos.page) {
+        this.annotationService.renderHelper.redraw(newFocus.pos.page);
       }
-    }
+    });
   }
 
   rebuildComments(page) {
     setTimeout(() => {
       this.annotationService.positionHelper.rebuildCommentPositions();
       this.annotationService.positionHelper.sortComments();
-      setTimeout(() => this._redraw(page), 1);
+      setTimeout(() => this.redraw(page), 1);
     }, 1);
   }
 
@@ -82,6 +75,27 @@ export class AnnotationRenderHelper {
             }
           }
         }
+    }
+  }
+
+  redraw(page?: number) {
+    // console.log(' REDRAW ', page);
+    if (page !== undefined) {
+      const pageHandler = this.annotationService.pages[page];
+      if (pageHandler) {
+        pageHandler.clear();
+      }
+    } else {
+      for (const key of Object.keys(this.annotationService.pages)) {
+        this.annotationService.pages[key].clear();
+      }
+    }
+
+    for (const id of Object.keys(this.annotationService.commentRecordMap)) {
+      const record = this.annotationService.commentRecordMap[id];
+      if (page === undefined || (record.mark && record.mark.page === page)) {
+        this.renderer(record);
+      }
     }
   }
 }

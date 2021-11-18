@@ -47,12 +47,12 @@ export class AnnotationFocusHelper {
 
     setTimeout(() => {
       if (oldHighlight) {
-        this.annotationService.renderHelper._redraw(oldHighlight.pos.page);
+        this.annotationService.renderHelper.redraw(oldHighlight.pos.page);
         if (newFocus && newFocus.pos.page !== oldHighlight.pos.page) {
-          this.annotationService.renderHelper._redraw(newFocus.pos.page);
+          this.annotationService.renderHelper.redraw(newFocus.pos.page);
         }
       } else if (newFocus && newFocus.pos.page) {
-        this.annotationService.renderHelper._redraw(newFocus.pos.page);
+        this.annotationService.renderHelper.redraw(newFocus.pos.page);
       }
     });
   }

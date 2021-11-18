@@ -196,6 +196,6 @@ export class AnnotationFactory {
     const id = comment.records[0].id;
     delete this.annotationService.commentRecordMap[id];
     const page = comment.pos.page;
-    this.annotationService.renderHelper._redraw(page);
+    this.annotationService.renderHelper.redraw(page);
   }
 }

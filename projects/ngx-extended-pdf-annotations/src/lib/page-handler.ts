@@ -212,9 +212,9 @@ export class PageHandler {
   }
 
   mouseDownHandler(e) {
-    console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
 
-    console.log(e);
+    // console.log(e);
 
     const pos = posOfEvent(e);
 
@@ -254,7 +254,7 @@ export class PageHandler {
   }
 
   mouseMoveHandler(e) {
-    console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
 
     if (this.isDrawing === true) {
       const pos = posOfEvent(e);

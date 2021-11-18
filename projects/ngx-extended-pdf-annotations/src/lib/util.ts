@@ -72,6 +72,6 @@ export function getPosOfElement(elm: HTMLElement): {
 }
 
 export function posOfEvent(evt): { x: number; y: number } {
-  console.log(evt);
+  // console.log(evt);
   return { x: evt.offsetX, y: evt.offsetY };
 }
