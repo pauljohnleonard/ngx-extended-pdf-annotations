@@ -3,8 +3,6 @@ import { AnnotationPageRect, AnnotationRecord, PanelPosition } from './classes';
 import { PageHandler } from './page-handler';
 
 export class AnnotationPositionHelper {
-  // needsRebuild: boolean;
-
   constructor(public annotationService: AnnotationService) {}
 
   rebuildCommentPositions() {

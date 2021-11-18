@@ -26,8 +26,6 @@ export class DemoComponent implements AfterViewInit {
   async ngAfterViewInit() {
     const documentId = '1234';
 
-    this.annotationsService.focusHelper.setMode(AnnotationType.HIDE);
-
     await this.storage.initialize();
 
     await this.annotationsService.initialize({
@@ -35,6 +33,8 @@ export class DemoComponent implements AfterViewInit {
       user: this.user,
       documentId,
     });
+
+    this.annotationsService.focusHelper.setMode(AnnotationType.SHOW);
   }
 
   toogleAnnotations() {

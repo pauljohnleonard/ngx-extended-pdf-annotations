@@ -9,8 +9,8 @@ import {
 } from './classes';
 
 export class AnnotationFocusHelper {
-  private _focusComment: UIPannelComment = null;
-  private _mode = AnnotationType.OFF;
+  private _focusComment: UIPannelComment;
+  private _mode;
   public modeSubject$ = new Subject<AnnotationType>();
   lastMode: AnnotationType;
 
@@ -20,7 +20,16 @@ export class AnnotationFocusHelper {
   get focusComment(): UIPannelComment {
     return this._focusComment;
   }
-  constructor(public annotationService: AnnotationService) {}
+
+  constructor(public annotationService: AnnotationService) {
+    this.init();
+  }
+
+  init() {
+    this.lastMode = undefined;
+    this._focusComment = null;
+    this._mode = AnnotationType.OFF;
+  }
 
   focusOnComment(newFocus: UIPannelComment) {
     const oldHighlight: UIPannelComment = this._focusComment;

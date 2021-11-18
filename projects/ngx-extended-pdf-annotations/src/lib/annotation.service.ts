@@ -48,6 +48,7 @@ export class AnnotationService {
     this.focusHelper = new AnnotationFocusHelper(this);
     this.renderHelper = new AnnotationRenderHelper(this);
     this.factory = new AnnotationFactory(this);
+    this.focusHelper.init();
   }
 
   async initialize({
@@ -59,6 +60,10 @@ export class AnnotationService {
     storage: AnnotationStorage;
     documentId: string;
   }) {
+    this.focusHelper.init();
+    this.commentRecordMap = {};
+    this.pages = {};
+    this._comments = [];
     this.storage = storage;
     this._user = user;
     this.documentId = documentId;
@@ -175,7 +180,7 @@ export class AnnotationService {
   }
 
   isActive(): boolean {
-    return this.focusHelper.mode !== AnnotationType.HIDE;
+    return this.focusHelper && this.focusHelper.mode !== AnnotationType.HIDE;
   }
 
   // Auto loop saves (publish button handled else where)
