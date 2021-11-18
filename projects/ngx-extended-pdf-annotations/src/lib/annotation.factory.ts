@@ -162,7 +162,8 @@ export class AnnotationFactory {
       this.annotationService.focusHelper._handleHighlightRecord(record);
     }
 
-    this.annotationService.renderHelper.renderer(record);
+    this.annotationService.renderHelper.redraw(event.page);
+    // this.annotationService.renderHelper.renderer(record);
   }
 
   addNewRecord(record: AnnotationRecord, external: boolean): boolean {

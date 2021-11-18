@@ -27,7 +27,7 @@ export class AnnotationRenderHelper {
     }, 1);
   }
 
-  renderer(record: AnnotationRecord) {
+  private renderer(record: AnnotationRecord) {
     if (!record.mark) return;
 
     const highlight =

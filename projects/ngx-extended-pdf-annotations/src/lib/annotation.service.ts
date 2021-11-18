@@ -144,7 +144,8 @@ export class AnnotationService {
       comment.component.updateExternalReply(record);
     }
 
-    this.renderHelper.renderer(record);
+    // this.renderHelper.renderer(record);
+    this.renderHelper.rebuildComments(record);
   }
 
   getMode() {
