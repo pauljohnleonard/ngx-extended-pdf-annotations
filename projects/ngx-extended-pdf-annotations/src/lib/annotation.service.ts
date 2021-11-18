@@ -43,6 +43,8 @@ export class AnnotationService {
   factory: AnnotationFactory;
   textHandler: AnnotationTextSelection;
 
+  ready$ = new BehaviorSubject<boolean>(false);
+
   constructor(public imageService: AnnotationImageService) {
     this.positionHelper = new AnnotationPositionHelper(this);
     this.focusHelper = new AnnotationFocusHelper(this);
@@ -171,6 +173,7 @@ export class AnnotationService {
 
     this.pages[page].updateCanvas(evt.source);
     this.renderHelper.rebuildComments(page);
+    this.ready$.next(true);
   }
 
   zoomChange(evt) {

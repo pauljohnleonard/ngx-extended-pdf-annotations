@@ -31,7 +31,6 @@ export class AnnotationRenderHelper {
   }
 
   private renderer(record: AnnotationRecord) {
-    console.log(' RENDER ---->> ', record.id);
     if (
       !record.mark ||
       this.annotationService.focusHelper.mode === AnnotationType.HIDE
@@ -85,7 +84,6 @@ export class AnnotationRenderHelper {
           }
         }
     }
-    console.log('  ---->   RENDER ', record.id);
   }
 
   private redraw(page?: number) {
