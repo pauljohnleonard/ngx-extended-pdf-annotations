@@ -44,6 +44,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   AnnotationType = AnnotationType;
   cnt = 0;
   editing = false;
+  hasFocus: boolean;
 
   constructor(
     public date: DateUtilService,
@@ -77,8 +78,9 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  get hasFocus() {
-    return this.annotationService.focusHelper.focusComment === this.comment;
+  ngDoCheck() {
+    this.hasFocus =
+      this.annotationService.focusHelper.focusComment === this.comment;
   }
 
   handleFocusOn() {

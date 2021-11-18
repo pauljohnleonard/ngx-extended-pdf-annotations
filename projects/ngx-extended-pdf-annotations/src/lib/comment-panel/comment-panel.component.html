@@ -3,7 +3,7 @@
     <div
       [ngClass]="{
         comment: true,
-        focuscomment: comment.component ? comment.component.hasFocus : 'false'
+        focuscomment: annotationService.focusHelper.focusComment === comment
       }"
       [style.top]="comment.pos?.yPlot + 'px'"
     >
