@@ -87,7 +87,7 @@ export class AnnotationRenderHelper {
   }
 
   private redraw(page?: number) {
-    console.log(' REDRAW ', page);
+    // console.log(' REDRAW ', page);
     if (page !== undefined) {
       const pageHandler = this.annotationService.pages[page];
       if (pageHandler) {
