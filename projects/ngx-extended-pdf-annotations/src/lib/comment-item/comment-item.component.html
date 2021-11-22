@@ -102,7 +102,11 @@
           *ngIf="(item !== inputRecord || !editing) && !!item.bodyValue"
           class="comment-body-container"
         >
-          <div class="comment-body">
+          <div *ngIf="hasFocus" class="comment-body">
+            {{ item.bodyValue }}
+          </div>
+
+          <div *ngIf="!hasFocus" class="comment-body-brief" [id]="commentId">
             {{ item.bodyValue }}
           </div>
         </div>
@@ -112,12 +116,26 @@
         <ng-container *ngIf="item === inputRecord && editing">
           <mat-form-field class="comment-body-formfield" appearance="outline">
             <textarea
+              *ngIf="AnnotationItemType.COMMENT"
               matInput
               class="comment-window-textarea-message-input"
               i18n-placeholder="@@YourCommentPlaceHolder"
-              [placeholder]="
-                item.type === AnnotationItemType.COMMENT ? 'Comment' : 'Reply'
-              "
+              placeholder="Comment"
+              [formControl]="inputFormControl"
+              autocomplete="off"
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="5"
+              #messageinput
+            >
+            </textarea>
+
+            <textarea
+              *ngIf="!AnnotationItemType.COMMENT"
+              matInput
+              class="comment-window-textarea-message-input"
+              i18n-placeholder="@@YourReplyPlaceHolder"
+              placeholder="Reply"
               [formControl]="inputFormControl"
               autocomplete="off"
               cdkTextareaAutosize
@@ -156,10 +174,11 @@
     </ng-container>
 
     <div
-      *ngIf="!hasFocus && comment.records.length > 1"
+      *ngIf="!hasFocus && (comment.records.length > 1 || hasOverFlow())"
       style="display: flex; width: 100%; justify-content: flex-end"
     >
       <mat-icon
+        *ngIf="comment.records.length > 1"
         [matBadge]="comment.records.length - 1"
         matBadgeOverlap="false"
         matBadgeSize="medium"
@@ -167,6 +186,8 @@
       >
         expand_more</mat-icon
       >
+
+      <mat-icon *ngIf="comment.records.length === 1"> expand_more</mat-icon>
     </div>
   </div>
 </div>

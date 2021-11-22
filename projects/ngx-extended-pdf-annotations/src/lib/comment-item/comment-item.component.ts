@@ -31,7 +31,6 @@ class TextItem {
   // encapsulation: ViewEncapsulation.ShadowDom,
 })
 export class CommentItemComponent implements OnInit, UIPanelItemIterface {
-  @ViewChild(MatInput) messageInput: MatInput;
   @Input() comment: UIPannelComment;
 
   isMobileScreen = false;
@@ -42,15 +41,18 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   windowHeightForMobile: number;
   focusmode = FocusModeEnum.CREATE;
   AnnotationType = AnnotationType;
-  cnt = 0;
+  static cnt = 0;
   editing = false;
   hasFocus: boolean;
+  commentId;
 
   constructor(
     public date: DateUtilService,
     public el: ElementRef,
     public annotationService: AnnotationService
-  ) {}
+  ) {
+    this.commentId = 'comment-' + CommentItemComponent.cnt++;
+  }
 
   updateExternalReply(record: AnnotationRecord) {
     const existing = this.comment.records.find((item) => item.id == record.id);
@@ -129,6 +131,11 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this._inputRecord = null;
     this.editing = false;
     this.initInput();
+  }
+
+  hasOverFlow() {
+    const el = document.getElementById(this.commentId);
+    return el && el.scrollHeight > el.clientHeight;
   }
 
   // This is responisble for setting the state of annotation when we gain focus

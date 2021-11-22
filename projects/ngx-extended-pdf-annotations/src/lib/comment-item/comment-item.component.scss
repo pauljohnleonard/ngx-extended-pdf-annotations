@@ -65,6 +65,15 @@
   box-sizing: border-box;
 }
 
+.comment-body-brief {
+  color: $textDarkGrey;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  height: 3em;
+  overflow-y: hidden;
+}
+
 .myicon {
   margin-right: 5px;
   color: $primaryColor;
