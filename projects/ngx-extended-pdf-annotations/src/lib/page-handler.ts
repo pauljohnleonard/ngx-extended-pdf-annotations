@@ -9,7 +9,6 @@ import {
   AnnotationRecord,
   AnnotationMark,
   BoundingBox,
-  AnnotationEdge,
   AnnotationPageEventType,
 } from './classes';
 import { AnnotationService } from './annotation.service';
@@ -191,12 +190,13 @@ export class PageHandler {
     this.currentAnnotationId = null;
     // this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
     // this.annotationCanvas.onmousemove = this.mouseMoveHandler.bind(this);
-    this.annotationCanvas.onpointerdown = this.mouseDownHandler.bind(this);
-    this.annotationCanvas.onpointermove = this.mouseMoveHandler.bind(this);
+
     this.isActive = true;
 
     switch (this.annotationService.getMode()) {
       case AnnotationType.PEN:
+        this.annotationCanvas.onpointerdown = this.mouseDownHandler.bind(this);
+        this.annotationCanvas.onpointermove = this.mouseMoveHandler.bind(this);
         this.annotationCanvas.style.cursor =
           this.annotationService.imageService.getPenCursorUrl();
 
@@ -204,6 +204,7 @@ export class PageHandler {
         break;
 
       case AnnotationType.NOTE:
+        this.annotationCanvas.onclick = this.mouseClickHandler.bind(this);
         this.annotationCanvas.style.cursor =
           this.annotationService.imageService.getNoteCursorUrl();
         "url('/assets/ngx-extended-pdf-annotations/note.png')  0 0 ,auto";
@@ -211,6 +212,44 @@ export class PageHandler {
     }
   }
 
+  mouseClickHandler(e) {
+    const pos = posOfEvent(e);
+
+    this.pos = this.cursorToReal(pos);
+    if (!this.currentAnnotationId) {
+      this.currentAnnotationId = uuidv4();
+      switch (this.annotationService.getMode()) {
+        // case AnnotationType.PEN:
+        //   this.path = [];
+        //   this.annotationService.factory.handlePageEvent({
+        //     id: this.currentAnnotationId,
+        //     type: PageEventType.START,
+        //     pos: this.pos,
+        //     mode: AnnotationType.PEN,
+        //     path: this.path,
+        //     page: this.page,
+        //     event: 'MOUSE_DOWN',
+        //   });
+        //   this.isDrawing = true;
+        //   break;
+
+        case AnnotationType.NOTE:
+          e.stopPropagation();
+          this.annotationService.factory.handlePageEvent({
+            id: this.currentAnnotationId,
+            type: PageEventType.START,
+            pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
+            mode: AnnotationType.NOTE,
+            page: this.page,
+            event: 'MOUSE_DOWN',
+          });
+          this.isDrawing = false;
+          break;
+        default:
+          this.isDrawing = false;
+      }
+    }
+  }
   mouseDownHandler(e) {
     // console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
 
@@ -236,19 +275,19 @@ export class PageHandler {
           this.isDrawing = true;
           break;
 
-        case AnnotationType.NOTE:
-          this.annotationService.factory.handlePageEvent({
-            id: this.currentAnnotationId,
-            type: PageEventType.START,
-            pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
-            mode: AnnotationType.NOTE,
-            page: this.page,
-            event: 'MOUSE_DOWN',
-          });
-          this.isDrawing = false;
-          break;
-        default:
-          this.isDrawing = false;
+        // case AnnotationType.NOTE:
+        //   this.annotationService.factory.handlePageEvent({
+        //     id: this.currentAnnotationId,
+        //     type: PageEventType.START,
+        //     pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
+        //     mode: AnnotationType.NOTE,
+        //     page: this.page,
+        //     event: 'MOUSE_DOWN',
+        //   });
+        //   this.isDrawing = false;
+        //   break;
+        // default:
+        //   this.isDrawing = false;
       }
     }
   }

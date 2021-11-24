@@ -1,7 +1,6 @@
-import { TOUCH_BUFFER_MS } from '@angular/cdk/a11y/input-modality/input-modality-detector';
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatInput } from '@angular/material/input';
+
 import { AnnotationService } from '../annotation.service';
 import {
   AnnotationRecord,
@@ -45,6 +44,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   editing = false;
   hasFocus: boolean;
   commentId;
+  hasOverFlow: boolean;
 
   constructor(
     public date: DateUtilService,
@@ -83,6 +83,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   ngDoCheck() {
     this.hasFocus =
       this.annotationService.focusHelper.focusComment === this.comment;
+    this.setHasOverflow();
   }
 
   handleFocusOn() {
@@ -110,6 +111,7 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
     this.initInput();
     if (!lastItem.bodyValue) this.editItem(lastItem);
+    this.setHasOverflow();
   }
 
   toogleVisibility(item: AnnotationRecord, evt) {
@@ -131,13 +133,18 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     this._inputRecord = null;
     this.editing = false;
     this.initInput();
+    this.setHasOverflow();
   }
 
-  hasOverFlow() {
+  setHasOverflow() {
     const el = document.getElementById(this.commentId);
-    return el && el.scrollHeight > el.clientHeight;
+    this.hasOverFlow = el && el.scrollHeight > el.clientHeight;
   }
 
+  loseFocus(evt) {
+    evt.stopPropagation();
+    this.annotationService.focusHelper.focusOnComment(null);
+  }
   // This is responisble for setting the state of annotation when we gain focus
 
   // async publishItem(record: AnnotationRecord) {
@@ -186,11 +193,13 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
-  clicked() {
+  clicked(evt) {
     // this.comment.editing = true;
 
     console.log('CLICKED');
     this.annotationService.focusHelper.focusOnComment(this.comment);
+    evt.stopPropagation();
+    // evt.preventDefault();
   }
 
   editItem(item: AnnotationRecord) {

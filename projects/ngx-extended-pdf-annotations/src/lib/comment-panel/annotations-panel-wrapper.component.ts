@@ -36,6 +36,11 @@ export class CommentComponent implements OnInit, OnDestroy {
     this.viewContainer = document.getElementById('viewerContainer');
     this.viewContainer.appendChild(this.elRef.nativeElement);
 
+    this.viewContainer.addEventListener('click', (evt) => {
+      console.log('  View container Mouse CLICK');
+      this.annotationService.focusHelper.focusOnComment(null);
+    });
+
     this._showCommentPanel(true);
     this.annotationService.focusHelper.modeSubject$
       .pipe(untilDestroyed(this))

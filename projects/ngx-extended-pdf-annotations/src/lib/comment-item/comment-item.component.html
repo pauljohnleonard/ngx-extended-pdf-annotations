@@ -4,7 +4,7 @@
     'mat-elevation-z8': hasFocus,
     hasFocus: hasFocus
   }"
-  (click)="clicked()"
+  (click)="clicked($event)"
 >
   <div class="comment-inner-container">
     <ng-container
@@ -38,6 +38,12 @@
 
           <span class="filler"></span>
 
+          <ng-container *ngIf="isFirst && comment.records.length > 1">
+            <mat-icon> forum </mat-icon>
+            {{ comment.records.length }}
+            <div style="width: 20px"></div>
+          </ng-container>
+
           <ng-container *ngIf="item.userId === annotationService._user.userId">
             <mat-icon
               *ngIf="isFirst && item.shared"
@@ -66,6 +72,22 @@
               >
                 <mat-icon>more_vert</mat-icon>
               </button>
+
+              <!-- <ng-container
+                *ngIf="!hasFocus && (comment.records.length > 1 || hasOverFlow)"
+              >
+                <mat-icon *ngIf="comment.records.length === 1">
+                  expand_more</mat-icon
+                >
+              </ng-container>
+
+              <mat-icon
+                *ngIf="hasFocus"
+                class="canpress"
+                (click)="loseFocus($event)"
+              >
+                expand_less</mat-icon
+              > -->
 
               <mat-menu #commentMenu="matMenu">
                 <button
@@ -116,7 +138,7 @@
         <ng-container *ngIf="item === inputRecord && editing">
           <mat-form-field class="comment-body-formfield" appearance="outline">
             <textarea
-              *ngIf="AnnotationItemType.COMMENT"
+              *ngIf="item.type === AnnotationItemType.COMMENT"
               matInput
               class="comment-window-textarea-message-input"
               i18n-placeholder="@@YourCommentPlaceHolder"
@@ -131,7 +153,7 @@
             </textarea>
 
             <textarea
-              *ngIf="!AnnotationItemType.COMMENT"
+              *ngIf="item.type !== AnnotationItemType.COMMENT"
               matInput
               class="comment-window-textarea-message-input"
               i18n-placeholder="@@YourReplyPlaceHolder"
@@ -173,21 +195,10 @@
       </ng-container>
     </ng-container>
 
-    <div
-      *ngIf="!hasFocus && (comment.records.length > 1 || hasOverFlow())"
-      style="display: flex; width: 100%; justify-content: flex-end"
-    >
-      <mat-icon
-        *ngIf="comment.records.length > 1"
-        [matBadge]="comment.records.length - 1"
-        matBadgeOverlap="false"
-        matBadgeSize="medium"
-        matBadgePosition="before"
-      >
-        expand_more</mat-icon
-      >
-
-      <mat-icon *ngIf="comment.records.length === 1"> expand_more</mat-icon>
+    <div style="display: flex; width: 100%; justify-content: flex-end">
+      <ng-container *ngIf="!hasFocus && hasOverFlow">
+        <mat-icon> expand_more</mat-icon>
+      </ng-container>
     </div>
   </div>
 </div>

@@ -52,7 +52,9 @@ export class AnnotationFocusHelper {
       if (newFocus) {
         this._focusComment.component.setFocusMode(FocusModeEnum.HIGHLIGHT_ON);
       }
-      this.annotationService.positionHelper.sortComments();
+      setTimeout(() => {
+        this.annotationService.positionHelper.sortComments();
+      });
     }
 
     this.annotationService.renderHelper.switchHighlight(oldHighlight, newFocus);
