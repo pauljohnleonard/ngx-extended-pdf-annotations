@@ -40,7 +40,12 @@
 
           <ng-container *ngIf="isFirst && comment.records.length > 1">
             <mat-icon> forum </mat-icon>
-            {{ comment.records.length }}
+            {{
+              comment.records[comment.records.length - 1].virgin
+                ? comment.records.length - 2
+                : comment.records.length - 1
+            }}
+
             <div style="width: 20px"></div>
           </ng-container>
 

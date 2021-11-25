@@ -274,20 +274,6 @@ export class PageHandler {
           });
           this.isDrawing = true;
           break;
-
-        // case AnnotationType.NOTE:
-        //   this.annotationService.factory.handlePageEvent({
-        //     id: this.currentAnnotationId,
-        //     type: PageEventType.START,
-        //     pos: { x: this.pos.x - 8, y: this.pos.y + 8 },
-        //     mode: AnnotationType.NOTE,
-        //     page: this.page,
-        //     event: 'MOUSE_DOWN',
-        //   });
-        //   this.isDrawing = false;
-        //   break;
-        // default:
-        //   this.isDrawing = false;
       }
     }
   }
