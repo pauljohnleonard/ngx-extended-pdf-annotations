@@ -38,13 +38,20 @@
 
           <span class="filler"></span>
 
-          <ng-container *ngIf="isFirst && comment.records.length > 1">
-            <mat-icon> forum </mat-icon>
-            {{
+          <ng-container
+            *ngIf="
+              isFirst &&
+              (comment.records[comment.records.length - 1].virgin
+                ? comment.records.length > 2
+                : comment.records.length > 1)
+            "
+          >
+            <mat-icon class="comment-icon"> forum </mat-icon>
+            <span class="comment-number">{{
               comment.records[comment.records.length - 1].virgin
                 ? comment.records.length - 2
                 : comment.records.length - 1
-            }}
+            }}</span>
 
             <div style="width: 20px"></div>
           </ng-container>
