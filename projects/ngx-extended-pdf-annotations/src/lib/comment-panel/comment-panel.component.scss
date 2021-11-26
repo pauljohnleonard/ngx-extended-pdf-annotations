@@ -1,13 +1,14 @@
+@import "../../../assets/ngx-extended-pdf-annotations/constants";
+
 .comment {
   position: absolute;
   z-index: 0;
 }
 
 .commentPanelOuterContainer {
-  width: 300px;
   position: relative;
-  right: 10px;
-  display: none;
+  margin-left: 1rem;
+  width: $panelItemWidth;
 }
 
 .focuscomment {

@@ -26,7 +26,7 @@
 .comment-outer-container {
   position: relative;
   background-color: $commentBackground;
-  width: 400px;
+  width: $panelItemWidth;
   border: 1px solid $borderLightGrey;
   border-radius: $borderRadius;
   cursor: pointer;

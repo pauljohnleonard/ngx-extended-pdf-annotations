@@ -22,7 +22,6 @@ import {
   TEXT_RECT_COLOUR,
 } from './constants';
 import { posOfEvent } from './util';
-import { AnnotationImageService } from './image.service';
 
 export class PageHandler {
   path: AnnotationPath = [];
@@ -186,6 +185,7 @@ export class PageHandler {
   }
 
   startAnnotation() {
+    console.log('>>> Start annotation ');
     this.path = [];
     this.currentAnnotationId = null;
     // this.annotationCanvas.onmousedown = this.mouseDownHandler.bind(this);
@@ -213,6 +213,7 @@ export class PageHandler {
   }
 
   mouseClickHandler(e) {
+    console.log(' >>> mouse clicked ');
     const pos = posOfEvent(e);
 
     this.pos = this.cursorToReal(pos);
@@ -251,30 +252,28 @@ export class PageHandler {
     }
   }
   mouseDownHandler(e) {
-    // console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
+    console.log('>>> down ', { page: this.page, x: e.offsetX, y: e.offsetY });
 
-    // console.log(e);
+    if (this.annotationService.getMode() !== AnnotationType.PEN) {
+      return;
+    }
 
     const pos = posOfEvent(e);
 
     this.pos = this.cursorToReal(pos);
     if (!this.currentAnnotationId) {
       this.currentAnnotationId = uuidv4();
-      switch (this.annotationService.getMode()) {
-        case AnnotationType.PEN:
-          this.path = [];
-          this.annotationService.factory.handlePageEvent({
-            id: this.currentAnnotationId,
-            type: PageEventType.START,
-            pos: this.pos,
-            mode: AnnotationType.PEN,
-            path: this.path,
-            page: this.page,
-            event: 'MOUSE_DOWN',
-          });
-          this.isDrawing = true;
-          break;
-      }
+      this.path = [];
+      this.annotationService.factory.handlePageEvent({
+        id: this.currentAnnotationId,
+        type: PageEventType.START,
+        pos: this.pos,
+        mode: AnnotationType.PEN,
+        path: this.path,
+        page: this.page,
+        event: 'MOUSE_DOWN',
+      });
+      this.isDrawing = true;
     }
   }
 
@@ -297,7 +296,7 @@ export class PageHandler {
   }
 
   mouseUpHandler(e) {
-    // console.log('up', { page: this.page, x: e.offsetX, y: e.offsetY });
+    console.log(' >>> up', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
       const pos = posOfEvent(e);
       const pos2 = this.cursorToReal(pos);
