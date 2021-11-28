@@ -70,7 +70,7 @@ export class CommentComponent implements OnInit, OnDestroy {
     if (yes) {
       this.elRef.nativeElement.style.display = 'block';
       this.viewContainer.style.display = 'flex';
-      this.viewContainer.style.justifyContent = 'center';
+      // this.viewContainer.style.justifyContent = 'center';
     } else {
       this.elRef.nativeElement.style.display = 'none';
       this.viewContainer.style.display = 'block';

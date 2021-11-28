@@ -280,9 +280,16 @@ export class PageHandler {
   mouseMoveHandler(e) {
     // console.log('>>> move', { page: this.page, x: e.offsetX, y: e.offsetY });
 
+    if (this.annotationService.getMode() !== AnnotationType.PEN) {
+      return;
+    }
+
     if (this.isDrawing === true) {
       const pos = posOfEvent(e);
       const pos2 = this.cursorToReal(pos);
+      if (pos2.x === null || pos2.y === null) {
+        return;
+      }
       this.path.push({ pos1: this.pos, pos2 });
       this.pos = pos2;
       this.annotationService.factory.handlePageEvent({
@@ -290,25 +297,24 @@ export class PageHandler {
         type: PageEventType.UPDATE,
         event: 'MOUSE_MOVE',
       });
-
-      // this.draw();
     }
   }
 
   mouseUpHandler(e) {
-    console.log(' >>> up', { page: this.page, x: e.offsetX, y: e.offsetY });
+    // console.log(' >>> up', { page: this.page, x: e.offsetX, y: e.offsetY });
     if (this.isDrawing === true) {
       const pos = posOfEvent(e);
       const pos2 = this.cursorToReal(pos);
-      this.path.push({ pos1: this.pos, pos2 });
-      this.pos = pos2;
+      if (pos2.x !== null && pos2.y !== null) {
+        this.path.push({ pos1: this.pos, pos2 });
+        this.pos = pos2;
+      }
       this.isDrawing = false;
       this.annotationService.factory.handlePageEvent({
         id: this.currentAnnotationId,
         type: PageEventType.UPDATE,
         event: 'MOUSE_UP',
       });
-      // this.draw();
     }
   }
 
