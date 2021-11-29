@@ -33,7 +33,14 @@ export class DemoComponent implements AfterViewInit {
       user: this.user,
       documentId,
     });
+    this.annotationsService.focusHelper.setMode(AnnotationType.HIDE);
 
+    await this.annotationsService.ready$
+      .pipe(
+        skipWhile((val) => !val),
+        take(1)
+      )
+      .toPromise();
     this.annotationsService.focusHelper.setMode(AnnotationType.SHOW);
   }
 
@@ -69,4 +76,13 @@ export class DemoComponent implements AfterViewInit {
       val,
     });
   }
+}
+function skipWhile(
+  arg0: (val: any) => boolean
+): import('rxjs').OperatorFunction<boolean, unknown> {
+  throw new Error('Function not implemented.');
+}
+
+function take(arg0: number): import('rxjs').OperatorFunction<unknown, unknown> {
+  throw new Error('Function not implemented.');
 }

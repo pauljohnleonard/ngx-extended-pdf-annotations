@@ -59,7 +59,11 @@ export type PageEvent = {
   pos?: AnnotationPoint;
 };
 
-export type AnnotationUser = { userName: string; userId: string };
+export type AnnotationUser = {
+  userName: string;
+  userId: string;
+  isAdmin?: boolean;
+};
 
 // This is what is drawn on the pdf.
 export type AnnotationPath = { pos1: { x; y }; pos2: { x; y } }[];

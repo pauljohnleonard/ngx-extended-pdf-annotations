@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { AnnotationService } from 'projects/ngx-extended-pdf-annotations/src/public-api';
+import {
+  AnnotationService,
+  AnnotationUser,
+} from 'projects/ngx-extended-pdf-annotations/src/public-api';
 
 @Component({
   selector: 'app-root',
@@ -22,11 +25,15 @@ export class AppComponent {
 
   userControl = new FormControl('');
   user;
-
+  isAdmin = false;
   constructor(public annotationsService: AnnotationService) {}
   ngOnInit() {
     this.userControl.valueChanges.subscribe((name) => {
-      const user = { userName: name, userId: this.hashCode(name) };
+      const user: AnnotationUser = {
+        userName: name,
+        userId: this.hashCode(name),
+        isAdmin: this.isAdmin,
+      };
       // console.log('SELECT:', user, this.hashCode(user));
       this.user = user;
     });

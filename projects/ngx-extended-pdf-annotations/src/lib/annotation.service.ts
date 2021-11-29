@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import {
   AnnotationRecord,
   AnnotationItemType,
@@ -11,7 +11,7 @@ import {
 } from './classes';
 
 import { PageHandler } from './page-handler';
-import { AUTO_SAVE_INTERVAL, SELECTION_ACTIVATE_TIME } from './constants';
+import { AUTO_SAVE_INTERVAL } from './constants';
 import { AnnotationPositionHelper } from './annotation.position.helper';
 import { AnnotationFocusHelper } from './annotation.focus.helper';
 import { AnnotationRenderHelper } from './annotation.render.helper';
@@ -28,7 +28,7 @@ export class AnnotationService {
 
   // This holds all the comments
   commentRecordMap: { [id: string]: AnnotationRecord } = {};
-  _user: AnnotationUser = { userName: 'Guest', userId: '1234' };
+  _user: AnnotationUser = { userName: 'Guest', userId: '1234', isAdmin: true };
 
   // Replies are part of the UIPannelComment
   _comments: UIPannelComment[] = [];
