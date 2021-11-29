@@ -56,9 +56,18 @@
             <div style="width: 20px"></div>
           </ng-container>
 
-          <ng-container *ngIf="item.userId === annotationService._user.userId">
+          <ng-container
+            *ngIf="
+              item.userId === annotationService._user.userId ||
+              annotationService._user.isAdmin
+            "
+          >
             <mat-icon
-              *ngIf="isFirst && item.shared"
+              *ngIf="
+                isFirst &&
+                item.shared &&
+                item.userId === annotationService._user.userId
+              "
               class="myicon"
               i18n-matTooltip="@@AnnotationToolTipPublicCommentClick"
               matTooltip="Public comment. Click to make private."
@@ -103,6 +112,7 @@
 
               <mat-menu #commentMenu="matMenu">
                 <button
+                  *ngIf="item.userId === annotationService._user.userId"
                   mat-menu-item
                   (click)="editItem(item)"
                   aria-label="Edit Comment"
