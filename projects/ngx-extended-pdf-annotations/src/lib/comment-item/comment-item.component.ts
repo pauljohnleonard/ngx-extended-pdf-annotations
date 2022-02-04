@@ -177,6 +177,8 @@ export class CommentItemComponent implements OnInit, UIPanelItemIterface {
     }
   }
 
+  getSaveToopTip() {}
+
   // Set the mode of the item.
   // Do not call directly. Let annotation manager do it.
   setFocusMode(focusMode: FocusModeEnum) {
