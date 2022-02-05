@@ -41,6 +41,7 @@
               }
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/ngx-extended-pdf-annotations/assets/ngx-extended-pdf-annotations/theme.css",
               "src/styles.scss"
             ],

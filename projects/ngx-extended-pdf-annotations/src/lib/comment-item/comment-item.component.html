@@ -146,9 +146,11 @@
           *ngIf="(item !== inputRecord || !editing) && !!item.bodyValue"
           class="comment-body-container"
         >
-          <div *ngIf="hasFocus" class="comment-body">
-            {{ item.bodyValue }}
-          </div>
+          <div
+            *ngIf="hasFocus"
+            class="comment-body"
+            [innerHTML]="item.bodyValue | MarkdownToHtml"
+          ></div>
 
           <div *ngIf="!hasFocus" class="comment-body-brief" [id]="commentId">
             {{ item.bodyValue }}

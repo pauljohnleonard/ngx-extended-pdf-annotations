@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-
+import { parse } from 'marked';
 import { AnnotationService } from '../annotation.service';
 import {
   AnnotationRecord,
@@ -31,7 +31,7 @@ class TextItem {
 })
 export class CommentItemComponent implements OnInit, UIPanelItemIterface {
   @Input() comment: UIPannelComment;
-
+  parse = parse;
   isMobileScreen = false;
   FocusMode = FocusModeEnum;
   AnnotationItemType = AnnotationItemType;

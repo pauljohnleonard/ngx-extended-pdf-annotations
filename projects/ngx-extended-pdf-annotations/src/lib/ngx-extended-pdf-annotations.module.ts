@@ -12,6 +12,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { AnnotationIconRegisterService } from './annotation-icon-register.service';
+import { MarkdownModule } from './markdown/markdown.module';
 @NgModule({
   declarations: [CommentComponent, CommentItemComponent],
   imports: [
@@ -27,6 +28,7 @@ import { AnnotationIconRegisterService } from './annotation-icon-register.servic
     MatIconModule,
     MatTooltipModule,
     MatBadgeModule,
+    MarkdownModule,
   ],
   exports: [CommentComponent, CommentItemComponent],
 })
